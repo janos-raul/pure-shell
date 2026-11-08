@@ -42,10 +42,63 @@ void main() {
   Future<void> createKey(WidgetTester t, String name) async {
     await t.tap(find.byType(FloatingActionButton));
     await t.pumpAndSettle();
+    if (find.text('Keys can be lost').evaluate().isNotEmpty) {
+      await t.tap(find.text('I understand'));
+      await t.pumpAndSettle();
+    }
     await t.enterText(find.widgetWithText(TextFormField, 'Name'), name);
     await t.tap(find.text('Create'));
     await t.pumpAndSettle();
   }
+
+  group('key loss notice', () {
+    testWidgets('shown before the first key; cancelling creates nothing and '
+        'asks again', (t) async {
+      await openKeys(t);
+      await t.tap(find.byType(FloatingActionButton));
+      await t.pumpAndSettle();
+      expect(find.text('Keys can be lost'), findsOneWidget);
+      expect(find.textContaining('uninstall PureShell'), findsOneWidget);
+      expect(find.textContaining('clear its data'), findsOneWidget);
+      expect(find.textContaining('different key'), findsOneWidget);
+      expect(
+        find.textContaining('another way into your servers'),
+        findsOneWidget,
+      );
+      await t.tap(find.text('Cancel'));
+      await t.pumpAndSettle();
+      expect(find.text('Create key'), findsNothing);
+      expect(await service.list(), isEmpty);
+      expect(await service.lossNoticeShown(), isFalse);
+
+      await t.tap(find.byType(FloatingActionButton));
+      await t.pumpAndSettle();
+      expect(find.text('Keys can be lost'), findsOneWidget);
+    });
+
+    testWidgets('acknowledged once, then never again', (t) async {
+      await openKeys(t);
+      await createKey(t, 'first');
+      expect(await service.lossNoticeShown(), isTrue);
+      expect(find.text('first'), findsOneWidget);
+
+      await t.tap(find.byType(FloatingActionButton));
+      await t.pumpAndSettle();
+      expect(find.text('Keys can be lost'), findsNothing);
+      expect(find.text('Create key'), findsOneWidget); // straight to the name
+    });
+
+    testWidgets('no notice when the phone has no screen lock (nothing is '
+        'created)', (t) async {
+      keystore.secureLock = false;
+      await openKeys(t);
+      await t.tap(find.byType(FloatingActionButton));
+      await t.pumpAndSettle();
+      expect(find.text('Keys can be lost'), findsNothing);
+      expect(find.text('Set a screen lock to create keys.'), findsOneWidget);
+      expect(await service.lossNoticeShown(), isFalse);
+    });
+  });
 
   testWidgets('empty state explains the keys', (t) async {
     await openKeys(t);
@@ -66,6 +119,7 @@ void main() {
   });
 
   testWidgets('the comment defaults to pureshell and is editable', (t) async {
+    await service.markLossNoticeShown();
     await openKeys(t);
     await t.tap(find.byType(FloatingActionButton));
     await t.pumpAndSettle();

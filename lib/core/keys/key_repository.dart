@@ -17,6 +17,7 @@ class KeyRepository {
   KeyRepository(this._store);
 
   static const storageKey = 'keys.v1';
+  static const lossNoticeKey = 'keys.lossNoticeShown';
 
   final SecureStore _store;
 
@@ -56,4 +57,10 @@ class KeyRepository {
       ..removeWhere((k) => k.id == id);
     await _save(keys);
   }
+
+  /// The one-time "keys can be lost" notice has been acknowledged.
+  Future<bool> lossNoticeShown() async =>
+      (await _store.read(lossNoticeKey)) == 'true';
+
+  Future<void> markLossNoticeShown() => _store.write(lossNoticeKey, 'true');
 }

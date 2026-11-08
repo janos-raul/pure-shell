@@ -17,6 +17,14 @@ import '../private_input.dart';
 import 'key_detail_screen.dart';
 import 'key_widgets.dart';
 
+/// Shown once, before the first key is created (and mirrored in the README).
+const keyLossNotice =
+    'Keys are destroyed if you uninstall PureShell, clear its data, or '
+    'reinstall it signed with a different key (for example a build from '
+    'another source). They are not backed up and cannot be recovered or '
+    'exported. Keep another way into your servers, such as a password or a '
+    'second key.';
+
 class KeysScreen extends StatefulWidget {
   const KeysScreen({super.key, required this.keyService});
 
@@ -63,6 +71,29 @@ class _KeysScreenState extends State<KeysScreen> {
       _snack(const KeystoreException(KeystoreErrorKind.noScreenLock).message);
       return;
     }
+    if (!await widget.keyService.lossNoticeShown()) {
+      if (!mounted) return;
+      final understood = await showDialog<bool>(
+        context: context,
+        builder: (c) => AlertDialog(
+          title: const Text('Keys can be lost'),
+          content: const Text(keyLossNotice),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(c, false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(c, true),
+              child: const Text('I understand'),
+            ),
+          ],
+        ),
+      );
+      if (understood != true) return; // not acknowledged: ask again next time
+      await widget.keyService.markLossNoticeShown();
+    }
+    if (!mounted) return;
     final result = await showDialog<({String name, String comment})>(
       context: context,
       builder: (_) => const _NewKeyDialog(),

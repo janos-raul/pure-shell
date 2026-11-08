@@ -54,6 +54,10 @@ class KeyService {
 
   Future<SshKey?> get(String id) => _repo.get(id);
 
+  Future<bool> lossNoticeShown() => _repo.lossNoticeShown();
+
+  Future<void> markLossNoticeShown() => _repo.markLossNoticeShown();
+
   /// The security level to show for [key].
   ///
   /// The level is stored in the key's encrypted metadata when the key is

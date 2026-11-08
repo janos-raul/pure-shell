@@ -29,6 +29,14 @@ It connects to your servers and gets out of the way.
 - Screenshots and the recent-apps preview are disabled (`FLAG_SECURE`), and
   Android backup and data extraction are switched off.
 
+## Keys can be lost
+
+Keys live in the phone's Keystore and are not backed up or exportable. They are
+destroyed if you uninstall PureShell, clear its data, or reinstall it signed
+with a different key (for example a build from another source). Keep another
+way into your servers, such as a password or a second key. The app tells you
+this once, before you create your first key.
+
 ## Status
 
 Early development: host list, terminal, host key verification (trust on first
