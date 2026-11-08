@@ -18,6 +18,7 @@ class PinchZoom extends StatefulWidget {
   const PinchZoom({
     super.key,
     required this.value,
+    this.onChangeStart,
     required this.onChanged,
     required this.onChangeEnd,
     required this.child,
@@ -25,6 +26,9 @@ class PinchZoom extends StatefulWidget {
 
   /// Current font size.
   final double value;
+
+  /// Called once when a pinch begins (the second finger touches down).
+  final VoidCallback? onChangeStart;
 
   /// Called while pinching, with the new (clamped, half-point) size.
   final ValueChanged<double> onChanged;
@@ -54,6 +58,7 @@ class _PinchZoomState extends State<PinchZoom> {
     if (_pointers.length == 2) {
       _startDistance = _distance();
       _startSize = _current = widget.value;
+      widget.onChangeStart?.call();
     }
   }
 

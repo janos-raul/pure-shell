@@ -19,6 +19,7 @@ import '../../core/storage/terminal_settings.dart';
 import '../private_input.dart';
 import 'extra_keys.dart';
 import 'pinch_zoom.dart';
+import 'pty_resize.dart';
 
 /// Converts a single typed character to its Ctrl-modified control character
 /// (Ctrl+C -> 0x03, Ctrl+[ -> ESC, ...). Returns null if there is none.
@@ -64,11 +65,16 @@ class _TerminalScreenState extends State<TerminalScreen> {
 
   SshConnection get _conn => widget.connection;
 
+  /// Resizes of the PTY are coalesced: none during a pinch, one at its end.
+  late final _resizer = PtyResizeCoalescer(
+    send: (columns, rows) => _conn.resize(columns, rows),
+  );
+
   @override
   void initState() {
     super.initState();
     _terminal.onOutput = _send;
-    _terminal.onResize = (w, h, pw, ph) => _conn.resize(w, h);
+    _terminal.onResize = (w, h, pw, ph) => _resizer.request(w, h);
     widget.settings.loadFontSize().then((size) {
       if (mounted) setState(() => _fontSize = size);
     });
@@ -79,10 +85,10 @@ class _TerminalScreenState extends State<TerminalScreen> {
 
   Future<void> _openShell() async {
     try {
-      final session = await _conn.openShell(
-        _terminal.viewWidth,
-        _terminal.viewHeight,
-      );
+      final columns = _terminal.viewWidth;
+      final rows = _terminal.viewHeight;
+      final session = await _conn.openShell(columns, rows);
+      _resizer.markSent(columns, rows); // the server has this size already
       _subscriptions
         ..add(
           session.stdout
@@ -186,6 +192,7 @@ class _TerminalScreenState extends State<TerminalScreen> {
     }
     _terminal.onOutput = null;
     _terminal.onResize = null;
+    _resizer.dispose();
     _conn.close();
     _focus.dispose();
     super.dispose();
@@ -226,8 +233,14 @@ class _TerminalScreenState extends State<TerminalScreen> {
                   children: [
                     PinchZoom(
                       value: _fontSize,
+                      // The font changes on screen at every step; the server is
+                      // told the new size once, when the fingers lift.
+                      onChangeStart: _resizer.hold,
                       onChanged: (size) => setState(() => _fontSize = size),
-                      onChangeEnd: widget.settings.saveFontSize,
+                      onChangeEnd: (size) {
+                        widget.settings.saveFontSize(size);
+                        _resizer.release();
+                      },
                       child: PrivateTerminalView(
                         _terminal,
                         focusNode: _focus,
