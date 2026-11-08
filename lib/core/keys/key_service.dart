@@ -17,6 +17,14 @@ import 'ssh_ec_encoding.dart';
 import 'ssh_ed25519_encoding.dart';
 import 'ssh_key.dart';
 
+/// Debug/test switch for emulators: keep an EC key even when the Keystore
+/// reports SOFTWARE (emulators have no secure hardware), so the real
+/// Keystore/BiometricPrompt signing path can be tested. The key is still
+/// shown with its honest "Software" level. Compile-time only.
+const allowSoftwareKeystore = bool.fromEnvironment(
+  'PURESHELL_ALLOW_SOFTWARE_KEYSTORE',
+);
+
 /// Debug/test switch to exercise the software-key path on a phone that does
 /// have secure hardware. Compile-time only (`--dart-define`), never a
 /// runtime option.
@@ -30,12 +38,14 @@ class KeyService {
     this._keystore,
     this._repo, {
     this.softwareOnly = forceSoftwareKeys,
+    this.keepSoftwareKeystoreKeys = allowSoftwareKeystore,
     Random? random,
   }) : _random = random ?? Random.secure();
 
   final KeystoreApi _keystore;
   final KeyRepository _repo;
   final bool softwareOnly;
+  final bool keepSoftwareKeystoreKeys;
   final Random _random;
 
   Future<KeystoreCapabilities> capabilities() => _keystore.capabilities();
@@ -78,7 +88,8 @@ class KeyService {
 
     if (!softwareOnly) {
       final generated = await _keystore.generateKey(base.signAlias);
-      if (generated.level != SecurityLevel.software) {
+      if (generated.level != SecurityLevel.software ||
+          keepSoftwareKeystoreKeys) {
         final key = SshKey(
           id: id,
           name: base.name,

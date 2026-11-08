@@ -17,14 +17,23 @@ It connects to your servers and gets out of the way.
   (no personalized learning, no suggestions, no autocorrect, in the terminal
   and in every text field). This is a request to the keyboard app: a
   third-party keyboard can ignore it.
+- SSH keys are generated in the phone's secure hardware where the phone
+  provides it (StrongBox, otherwise the TEE), are never exportable, and every
+  use needs your fingerprint or screen lock. The Keys screen shows where each
+  key actually lives. On a phone that reports no secure hardware, a clearly
+  labelled "Software key" is used instead (Ed25519, encrypted by a Keystore
+  key that also needs you for every use); it is not protected by hardware.
+- The app can lock itself (fingerprint or screen lock) when opened and after a
+  time away, and hides its content as soon as it loses focus. It needs a
+  screen lock on the phone to do so.
 - Screenshots and the recent-apps preview are disabled (`FLAG_SECURE`), and
   Android backup and data extraction are switched off.
 
 ## Status
 
-Early development (phase 1): host list, password login, terminal, and host key
-verification (trust on first use, SHA-256 fingerprints). Passwords are asked
-for on every connection and are never stored.
+Early development: host list, terminal, host key verification (trust on first
+use, SHA-256 fingerprints), password login (asked every time, never stored),
+key login with hardware-backed keys (per-use authentication) and an app lock.
 
 Requires Android 11 (API 30) or newer.
 

@@ -192,4 +192,29 @@ void main() {
     expect(key.authorizedKeysLine.split(' ').last, 'pureshell');
     expect(defaultKeyComment, 'pureshell');
   });
+
+  test(
+    'emulator switch keeps a software-level EC key, labelled honestly',
+    () async {
+      keystore.level = SecurityLevel.software;
+      service = KeyService(
+        keystore,
+        KeyRepository(store),
+        keepSoftwareKeystoreKeys: true,
+        random: Random(7),
+      );
+      final key = await service.generate(name: 'emu');
+      expect(key.kind, KeyKind.hardwareEcdsa);
+      expect(key.level, SecurityLevel.software);
+      expect(keystore.ec, isNotEmpty);
+      expect(keystore.wrapKeys, isEmpty);
+      final blob = await service.sign(key, Uint8List.fromList([1, 2, 3]));
+      expect(blob, isNotEmpty);
+    },
+  );
+
+  test('without the switch the flag is off', () {
+    expect(allowSoftwareKeystore, isFalse);
+    expect(forceSoftwareKeys, isFalse);
+  });
 }
