@@ -14,9 +14,13 @@ import 'package:flutter/material.dart';
 import 'package:xterm/xterm.dart';
 
 import '../../core/hosts/host.dart';
+import '../../core/lock/app_lock_controller.dart';
 import '../../core/ssh/ssh_connection.dart';
 import '../../core/storage/terminal_settings.dart';
+import '../theme.dart';
+import '../lock/app_lock_gate.dart';
 import '../private_input.dart';
+import 'direct_input.dart';
 import 'extra_keys.dart';
 import 'pinch_zoom.dart';
 import 'pty_resize.dart';
@@ -50,7 +54,8 @@ class TerminalScreen extends StatefulWidget {
   State<TerminalScreen> createState() => _TerminalScreenState();
 }
 
-class _TerminalScreenState extends State<TerminalScreen> {
+class _TerminalScreenState extends State<TerminalScreen>
+    with WidgetsBindingObserver {
   final _terminal = Terminal(maxLines: 10000);
   final _focus = FocusNode();
   final _subscriptions = <StreamSubscription<dynamic>>[];
@@ -59,6 +64,13 @@ class _TerminalScreenState extends State<TerminalScreen> {
   String? _endMessage;
 
   var _fontSize = TerminalSettings.defaultFontSize;
+  var _colors = TerminalColors.standard;
+  var _inputMode = InputMode.direct;
+
+  /// Direct input: the native keyboard view. Null in composing mode.
+  DirectInput? _direct;
+  var _resumed = true;
+  AppLockController? _lock;
 
   var _barVisible = false;
   Timer? _barTimer;
@@ -70,11 +82,33 @@ class _TerminalScreenState extends State<TerminalScreen> {
     send: (columns, rows) => _conn.resize(columns, rows),
   );
 
+  /// Typed input may reach the server only while the app is in front,
+  /// unlocked, and the shell session is alive.
+  bool get _acceptingInput =>
+      _resumed &&
+      !(_lock?.hidden ?? false) &&
+      !_disconnected &&
+      _conn.session != null;
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _focus.addListener(_syncInput);
+    _direct = DirectInput(
+      terminal: _terminal,
+      accepting: () => _acceptingInput,
+    );
+    widget.settings.loadInputMode().then((mode) {
+      if (!mounted) return;
+      setState(() => _inputMode = mode);
+      _syncInput();
+    });
     _terminal.onOutput = _send;
     _terminal.onResize = (w, h, pw, ph) => _resizer.request(w, h);
+    widget.settings.loadColors().then((colors) {
+      if (mounted) setState(() => _colors = colors);
+    });
     widget.settings.loadFontSize().then((size) {
       if (mounted) setState(() => _fontSize = size);
     });
@@ -83,11 +117,43 @@ class _TerminalScreenState extends State<TerminalScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) => _openShell());
   }
 
+  /// Direct input follows the terminal's focus: attached while the terminal
+  /// has focus and input is allowed, detached when a dialog or the lock cover
+  /// takes over, the app is backgrounded, or the session ends.
+  void _syncInput() {
+    final direct = _direct;
+    if (direct == null) return;
+    if (_inputMode == InputMode.direct && _focus.hasFocus && _acceptingInput) {
+      direct.attach();
+    } else {
+      direct.detach();
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _resumed = state == AppLifecycleState.resumed;
+    _syncInput();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final lock = AppLockScope.maybeOf(context);
+    if (!identical(lock, _lock)) {
+      _lock?.removeListener(_syncInput);
+      _lock = lock;
+      _lock?.addListener(_syncInput);
+    }
+    _syncInput();
+  }
+
   Future<void> _openShell() async {
     try {
       final columns = _terminal.viewWidth;
       final rows = _terminal.viewHeight;
       final session = await _conn.openShell(columns, rows);
+      _syncInput(); // there is a session now: input can be accepted
       _resizer.markSent(columns, rows); // the server has this size already
       _subscriptions
         ..add(
@@ -120,6 +186,7 @@ class _TerminalScreenState extends State<TerminalScreen> {
       _disconnected = true;
       _endMessage = message;
     });
+    _syncInput();
   }
 
   void _send(String data) {
@@ -186,6 +253,10 @@ class _TerminalScreenState extends State<TerminalScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _lock?.removeListener(_syncInput);
+    _focus.removeListener(_syncInput);
+    _direct?.dispose();
     _barTimer?.cancel();
     for (final s in _subscriptions) {
       s.cancel();
@@ -241,10 +312,16 @@ class _TerminalScreenState extends State<TerminalScreen> {
                         widget.settings.saveFontSize(size);
                         _resizer.release();
                       },
-                      child: PrivateTerminalView(
-                        _terminal,
-                        focusNode: _focus,
-                        textStyle: TerminalStyle(fontSize: _fontSize),
+                      child: _TapToShowKeyboard(
+                        enabled: _inputMode == InputMode.direct,
+                        onTap: () => _direct?.attach(),
+                        child: PrivateTerminalView(
+                          _terminal,
+                          focusNode: _focus,
+                          hardwareKeyboardOnly: _inputMode == InputMode.direct,
+                          textStyle: TerminalStyle(fontSize: _fontSize),
+                          theme: terminalThemeFor(_colors),
+                        ),
                       ),
                     ),
                     if (landscape) ...[
@@ -339,6 +416,51 @@ class _TerminalScreenState extends State<TerminalScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// In Direct input xterm opens no keyboard connection, so a tap on the
+/// terminal brings the keyboard back (after it was hidden with Back).
+class _TapToShowKeyboard extends StatefulWidget {
+  const _TapToShowKeyboard({
+    required this.enabled,
+    required this.onTap,
+    required this.child,
+  });
+
+  final bool enabled;
+  final VoidCallback onTap;
+  final Widget child;
+
+  @override
+  State<_TapToShowKeyboard> createState() => _TapToShowKeyboardState();
+}
+
+class _TapToShowKeyboardState extends State<_TapToShowKeyboard> {
+  final _down = <int, Offset>{};
+  var _single = true;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!widget.enabled) return widget.child;
+    return Listener(
+      onPointerDown: (e) {
+        if (_down.isNotEmpty) _single = false;
+        _down[e.pointer] = e.position;
+      },
+      onPointerUp: (e) {
+        final start = _down.remove(e.pointer);
+        final tap =
+            _single && start != null && (e.position - start).distance < 18;
+        if (_down.isEmpty) _single = true;
+        if (tap) widget.onTap();
+      },
+      onPointerCancel: (e) {
+        _down.remove(e.pointer);
+        if (_down.isEmpty) _single = true;
+      },
+      child: widget.child,
     );
   }
 }

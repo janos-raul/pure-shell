@@ -26,8 +26,9 @@ It connects to your servers and gets out of the way.
 - The app can lock itself (fingerprint or screen lock) when opened and after a
   time away, and hides its content as soon as it loses focus. It needs a
   screen lock on the phone to do so.
-- Screenshots and the recent-apps preview are disabled (`FLAG_SECURE`), and
-  Android backup and data extraction are switched off.
+- Screenshots, screen recording and the recent-apps preview are blocked by
+  default (`FLAG_SECURE`); Settings has an "Allow screenshots" switch if you
+  want them. Android backup and data extraction are switched off.
 
 ## Keys can be lost
 

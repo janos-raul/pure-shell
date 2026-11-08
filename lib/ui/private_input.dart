@@ -71,13 +71,20 @@ class PrivateTerminalView extends StatelessWidget {
     super.key,
     required this.focusNode,
     required this.textStyle,
+    this.theme = TerminalThemes.defaultTheme,
     this.autofocus = true,
+    this.hardwareKeyboardOnly = false,
   });
 
   final Terminal terminal;
   final FocusNode focusNode;
   final TerminalStyle textStyle;
+  final TerminalTheme theme;
   final bool autofocus;
+
+  /// Direct input: xterm opens no keyboard connection of its own (our native
+  /// view owns the keyboard); hardware key events still reach the terminal.
+  final bool hardwareKeyboardOnly;
 
   /// The keyboard type we ask for.
   static const keyboardType = TextInputType.emailAddress;
@@ -88,10 +95,11 @@ class PrivateTerminalView extends StatelessWidget {
       terminal,
       focusNode: focusNode,
       autofocus: autofocus,
-      hardwareKeyboardOnly: false,
+      hardwareKeyboardOnly: hardwareKeyboardOnly,
       keyboardType: keyboardType,
       backgroundOpacity: 1,
       textStyle: textStyle,
+      theme: theme,
     );
   }
 }

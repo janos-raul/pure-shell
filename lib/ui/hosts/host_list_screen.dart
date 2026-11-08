@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import '../../core/hosts/host.dart';
 import '../../core/hosts/host_repository.dart';
 import '../../core/hosts/known_hosts.dart';
+import '../../core/storage/screenshot_settings.dart';
 import '../../core/storage/terminal_settings.dart';
 import '../../core/keys/key_service.dart';
 import '../../core/lock/app_lock_controller.dart';
@@ -28,6 +29,7 @@ class HostListScreen extends StatefulWidget {
     required this.settings,
     required this.keyService,
     required this.lock,
+    required this.screenshots,
   });
 
   final HostRepository hosts;
@@ -35,6 +37,7 @@ class HostListScreen extends StatefulWidget {
   final TerminalSettings settings;
   final KeyService keyService;
   final AppLockController lock;
+  final ScreenshotSettings screenshots;
 
   @override
   State<HostListScreen> createState() => _HostListScreenState();
@@ -111,7 +114,11 @@ class _HostListScreenState extends State<HostListScreen> {
             tooltip: 'Settings',
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute<void>(
-                builder: (_) => SettingsScreen(lock: widget.lock),
+                builder: (_) => SettingsScreen(
+                  lock: widget.lock,
+                  screenshots: widget.screenshots,
+                  terminal: widget.settings,
+                ),
               ),
             ),
           ),

@@ -12,6 +12,7 @@ package eu.pureshell.app
 import android.content.Intent
 import android.os.Bundle
 import android.view.WindowManager
+import android.widget.FrameLayout
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -27,12 +28,56 @@ class MainActivity : FlutterFragmentActivity() {
         super.onCreate(savedInstanceState)
     }
 
+    private var inputView: TerminalInputView? = null
+
+    private fun inputView(channel: MethodChannel): TerminalInputView =
+        inputView ?: TerminalInputView(this) { event ->
+            channel.invokeMethod("event", event)
+        }.also {
+            addContentView(it, FrameLayout.LayoutParams(1, 1))
+            inputView = it
+        }
+
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         val messenger = flutterEngine.dartExecutor.binaryMessenger
         val keystore = KeystoreBridge(this)
         MethodChannel(messenger, "eu.pureshell.app/keystore")
             .setMethodCallHandler { call, result -> keystore.handle(call, result) }
+
+        // Lets the user allow screenshots (off by default; the window is
+        // secure from onCreate until Dart says otherwise).
+        MethodChannel(messenger, "eu.pureshell.app/window")
+            .setMethodCallHandler { call, result ->
+                if (call.method == "setSecure") {
+                    val secure = call.argument<Boolean>("secure") ?: true
+                    if (secure) {
+                        window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                    } else {
+                        window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                    }
+                    result.success(null)
+                } else {
+                    result.notImplemented()
+                }
+            }
+
+        // "Direct" terminal input: an invisible native view owns the soft
+        // keyboard while a terminal is shown and reports what is typed.
+        val inputChannel = MethodChannel(messenger, "eu.pureshell.app/terminal_input")
+        inputChannel.setMethodCallHandler { call, result ->
+            when (call.method) {
+                "attach" -> {
+                    inputView(inputChannel).attach()
+                    result.success(null)
+                }
+                "detach" -> {
+                    inputView?.detach(call.argument<Boolean>("hide") ?: true)
+                    result.success(null)
+                }
+                else -> result.notImplemented()
+            }
+        }
 
         // Share a piece of text (the public key) through the system share
         // sheet. Public data only.

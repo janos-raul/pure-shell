@@ -9,6 +9,8 @@
 
 import 'package:flutter/material.dart';
 
+import 'theme.dart';
+
 /// Compile-time test switches that must never reach a release build.
 ///
 /// Returns a user-facing problem description, or null when the build is fine.
@@ -38,7 +40,7 @@ class BuildErrorApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark(useMaterial3: true),
+      theme: pureShellTheme(),
       home: Scaffold(
         body: SafeArea(
           child: Padding(

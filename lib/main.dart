@@ -17,11 +17,13 @@ import 'core/keys/key_service.dart';
 import 'core/keys/keystore_api.dart';
 import 'core/lock/app_lock_controller.dart';
 import 'core/lock/app_lock_settings.dart';
+import 'core/storage/screenshot_settings.dart';
 import 'core/storage/secure_store.dart';
 import 'core/storage/terminal_settings.dart';
 import 'ui/build_guard.dart';
 import 'ui/hosts/host_list_screen.dart';
 import 'ui/lock/app_lock_gate.dart';
+import 'ui/theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,6 +42,8 @@ Future<void> main() async {
   // Decide whether the app starts locked before the first frame.
   final lock = AppLockController(keystore, AppLockSettings(store));
   await lock.init();
+  final screenshots = ScreenshotSettings(store);
+  await screenshots.init();
   final knownHosts = KnownHostsStore(store);
   final hosts = HostRepository(store, knownHosts: knownHosts);
   runApp(
@@ -49,6 +53,7 @@ Future<void> main() async {
       settings: TerminalSettings(store),
       keyService: KeyService(keystore, KeyRepository(store)),
       lock: lock,
+      screenshots: screenshots,
     ),
   );
 }
@@ -61,6 +66,7 @@ class PureShellApp extends StatefulWidget {
     required this.settings,
     required this.keyService,
     required this.lock,
+    required this.screenshots,
   });
 
   final HostRepository hosts;
@@ -68,6 +74,7 @@ class PureShellApp extends StatefulWidget {
   final TerminalSettings settings;
   final KeyService keyService;
   final AppLockController lock;
+  final ScreenshotSettings screenshots;
 
   @override
   State<PureShellApp> createState() => _PureShellAppState();
@@ -82,7 +89,7 @@ class _PureShellAppState extends State<PureShellApp> {
       title: 'PureShell',
       navigatorKey: _navigatorKey,
       debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark(useMaterial3: true),
+      theme: pureShellTheme(),
       // The lock screen sits above the navigator, so it covers dialogs too.
       builder: (context, child) => AppLockGate(
         controller: widget.lock,
@@ -95,6 +102,7 @@ class _PureShellAppState extends State<PureShellApp> {
         settings: widget.settings,
         keyService: widget.keyService,
         lock: widget.lock,
+        screenshots: widget.screenshots,
       ),
     );
   }

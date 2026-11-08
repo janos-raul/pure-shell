@@ -107,7 +107,7 @@ class _AppLockGateState extends State<AppLockGate> with WidgetsBindingObserver {
     return Stack(
       fit: StackFit.expand,
       children: [
-        widget.child,
+        AppLockScope(controller: _c, child: widget.child),
         if (_c.hidden)
           Positioned.fill(
             child: _LockScreen(
@@ -161,4 +161,18 @@ class _LockScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Lets screens below the lock gate see whether the app is locked or covered
+/// (to stop taking keyboard input, for example).
+class AppLockScope extends InheritedNotifier<AppLockController> {
+  const AppLockScope({
+    super.key,
+    required AppLockController controller,
+    required super.child,
+  }) : super(notifier: controller);
+
+  /// Null when there is no lock gate (tests).
+  static AppLockController? maybeOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<AppLockScope>()?.notifier;
 }
