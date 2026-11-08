@@ -27,12 +27,17 @@ void main() {
   test('matches ssh-keygen -lf for an RSA key', () {
     const rsaBlob =
         'AAAAB3NzaC1yc2EAAAADAQABAAABAQCVSmYshyaZGJhUclifDFtYVAUNEBzt/Gu29b6bwCYATE4XJbqdQyg0l3pTMqJL5hTSmWaJTgWYKneAGjCFApTjDhFlU2TQSLTmEp5dTS+MMXhqWnobZ7giGIO4++hLVWGiELmKdQHt7H1bXz9ufATPxFw9F5Qsm5mv9MYWu8u851nrrt1Xe4ODYh3Ss+JuECMUMOoAl/dsIxnWNLjOms3xP5kpLMgoiGqjAZdBZBsmwQ29lAzIDA6nxcPWwAIH3j86q7gsai9GIDq8Nz3LLwgZYVzueDCot2ScI0h75HXaaPi+KcM6jpc7Qz9L65rpIo12gCvLmVZHKBiFKKEu0fPB';
-    expect(sha256Fingerprint(base64.decode(rsaBlob)), 'SHA256:JsLFbeIAjnGJyi7RgKyJcX3ImLtGaEHKnv4eudznKAk');
+    expect(
+      sha256Fingerprint(base64.decode(rsaBlob)),
+      'SHA256:JsLFbeIAjnGJyi7RgKyJcX3ImLtGaEHKnv4eudznKAk',
+    );
   });
 
   test('has no base64 padding', () {
-    expect(sha256Fingerprint(Uint8List.fromList([1, 2, 3])).contains('='),
-        isFalse);
+    expect(
+      sha256Fingerprint(Uint8List.fromList([1, 2, 3])).contains('='),
+      isFalse,
+    );
   });
 
   test('decodes the dartssh2 callback bytes', () {

@@ -53,16 +53,22 @@ void main() {
 
   test('hostname is trimmed and lowercased', () async {
     await store.trust('  Example.COM ', 22, keyA);
-    expect((await store.check('example.com', 22, keyA)).status,
-        KnownHostStatus.match);
+    expect(
+      (await store.check('example.com', 22, keyA)).status,
+      KnownHostStatus.match,
+    );
   });
 
   test('port and IP vs name are separate entries', () async {
     await store.trust('example.com', 22, keyA);
-    expect((await store.check('example.com', 2222, keyA)).status,
-        KnownHostStatus.unknown);
-    expect((await store.check('192.0.2.10', 22, keyA)).status,
-        KnownHostStatus.unknown);
+    expect(
+      (await store.check('example.com', 2222, keyA)).status,
+      KnownHostStatus.unknown,
+    );
+    expect(
+      (await store.check('192.0.2.10', 22, keyA)).status,
+      KnownHostStatus.unknown,
+    );
   });
 
   test('trust refuses to overwrite a different key', () async {
@@ -74,8 +80,10 @@ void main() {
   test('remove allows trusting a new key', () async {
     await store.trust('example.com', 22, keyA);
     await store.remove('example.com', 22);
-    expect((await store.check('example.com', 22, keyB)).status,
-        KnownHostStatus.unknown);
+    expect(
+      (await store.check('example.com', 22, keyB)).status,
+      KnownHostStatus.unknown,
+    );
     await store.trust('example.com', 22, keyB);
     expect((await store.get('example.com', 22)), keyB);
   });
@@ -83,7 +91,11 @@ void main() {
   test('deleting a host also removes its trusted key', () async {
     final repo = HostRepository(backing, knownHosts: store);
     const host = Host(
-        id: '1', label: 'Test', hostname: 'example.com', username: 'user');
+      id: '1',
+      label: 'Test',
+      hostname: 'example.com',
+      username: 'user',
+    );
     await repo.upsert(host);
     await store.trust('example.com', 22, keyA);
     await repo.delete(host);

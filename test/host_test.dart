@@ -41,8 +41,10 @@ void main() {
   });
 
   test('serialized form has no password field', () {
-    expect(host.toJson().keys,
-        unorderedEquals(['id', 'label', 'hostname', 'port', 'username']));
+    expect(
+      host.toJson().keys,
+      unorderedEquals(['id', 'label', 'hostname', 'port', 'username']),
+    );
   });
 
   test('repository add, edit, delete', () async {

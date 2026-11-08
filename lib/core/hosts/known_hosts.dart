@@ -22,9 +22,9 @@ class HostKey {
   Map<String, dynamic> toJson() => {'type': type, 'fingerprint': fingerprint};
 
   factory HostKey.fromJson(Map<String, dynamic> json) => HostKey(
-        type: json['type'] as String,
-        fingerprint: json['fingerprint'] as String,
-      );
+    type: json['type'] as String,
+    fingerprint: json['fingerprint'] as String,
+  );
 
   @override
   bool operator ==(Object other) =>
@@ -81,9 +81,9 @@ class KnownHostsStore {
   }
 
   Future<void> _save(Map<String, HostKey> keys) => _store.write(
-        storageKey,
-        jsonEncode(keys.map((k, v) => MapEntry(k, v.toJson()))),
-      );
+    storageKey,
+    jsonEncode(keys.map((k, v) => MapEntry(k, v.toJson()))),
+  );
 
   Future<HostKey?> get(String hostname, int port) async =>
       (await _load())[entryKey(hostname, port)];

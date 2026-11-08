@@ -28,9 +28,9 @@ typedef TrustPrompt = Future<bool> Function(HostKey key);
 /// An RSA key can be presented as ssh-rsa, rsa-sha2-256 or rsa-sha2-512; these
 /// are the same key and must not cause a false mismatch.
 String normalizeKeyType(String negotiated) => switch (negotiated) {
-      'rsa-sha2-256' || 'rsa-sha2-512' => 'ssh-rsa',
-      _ => negotiated,
-    };
+  'rsa-sha2-256' || 'rsa-sha2-512' => 'ssh-rsa',
+  _ => negotiated,
+};
 
 /// Host key algorithm preference. The order is fixed in our code (the same as
 /// dartssh2's modern defaults, legacy SHA-1 RSA excluded). If a key type is
@@ -46,12 +46,10 @@ List<SSHHostkeyType> hostKeyPreference({String? storedType}) {
     SSHHostkeyType.ecdsa256,
   ];
   if (storedType == null) return base;
-  final preferred =
-      base.where((a) => normalizeKeyType(a.name) == storedType).toList();
-  return [
-    ...preferred,
-    ...base.where((a) => !preferred.contains(a)),
-  ];
+  final preferred = base
+      .where((a) => normalizeKeyType(a.name) == storedType)
+      .toList();
+  return [...preferred, ...base.where((a) => !preferred.contains(a))];
 }
 
 /// One SSH connection attempt to a [Host]. The password is passed to

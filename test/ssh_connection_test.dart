@@ -29,7 +29,9 @@ void main() {
     final order = hostKeyPreference(storedType: 'ssh-rsa');
     expect(order.take(2), [SSHHostkeyType.rsaSha512, SSHHostkeyType.rsaSha256]);
     expect(order, contains(SSHHostkeyType.ed25519));
-    expect(hostKeyPreference(storedType: 'ecdsa-sha2-nistp256').first,
-        SSHHostkeyType.ecdsa256);
+    expect(
+      hostKeyPreference(storedType: 'ecdsa-sha2-nistp256').first,
+      SSHHostkeyType.ecdsa256,
+    );
   });
 }

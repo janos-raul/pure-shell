@@ -32,9 +32,9 @@ class HostRepository {
   }
 
   Future<void> _save(List<Host> hosts) => _store.write(
-        storageKey,
-        jsonEncode(hosts.map((h) => h.toJson()).toList()),
-      );
+    storageKey,
+    jsonEncode(hosts.map((h) => h.toJson()).toList()),
+  );
 
   /// Adds the host, or replaces the one with the same id.
   Future<void> upsert(Host host) async {
@@ -50,7 +50,8 @@ class HostRepository {
 
   /// Deletes the host and its trusted host key.
   Future<void> delete(Host host) async {
-    final hosts = await list()..removeWhere((h) => h.id == host.id);
+    final hosts = await list()
+      ..removeWhere((h) => h.id == host.id);
     await _save(hosts);
     await knownHosts?.remove(host.hostname, host.port);
   }

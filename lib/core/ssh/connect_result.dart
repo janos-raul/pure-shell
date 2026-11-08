@@ -66,18 +66,17 @@ class ConnectOutcome {
 }
 
 String connectFailureMessage(ConnectFailure failure) => switch (failure) {
-      ConnectFailure.timeout =>
-        'The server did not respond in time. Check the address and your network.',
-      ConnectFailure.unreachable =>
-        'Could not reach the server. Check the hostname, port and your network.',
-      ConnectFailure.authFailed =>
-        'Authentication failed. Check the username and password.',
-      ConnectFailure.serverClosedDuringPrompt =>
-        'The server closed the connection while you were deciding. '
-            'Servers drop idle logins after about two minutes. Please try again.',
-      ConnectFailure.serverClosed =>
-        'The server closed the connection. Please try again.',
-      ConnectFailure.hostKeyRejected =>
-        'The server host key was rejected.',
-      ConnectFailure.unknown => 'The connection failed.',
-    };
+  ConnectFailure.timeout =>
+    'The server did not respond in time. Check the address and your network.',
+  ConnectFailure.unreachable =>
+    'Could not reach the server. Check the hostname, port and your network.',
+  ConnectFailure.authFailed =>
+    'Authentication failed. Check the username and password.',
+  ConnectFailure.serverClosedDuringPrompt =>
+    'The server closed the connection while you were deciding. '
+        'Servers drop idle logins after about two minutes. Please try again.',
+  ConnectFailure.serverClosed =>
+    'The server closed the connection. Please try again.',
+  ConnectFailure.hostKeyRejected => 'The server host key was rejected.',
+  ConnectFailure.unknown => 'The connection failed.',
+};

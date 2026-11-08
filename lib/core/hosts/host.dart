@@ -28,30 +28,29 @@ class Host {
     String? hostname,
     int? port,
     String? username,
-  }) =>
-      Host(
-        id: id,
-        label: label ?? this.label,
-        hostname: hostname ?? this.hostname,
-        port: port ?? this.port,
-        username: username ?? this.username,
-      );
+  }) => Host(
+    id: id,
+    label: label ?? this.label,
+    hostname: hostname ?? this.hostname,
+    port: port ?? this.port,
+    username: username ?? this.username,
+  );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'label': label,
-        'hostname': hostname,
-        'port': port,
-        'username': username,
-      };
+    'id': id,
+    'label': label,
+    'hostname': hostname,
+    'port': port,
+    'username': username,
+  };
 
   factory Host.fromJson(Map<String, dynamic> json) => Host(
-        id: json['id'] as String,
-        label: json['label'] as String,
-        hostname: json['hostname'] as String,
-        port: (json['port'] as num?)?.toInt() ?? 22,
-        username: json['username'] as String,
-      );
+    id: json['id'] as String,
+    label: json['label'] as String,
+    hostname: json['hostname'] as String,
+    port: (json['port'] as num?)?.toInt() ?? 22,
+    username: json['username'] as String,
+  );
 
   @override
   bool operator ==(Object other) =>

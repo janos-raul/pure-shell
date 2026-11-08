@@ -9,19 +9,36 @@
 
 import 'package:flutter/material.dart';
 
+import 'core/hosts/host_repository.dart';
+import 'core/hosts/known_hosts.dart';
+import 'core/storage/secure_store.dart';
+import 'ui/hosts/host_list_screen.dart';
+
 void main() {
-  runApp(const PureShellApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  final store = FlutterSecureStore();
+  final knownHosts = KnownHostsStore(store);
+  final hosts = HostRepository(store, knownHosts: knownHosts);
+  runApp(PureShellApp(hosts: hosts, knownHosts: knownHosts));
 }
 
 class PureShellApp extends StatelessWidget {
-  const PureShellApp({super.key});
+  const PureShellApp({
+    super.key,
+    required this.hosts,
+    required this.knownHosts,
+  });
+
+  final HostRepository hosts;
+  final KnownHostsStore knownHosts;
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'PureShell',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData.dark(useMaterial3: true),
-      home: const Scaffold(body: Center(child: Text('PureShell'))),
+      home: HostListScreen(hosts: hosts, knownHosts: knownHosts),
     );
   }
 }
