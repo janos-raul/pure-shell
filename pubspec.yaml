@@ -38,6 +38,7 @@ dependencies:
   flutter_secure_storage: ^11.2.0
   crypto: ^3.0.8
   pointycastle: ^4.0.0
+  pinenacl: ^0.6.0
 
 dev_dependencies:
   flutter_test:
