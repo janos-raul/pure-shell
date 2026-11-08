@@ -7,8 +7,6 @@
 // Software Foundation, either version 3 of the License, or (at your option)
 // any later version. See the LICENSE file for details.
 
-import 'dart:typed_data';
-
 import 'package:flutter/services.dart';
 
 /// Where a key actually lives, as reported by the Android Keystore.
