@@ -7,6 +7,7 @@
 // Software Foundation, either version 3 of the License, or (at your option)
 // any later version. See the LICENSE file for details.
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 /// Where a key actually lives, as reported by the Android Keystore.
@@ -140,17 +141,33 @@ abstract class KeystoreApi {
   Future<void> cancelPrompt();
 }
 
+/// Counts the system prompts (fingerprint / screen lock) currently showing.
+/// The app lock ignores the app losing focus while one is up, otherwise every
+/// key use would lock the app again.
+class PromptTracker {
+  PromptTracker._();
+
+  static final active = ValueNotifier<int>(0);
+}
+
 class PlatformKeystore implements KeystoreApi {
   PlatformKeystore([MethodChannel? channel])
     : _channel = channel ?? const MethodChannel('eu.pureshell.app/keystore');
 
   final MethodChannel _channel;
 
+  /// Methods that put a system prompt on screen.
+  static const _prompting = {'sign', 'wrap', 'unwrap', 'authenticate'};
+
   Future<T?> _call<T>(String method, [Map<String, Object?>? args]) async {
+    final tracked = _prompting.contains(method);
+    if (tracked) PromptTracker.active.value++;
     try {
       return await _channel.invokeMethod<T>(method, args);
     } on PlatformException catch (e) {
       throw KeystoreException.fromCode(e.code);
+    } finally {
+      if (tracked) PromptTracker.active.value--;
     }
   }
 

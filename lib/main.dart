@@ -14,13 +14,20 @@ import 'core/hosts/known_hosts.dart';
 import 'core/keys/key_repository.dart';
 import 'core/keys/key_service.dart';
 import 'core/keys/keystore_api.dart';
+import 'core/lock/app_lock_controller.dart';
+import 'core/lock/app_lock_settings.dart';
 import 'core/storage/secure_store.dart';
 import 'core/storage/terminal_settings.dart';
 import 'ui/hosts/host_list_screen.dart';
+import 'ui/lock/app_lock_gate.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final store = FlutterSecureStore();
+  final keystore = PlatformKeystore();
+  // Decide whether the app starts locked before the first frame.
+  final lock = AppLockController(keystore, AppLockSettings(store));
+  await lock.init();
   final knownHosts = KnownHostsStore(store);
   final hosts = HostRepository(store, knownHosts: knownHosts);
   runApp(
@@ -28,36 +35,54 @@ void main() {
       hosts: hosts,
       knownHosts: knownHosts,
       settings: TerminalSettings(store),
-      keyService: KeyService(PlatformKeystore(), KeyRepository(store)),
+      keyService: KeyService(keystore, KeyRepository(store)),
+      lock: lock,
     ),
   );
 }
 
-class PureShellApp extends StatelessWidget {
+class PureShellApp extends StatefulWidget {
   const PureShellApp({
     super.key,
     required this.hosts,
     required this.knownHosts,
     required this.settings,
     required this.keyService,
+    required this.lock,
   });
 
   final HostRepository hosts;
   final KnownHostsStore knownHosts;
   final TerminalSettings settings;
   final KeyService keyService;
+  final AppLockController lock;
+
+  @override
+  State<PureShellApp> createState() => _PureShellAppState();
+}
+
+class _PureShellAppState extends State<PureShellApp> {
+  final _navigatorKey = GlobalKey<NavigatorState>();
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'PureShell',
+      navigatorKey: _navigatorKey,
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark(useMaterial3: true),
+      // The lock screen sits above the navigator, so it covers dialogs too.
+      builder: (context, child) => AppLockGate(
+        controller: widget.lock,
+        navigatorKey: _navigatorKey,
+        child: child!,
+      ),
       home: HostListScreen(
-        hosts: hosts,
-        knownHosts: knownHosts,
-        settings: settings,
-        keyService: keyService,
+        hosts: widget.hosts,
+        knownHosts: widget.knownHosts,
+        settings: widget.settings,
+        keyService: widget.keyService,
+        lock: widget.lock,
       ),
     );
   }

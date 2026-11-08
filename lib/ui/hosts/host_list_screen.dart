@@ -14,7 +14,9 @@ import '../../core/hosts/host_repository.dart';
 import '../../core/hosts/known_hosts.dart';
 import '../../core/storage/terminal_settings.dart';
 import '../../core/keys/key_service.dart';
+import '../../core/lock/app_lock_controller.dart';
 import '../keys/keys_screen.dart';
+import '../settings/settings_screen.dart';
 import 'connect_flow.dart';
 import 'host_edit_screen.dart';
 
@@ -25,12 +27,14 @@ class HostListScreen extends StatefulWidget {
     required this.knownHosts,
     required this.settings,
     required this.keyService,
+    required this.lock,
   });
 
   final HostRepository hosts;
   final KnownHostsStore knownHosts;
   final TerminalSettings settings;
   final KeyService keyService;
+  final AppLockController lock;
 
   @override
   State<HostListScreen> createState() => _HostListScreenState();
@@ -102,6 +106,15 @@ class _HostListScreenState extends State<HostListScreen> {
       appBar: AppBar(
         title: const Text('PureShell'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            tooltip: 'Settings',
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => SettingsScreen(lock: widget.lock),
+              ),
+            ),
+          ),
           IconButton(
             icon: const Icon(Icons.vpn_key),
             tooltip: 'Keys',
