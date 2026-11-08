@@ -5,6 +5,51 @@ import 'package:pureshell/core/storage/terminal_settings.dart';
 import 'package:pureshell/ui/theme.dart';
 
 void main() {
+  test('Default is exactly the Campbell scheme', () {
+    final t = terminalThemeFor(TerminalColors.standard);
+    final got = [
+      t.background,
+      t.foreground,
+      t.black,
+      t.red,
+      t.green,
+      t.yellow,
+      t.blue,
+      t.magenta,
+      t.cyan,
+      t.white,
+      t.brightBlack,
+      t.brightRed,
+      t.brightGreen,
+      t.brightYellow,
+      t.brightBlue,
+      t.brightMagenta,
+      t.brightCyan,
+      t.brightWhite,
+    ];
+    const want = [
+      0xFF0C0C0C,
+      0xFFCCCCCC,
+      0xFF0C0C0C,
+      0xFFC50F1F,
+      0xFF13A10E,
+      0xFFC19C00,
+      0xFF0037DA,
+      0xFF881798,
+      0xFF3A96DD,
+      0xFFCCCCCC,
+      0xFF767676,
+      0xFFE74856,
+      0xFF16C60C,
+      0xFFF9F1A5,
+      0xFF3B78FF,
+      0xFFB4009E,
+      0xFF61D6D6,
+      0xFFF2F2F2,
+    ];
+    expect([for (final c in got) c.toARGB32()], want);
+  });
+
   test('default is light gray on black, and the choice is stored', () async {
     final s = TerminalSettings(MemorySecureStore());
     expect(await s.loadColors(), TerminalColors.standard);
@@ -14,7 +59,7 @@ void main() {
     );
     expect(
       terminalThemeFor(TerminalColors.standard).background,
-      const Color(0xFF000000),
+      const Color(0xFF0C0C0C),
     );
     await s.saveColors(TerminalColors.phosphor);
     expect(await s.loadColors(), TerminalColors.phosphor);

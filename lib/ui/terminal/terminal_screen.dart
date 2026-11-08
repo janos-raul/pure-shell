@@ -285,7 +285,7 @@ class _TerminalScreenState extends State<TerminalScreen>
         if (!didPop) _confirmDisconnect();
       },
       child: Scaffold(
-        backgroundColor: Colors.black,
+        backgroundColor: terminalThemeFor(_colors).background,
         // In landscape the app bar would eat a third of the height while the
         // keyboard is up, so it is hidden; tap the top edge to show it.
         appBar: landscape

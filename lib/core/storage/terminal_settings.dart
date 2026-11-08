@@ -11,7 +11,7 @@ import 'secure_store.dart';
 
 /// Terminal colour scheme.
 enum TerminalColors {
-  standard('Default', 'Light gray on black, standard ANSI colors'),
+  standard('Default', 'Windows Terminal "Campbell" colors'),
   phosphor('Phosphor green', 'Green on black');
 
   const TerminalColors(this.label, this.description);
