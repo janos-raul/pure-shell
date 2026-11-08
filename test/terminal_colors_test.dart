@@ -102,6 +102,11 @@ void main() {
       expect(textColor(t, '\x1b[97m'), const Color(0xFFF2F2F2));
     });
 
+    test('ESC[22m (normal intensity) ends the bright color', () {
+      final t = terminalThemeFor(TerminalColors.standard);
+      expect(textColor(t, '\x1b[1;34m\x1b[22m'), const Color(0xFF0037DA));
+    });
+
     test('Phosphor green leaves bold colors alone', () {
       final t = terminalThemeFor(TerminalColors.phosphor);
       expect(t.boldIsBright, isFalse);

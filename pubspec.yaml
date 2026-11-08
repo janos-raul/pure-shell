@@ -39,7 +39,7 @@ dependencies:
   xterm:
     git:
       url: https://github.com/janos-raul/xterm.dart.git
-      ref: 626c3e26e89f609cf21c43a7fa897182976578c6
+      ref: 1666e01c122ad7ca11c173554fda658cf3a7427b
   flutter_secure_storage: ^11.2.0
   crypto: ^3.0.8
   pointycastle: ^4.0.0

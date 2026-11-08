@@ -12,11 +12,11 @@ what is listed here.
 
 ## What the fork changes
 
-Two commits on top of `v4.0.0` (three changes). To audit them:
+Three commits on top of `v4.0.0` (four changes). To audit them:
 
     git clone https://github.com/janos-raul/xterm.dart
     cd xterm.dart
-    git diff v4.0.0 626c3e26e89f609cf21c43a7fa897182976578c6
+    git diff v4.0.0 1666e01c122ad7ca11c173554fda658cf3a7427b
 
 (Also in the fork: `PURESHELL_FORK.md`.)
 
@@ -31,20 +31,25 @@ Two commits on top of `v4.0.0` (three changes). To audit them:
    it off in Phosphor green.
 2. **Palette index 15 is `brightWhite`.** Upstream returned `white`, so
    `ESC[97m` and 256-color index 15 drew the normal white.
-3. **Dev tooling only.** Dropped the abandoned `dart_code_metrics` dev
+3. **SGR 22 clears bold and faint.** Upstream only cleared faint ("normal
+   intensity" is both), so a program that ended bold with `ESC[22m` left the text
+   bold, and with bold-is-bright, bright. Faint was already cleared; bold now is
+   too.
+4. **Dev tooling only.** Dropped the abandoned `dart_code_metrics` dev
    dependency, which cannot be resolved on current Dart SDKs. It never affected
    packages that depend on xterm.
 
-Both behavior changes have tests in the fork
-(`test/src/ui/bold_bright_test.dart`): every color of the 16 in both modes,
-30-37 and 256-color forms, bold set before and after the color, and the cases
-that must not change.
+The behavior changes have tests in the fork
+(`test/src/ui/bold_bright_test.dart`, `test/src/core/escape/sgr_intensity_test.dart`):
+all 16 colors in both modes, 30-37 and 256-color forms, bold set before and
+after the color, the cases that must not change, and SGR 22 for bold, faint,
+both, and with bold-is-bright on.
 
 ## Known upstream behavior we did not change
 
-- SGR 22 ("normal intensity") only clears faint, not bold. A program that ends
-  bold with `ESC[22m` leaves the text bold (and, with bold-is-bright, bright).
-  SGR 0 and SGR 21 do clear bold.
+- SGR 21 clears bold (as in upstream). Terminals disagree on 21: some treat it as
+  bold-off, newer ones as double underline. We left it as it is. SGR 0 and
+  SGR 22 also clear bold.
 
 ## Updating the pin
 
