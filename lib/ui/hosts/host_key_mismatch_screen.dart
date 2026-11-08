@@ -9,6 +9,8 @@
 
 import 'package:flutter/material.dart';
 
+import '../theme.dart';
+
 import '../../core/hosts/host.dart';
 import '../../core/hosts/known_hosts.dart';
 
@@ -29,7 +31,7 @@ class HostKeyMismatchScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const mono = TextStyle(fontFamily: 'monospace', fontSize: 13);
+    final mono = monoStyle.copyWith(fontSize: 13);
     return Scaffold(
       backgroundColor: const Color(0xFF3B0A0A),
       appBar: AppBar(
@@ -49,11 +51,21 @@ class HostKeyMismatchScreen extends StatelessWidget {
                   ?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            Text(
-              '${host.hostname}:${host.port} presented a different key than '
-              'the one you trusted. Someone may be intercepting the '
-              'connection, or the server was reinstalled. No password was '
-              'sent.',
+            Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: '${host.hostname}:${host.port}',
+                    style: monoStyle,
+                  ),
+                  const TextSpan(
+                    text:
+                        ' presented a different key than the one you trusted. '
+                        'Someone may be intercepting the connection, or the '
+                        'server was reinstalled. No password was sent.',
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 24),
             const Text(

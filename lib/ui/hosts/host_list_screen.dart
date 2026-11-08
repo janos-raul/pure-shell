@@ -9,6 +9,8 @@
 
 import 'package:flutter/material.dart';
 
+import '../theme.dart';
+
 import '../../core/hosts/host.dart';
 import '../../core/hosts/host_repository.dart';
 import '../../core/hosts/known_hosts.dart';
@@ -150,6 +152,7 @@ class _HostListScreenState extends State<HostListScreen> {
                   title: Text(h.label),
                   subtitle: Text(
                     '${h.username}@${h.hostname}${h.port == 22 ? '' : ':${h.port}'}',
+                    style: monoStyle,
                   ),
                   onTap: () => _connect(h),
                   trailing: PopupMenuButton<String>(

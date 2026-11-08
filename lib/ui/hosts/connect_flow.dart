@@ -9,6 +9,8 @@
 
 import 'dart:async';
 
+import '../theme.dart';
+
 import 'package:flutter/material.dart';
 
 import '../../core/hosts/host.dart';
@@ -149,22 +151,30 @@ class ConnectDialog extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('First connection to ${host.hostname}:${host.port}.'),
+            Text.rich(
+              TextSpan(
+                children: [
+                  const TextSpan(text: 'First connection to '),
+                  TextSpan(
+                    text: '${host.hostname}:${host.port}',
+                    style: monoStyle,
+                  ),
+                  const TextSpan(text: '.'),
+                ],
+              ),
+            ),
             const SizedBox(height: 12),
             const Text(
               'Key type',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            Text(key.type),
+            Text(key.type, style: monoStyle),
             const SizedBox(height: 8),
             const Text(
               'SHA-256 fingerprint',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            SelectableText(
-              key.fingerprint,
-              style: const TextStyle(fontFamily: 'monospace'),
-            ),
+            SelectableText(key.fingerprint, style: monoStyle),
             const SizedBox(height: 12),
             const Text(
               'Compare it with the fingerprint from your server '

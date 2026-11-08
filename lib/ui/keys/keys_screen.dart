@@ -9,6 +9,8 @@
 
 import 'package:flutter/material.dart';
 
+import '../theme.dart';
+
 import '../../core/keys/key_service.dart';
 import '../../core/keys/keystore_api.dart';
 import '../../core/keys/ssh_ec_encoding.dart';
@@ -171,7 +173,7 @@ class _KeysScreenState extends State<KeysScreen> {
                 for (final k in keys)
                   ListTile(
                     title: Text(k.name),
-                    subtitle: Text(k.fingerprint),
+                    subtitle: Text(k.fingerprint, style: monoStyle),
                     trailing: SecurityBadge(sshKey: k, level: _levels[k.id]),
                     onTap: () async {
                       await Navigator.of(context).push(

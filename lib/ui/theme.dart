@@ -18,6 +18,9 @@ const _dimGreen = Color(0xFF1F9940);
 const _black = Color(0xFF000000);
 const _panel = Color(0xFF0A120C);
 
+/// For technical values: hostnames, user@host:port, fingerprints, key lines.
+const monoStyle = TextStyle(fontFamily: 'monospace');
+
 ThemeData pureShellTheme() {
   const scheme = ColorScheme.dark(
     primary: _green,
@@ -58,10 +61,10 @@ ThemeData pureShellTheme() {
       surfaceTintColor: Colors.transparent,
     ),
     dividerColor: const Color(0xFF14501F),
+    // Proportional font for the UI; technical values use [monoStyle].
     textTheme: ThemeData.dark().textTheme.apply(
       bodyColor: _green,
       displayColor: _green,
-      fontFamily: 'monospace',
     ),
   );
 }

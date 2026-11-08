@@ -9,6 +9,8 @@
 
 import 'dart:math';
 
+import '../theme.dart';
+
 import 'package:flutter/material.dart';
 
 import '../../core/hosts/host.dart';
@@ -169,6 +171,7 @@ class _HostEditScreenState extends State<HostEditScreen> {
             PrivateTextFormField(
               controller: _hostname,
               decoration: const InputDecoration(labelText: 'Hostname'),
+              style: monoStyle,
               keyboardType: TextInputType.url,
               validator: (v) {
                 if (_required(v) != null) return 'Required';
@@ -182,6 +185,7 @@ class _HostEditScreenState extends State<HostEditScreen> {
             PrivateTextFormField(
               controller: _port,
               decoration: const InputDecoration(labelText: 'Port'),
+              style: monoStyle,
               keyboardType: TextInputType.number,
               validator: (v) {
                 final p = int.tryParse(v?.trim() ?? '');
@@ -194,6 +198,7 @@ class _HostEditScreenState extends State<HostEditScreen> {
             PrivateTextFormField(
               controller: _username,
               decoration: const InputDecoration(labelText: 'Username'),
+              style: monoStyle,
               validator: _required,
             ),
             const SizedBox(height: 24),
@@ -250,11 +255,8 @@ class _HostEditScreenState extends State<HostEditScreen> {
               if (_trusted == null)
                 const Text('None yet. You will be asked on first connection.')
               else ...[
-                Text(_trusted!.type),
-                SelectableText(
-                  _trusted!.fingerprint,
-                  style: const TextStyle(fontFamily: 'monospace'),
-                ),
+                Text(_trusted!.type, style: monoStyle),
+                SelectableText(_trusted!.fingerprint, style: monoStyle),
                 const SizedBox(height: 8),
                 OutlinedButton(
                   onPressed: _removeKey,

@@ -8,6 +8,9 @@
 // any later version. See the LICENSE file for details.
 
 import 'package:flutter/material.dart';
+
+import '../theme.dart';
+
 import 'package:flutter/services.dart';
 
 import '../../core/keys/key_service.dart';
@@ -147,15 +150,9 @@ class _KeyDetailScreenState extends State<KeyDetailScreen> {
             style: Theme.of(context).textTheme.titleSmall,
           ),
           const SizedBox(height: 4),
-          SelectableText(
-            line,
-            style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
-          ),
+          SelectableText(line, style: monoStyle.copyWith(fontSize: 12)),
           const SizedBox(height: 8),
-          Text(
-            _key.fingerprint,
-            style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
-          ),
+          Text(_key.fingerprint, style: monoStyle.copyWith(fontSize: 12)),
           const SizedBox(height: 8),
           Row(
             children: [

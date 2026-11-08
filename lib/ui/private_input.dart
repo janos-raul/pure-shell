@@ -26,6 +26,7 @@ class PrivateTextFormField extends StatelessWidget {
     this.obscureText = false,
     this.autofocus = false,
     this.onFieldSubmitted,
+    this.style,
   });
 
   final TextEditingController? controller;
@@ -36,12 +37,14 @@ class PrivateTextFormField extends StatelessWidget {
   final bool obscureText;
   final bool autofocus;
   final ValueChanged<String>? onFieldSubmitted;
+  final TextStyle? style;
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
       decoration: decoration,
+      style: style,
       keyboardType: keyboardType,
       validator: validator,
       textInputAction: textInputAction,

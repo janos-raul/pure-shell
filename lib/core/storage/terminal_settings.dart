@@ -28,8 +28,8 @@ enum InputMode {
   ),
   composing(
     'Composing (IME words)',
-    'The keyboard keeps a word until it is done. Needed for Chinese, '
-        'Japanese, Korean and similar input methods.',
+    'The keyboard keeps a word until it is done (needed for Chinese, '
+        'Japanese and Korean).',
   );
 
   const InputMode(this.label, this.description);
