@@ -34,7 +34,12 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   dartssh2: ^4.1.0
-  xterm: ^4.0.0
+  # Our fork of xterm 4.0.0 (bold-is-bright, palette index 15 fix), pinned to an
+  # exact commit. What it changes and why: docs/xterm-fork.md
+  xterm:
+    git:
+      url: https://github.com/janos-raul/xterm.dart.git
+      ref: 626c3e26e89f609cf21c43a7fa897182976578c6
   flutter_secure_storage: ^11.2.0
   crypto: ^3.0.8
   pointycastle: ^4.0.0
