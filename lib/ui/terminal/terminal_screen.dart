@@ -17,6 +17,7 @@ import '../../core/hosts/host.dart';
 import '../../core/ssh/ssh_connection.dart';
 import '../../core/storage/terminal_settings.dart';
 import 'extra_keys.dart';
+import 'pinch_zoom.dart';
 
 /// Converts a single typed character to its Ctrl-modified control character
 /// (Ctrl+C -> 0x03, Ctrl+[ -> ESC, ...). Returns null if there is none.
@@ -55,6 +56,11 @@ class _TerminalScreenState extends State<TerminalScreen> {
   var _disconnected = false;
   String? _endMessage;
 
+  var _fontSize = TerminalSettings.defaultFontSize;
+
+  var _barVisible = false;
+  Timer? _barTimer;
+
   SshConnection get _conn => widget.connection;
 
   @override
@@ -62,6 +68,9 @@ class _TerminalScreenState extends State<TerminalScreen> {
     super.initState();
     _terminal.onOutput = _send;
     _terminal.onResize = (w, h, pw, ph) => _conn.resize(w, h);
+    widget.settings.loadFontSize().then((size) {
+      if (mounted) setState(() => _fontSize = size);
+    });
     // Open the shell after the first layout so the PTY starts with the real
     // terminal size.
     WidgetsBinding.instance.addPostFrameCallback((_) => _openShell());
@@ -136,6 +145,14 @@ class _TerminalScreenState extends State<TerminalScreen> {
     _focus.requestFocus();
   }
 
+  void _showBar() {
+    _barTimer?.cancel();
+    setState(() => _barVisible = true);
+    _barTimer = Timer(const Duration(seconds: 4), () {
+      if (mounted) setState(() => _barVisible = false);
+    });
+  }
+
   Future<void> _confirmDisconnect() async {
     if (_disconnected) {
       if (mounted) Navigator.of(context).pop();
@@ -162,6 +179,7 @@ class _TerminalScreenState extends State<TerminalScreen> {
 
   @override
   void dispose() {
+    _barTimer?.cancel();
     for (final s in _subscriptions) {
       s.cancel();
     }
@@ -172,8 +190,16 @@ class _TerminalScreenState extends State<TerminalScreen> {
     super.dispose();
   }
 
+  Widget _disconnectButton() => IconButton(
+    icon: const Icon(Icons.power_settings_new),
+    tooltip: 'Disconnect',
+    onPressed: _confirmDisconnect,
+  );
+
   @override
   Widget build(BuildContext context) {
+    final landscape =
+        MediaQuery.orientationOf(context) == Orientation.landscape;
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
@@ -181,66 +207,125 @@ class _TerminalScreenState extends State<TerminalScreen> {
       },
       child: Scaffold(
         backgroundColor: Colors.black,
-        appBar: AppBar(
-          title: Text(widget.host.label),
-          backgroundColor: const Color(0xFF121212),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.link_off),
-              tooltip: 'Disconnect',
-              onPressed: _confirmDisconnect,
-            ),
-          ],
-        ),
-        body: Column(
-          children: [
-            Expanded(
-              child: Stack(
-                children: [
-                  TerminalView(
-                    _terminal,
-                    focusNode: _focus,
-                    autofocus: true,
-                    hardwareKeyboardOnly: false,
-                    backgroundOpacity: 1,
-                    textStyle: const TerminalStyle(fontSize: 14),
-                  ),
-                  if (_disconnected)
-                    Positioned(
-                      left: 0,
-                      right: 0,
-                      top: 0,
-                      child: Material(
-                        color: const Color(0xFF7A1212),
-                        child: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(_endMessage ?? 'Disconnected'),
+        // In landscape the app bar would eat a third of the height while the
+        // keyboard is up, so it is hidden; tap the top edge to show it.
+        appBar: landscape
+            ? null
+            : AppBar(
+                title: Text(widget.host.label),
+                backgroundColor: const Color(0xFF121212),
+                actions: [_disconnectButton()],
+              ),
+        body: SafeArea(
+          top: landscape,
+          child: Column(
+            children: [
+              Expanded(
+                child: Stack(
+                  children: [
+                    PinchZoom(
+                      value: _fontSize,
+                      onChanged: (size) => setState(() => _fontSize = size),
+                      onChangeEnd: widget.settings.saveFontSize,
+                      child: TerminalView(
+                        _terminal,
+                        focusNode: _focus,
+                        autofocus: true,
+                        hardwareKeyboardOnly: false,
+                        backgroundOpacity: 1,
+                        textStyle: TerminalStyle(fontSize: _fontSize),
+                      ),
+                    ),
+                    if (landscape) ...[
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        top: 0,
+                        height: 18,
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.translucent,
+                          onTap: _showBar,
+                          child: const Align(
+                            alignment: Alignment.topCenter,
+                            child: Padding(
+                              padding: EdgeInsets.only(top: 3),
+                              child: SizedBox(
+                                width: 36,
+                                height: 3,
+                                child: DecoratedBox(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white24,
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(2),
+                                    ),
+                                  ),
+                                ),
                               ),
-                              TextButton(
-                                onPressed: () => Navigator.of(context).pop(),
-                                child: const Text('Close'),
-                              ),
-                            ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                ],
+                      if (_barVisible)
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          top: 0,
+                          child: Material(
+                            color: const Color(0xEE121212),
+                            child: SizedBox(
+                              height: 44,
+                              child: Row(
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.arrow_back),
+                                    tooltip: 'Back',
+                                    onPressed: _confirmDisconnect,
+                                  ),
+                                  Expanded(child: Text(widget.host.label)),
+                                  _disconnectButton(),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                    if (_disconnected)
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        child: Material(
+                          color: const Color(0xFF7A1212),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(_endMessage ?? 'Disconnected'),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.of(context).pop(),
+                                  child: const Text('Close'),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
-            ),
-            ExtraKeysRow(
-              ctrlActive: _ctrl,
-              onCtrl: () {
-                setState(() => _ctrl = !_ctrl);
-                _focus.requestFocus();
-              },
-              onKey: _key,
-              onText: _text,
-            ),
-          ],
+              ExtraKeysRow(
+                ctrlActive: _ctrl,
+                onCtrl: () {
+                  setState(() => _ctrl = !_ctrl);
+                  _focus.requestFocus();
+                },
+                onKey: _key,
+                onText: _text,
+              ),
+            ],
+          ),
         ),
       ),
     );
