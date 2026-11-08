@@ -1,0 +1,22 @@
+# Local scratch
+debug/
+
+# Secrets / signing
+*.jks
+*.keystore
+key.properties
+local.properties
+
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+*.iml
+.idea/
+.vscode/
+*.log
+.DS_Store
