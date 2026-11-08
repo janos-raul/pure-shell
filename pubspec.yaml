@@ -36,6 +36,7 @@ dependencies:
   dartssh2: ^4.1.0
   xterm: ^4.0.0
   flutter_secure_storage: ^11.2.0
+  crypto: ^3.0.8
 
 dev_dependencies:
   flutter_test:
