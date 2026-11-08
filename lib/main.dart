@@ -7,22 +7,36 @@
 // Software Foundation, either version 3 of the License, or (at your option)
 // any later version. See the LICENSE file for details.
 
+import 'package:flutter/foundation.dart' show kReleaseMode;
 import 'package:flutter/material.dart';
 
 import 'core/hosts/host_repository.dart';
 import 'core/hosts/known_hosts.dart';
 import 'core/keys/key_repository.dart';
 import 'core/keys/key_service.dart';
+import 'core/keys/key_service.dart'
+    show allowSoftwareKeystore, forceSoftwareKeys;
 import 'core/keys/keystore_api.dart';
 import 'core/lock/app_lock_controller.dart';
 import 'core/lock/app_lock_settings.dart';
 import 'core/storage/secure_store.dart';
 import 'core/storage/terminal_settings.dart';
+import 'ui/build_guard.dart';
 import 'ui/hosts/host_list_screen.dart';
 import 'ui/lock/app_lock_gate.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Test-only switches must not be in a release build: refuse to start.
+  final problem = buildFlagProblem(
+    releaseMode: kReleaseMode,
+    allowSoftwareKeystore: allowSoftwareKeystore,
+    forceSoftwareKeys: forceSoftwareKeys,
+  );
+  if (problem != null) {
+    runApp(BuildErrorApp(message: problem));
+    return;
+  }
   final store = FlutterSecureStore();
   final keystore = PlatformKeystore();
   // Decide whether the app starts locked before the first frame.
