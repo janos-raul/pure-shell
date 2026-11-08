@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import '../../core/hosts/host.dart';
 import '../../core/hosts/host_repository.dart';
 import '../../core/hosts/known_hosts.dart';
+import '../private_input.dart';
 
 /// Add or edit a host. When editing, also shows the trusted host key with a
 /// button to remove it (the only way past a host key mismatch).
@@ -137,18 +138,16 @@ class _HostEditScreenState extends State<HostEditScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            TextFormField(
+            PrivateTextFormField(
               controller: _label,
               decoration: const InputDecoration(labelText: 'Label'),
               validator: _required,
               textInputAction: TextInputAction.next,
             ),
-            TextFormField(
+            PrivateTextFormField(
               controller: _hostname,
               decoration: const InputDecoration(labelText: 'Hostname'),
               keyboardType: TextInputType.url,
-              autocorrect: false,
-              enableSuggestions: false,
               validator: (v) {
                 if (_required(v) != null) return 'Required';
                 if (RegExp(r'\s').hasMatch(v!.trim())) {
@@ -158,7 +157,7 @@ class _HostEditScreenState extends State<HostEditScreen> {
               },
               textInputAction: TextInputAction.next,
             ),
-            TextFormField(
+            PrivateTextFormField(
               controller: _port,
               decoration: const InputDecoration(labelText: 'Port'),
               keyboardType: TextInputType.number,
@@ -170,11 +169,9 @@ class _HostEditScreenState extends State<HostEditScreen> {
               },
               textInputAction: TextInputAction.next,
             ),
-            TextFormField(
+            PrivateTextFormField(
               controller: _username,
               decoration: const InputDecoration(labelText: 'Username'),
-              autocorrect: false,
-              enableSuggestions: false,
               validator: _required,
             ),
             if (widget.host != null) ...[

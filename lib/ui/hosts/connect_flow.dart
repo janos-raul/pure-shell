@@ -17,6 +17,7 @@ import '../../core/ssh/connect_result.dart';
 import '../../core/ssh/ssh_connection.dart';
 import '../../core/storage/terminal_settings.dart';
 import '../terminal/terminal_screen.dart';
+import '../private_input.dart';
 import 'host_key_mismatch_screen.dart';
 
 enum ConnectPhase { connecting, askTrust, trustedAfterClose }
@@ -212,14 +213,12 @@ class _PasswordDialogState extends State<_PasswordDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text('${widget.host.username}@${widget.host.hostname}'),
-      content: TextField(
+      content: PrivateTextFormField(
         controller: _controller,
         autofocus: true,
         obscureText: true,
-        autocorrect: false,
-        enableSuggestions: false,
         decoration: const InputDecoration(labelText: 'Password'),
-        onSubmitted: (v) => Navigator.pop(context, v),
+        onFieldSubmitted: (v) => Navigator.pop(context, v),
       ),
       actions: [
         TextButton(

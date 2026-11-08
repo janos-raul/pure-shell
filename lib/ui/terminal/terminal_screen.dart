@@ -16,6 +16,7 @@ import 'package:xterm/xterm.dart';
 import '../../core/hosts/host.dart';
 import '../../core/ssh/ssh_connection.dart';
 import '../../core/storage/terminal_settings.dart';
+import '../private_input.dart';
 import 'extra_keys.dart';
 import 'pinch_zoom.dart';
 
@@ -227,12 +228,9 @@ class _TerminalScreenState extends State<TerminalScreen> {
                       value: _fontSize,
                       onChanged: (size) => setState(() => _fontSize = size),
                       onChangeEnd: widget.settings.saveFontSize,
-                      child: TerminalView(
+                      child: PrivateTerminalView(
                         _terminal,
                         focusNode: _focus,
-                        autofocus: true,
-                        hardwareKeyboardOnly: false,
-                        backgroundOpacity: 1,
                         textStyle: TerminalStyle(fontSize: _fontSize),
                       ),
                     ),

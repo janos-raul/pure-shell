@@ -13,6 +13,10 @@ It connects to your servers and gets out of the way.
 - **Security over convenience.** When in doubt, the app blocks and explains
   instead of warning and continuing. A changed server host key is a hard block
   with no "connect anyway" button.
+- The app asks the keyboard not to learn from or store anything typed in it
+  (no personalized learning, no suggestions, no autocorrect, in the terminal
+  and in every text field). This is a request to the keyboard app: a
+  third-party keyboard can ignore it.
 - Screenshots and the recent-apps preview are disabled (`FLAG_SECURE`), and
   Android backup and data extraction are switched off.
 
