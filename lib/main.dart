@@ -14,8 +14,6 @@ import 'core/hosts/host_repository.dart';
 import 'core/hosts/known_hosts.dart';
 import 'core/keys/key_repository.dart';
 import 'core/keys/key_service.dart';
-import 'core/keys/key_service.dart'
-    show allowSoftwareKeystore, forceSoftwareKeys;
 import 'core/keys/keystore_api.dart';
 import 'core/lock/app_lock_controller.dart';
 import 'core/lock/app_lock_settings.dart';
