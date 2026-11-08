@@ -8,6 +8,7 @@
 // any later version. See the LICENSE file for details.
 
 import 'package:flutter/material.dart';
+import '../theme.dart';
 
 import '../../core/keys/keystore_api.dart';
 import '../../core/keys/ssh_key.dart';
@@ -23,23 +24,21 @@ class SecurityBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     final shown = level ?? sshKey.level;
     final software = sshKey.isSoftware || shown == SecurityLevel.software;
     final label = sshKey.isSoftware ? 'Software key' : shown.label;
+    // Outlined chip on black: green for hardware-backed keys, amber for
+    // software keys. Never a fill.
+    final color = software
+        ? warningAmber
+        : Theme.of(context).colorScheme.primary;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: software ? scheme.errorContainer : scheme.primaryContainer,
+        border: Border.all(color: color),
         borderRadius: BorderRadius.circular(10),
       ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 12,
-          color: software ? scheme.onErrorContainer : scheme.onPrimaryContainer,
-        ),
-      ),
+      child: Text(label, style: TextStyle(fontSize: 12, color: color)),
     );
   }
 }

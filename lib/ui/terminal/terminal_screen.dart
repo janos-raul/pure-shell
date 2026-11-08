@@ -383,13 +383,17 @@ class _TerminalScreenState extends State<TerminalScreen>
                         right: 0,
                         bottom: 0,
                         child: Material(
-                          color: const Color(0xFF7A1212),
+                          color: Colors.black,
+                          shape: const Border(top: BorderSide(color: errorRed)),
                           child: Padding(
                             padding: const EdgeInsets.all(12),
                             child: Row(
                               children: [
                                 Expanded(
-                                  child: Text(_endMessage ?? 'Disconnected'),
+                                  child: Text(
+                                    _endMessage ?? 'Disconnected',
+                                    style: const TextStyle(color: errorRed),
+                                  ),
                                 ),
                                 TextButton(
                                   onPressed: () => Navigator.of(context).pop(),

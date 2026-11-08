@@ -18,6 +18,22 @@ const _dimGreen = Color(0xFF1F9940);
 const _black = Color(0xFF000000);
 const _panel = Color(0xFF0A120C);
 
+/// THE COLOR RULE: red (errors, destructive actions) is only ever used on the
+/// black background, as text, outline or icon. Never as a fill, and never on
+/// or inside a green fill. Warnings use amber the same way.
+const errorRed = Color(0xFFFF5555);
+const warningAmber = Color(0xFFFFB300);
+
+/// A destructive text button: red text on black.
+ButtonStyle destructiveTextStyle() =>
+    TextButton.styleFrom(foregroundColor: errorRed);
+
+/// A destructive outlined button: red text and red outline on black.
+ButtonStyle destructiveOutlineStyle() => OutlinedButton.styleFrom(
+  foregroundColor: errorRed,
+  side: const BorderSide(color: errorRed),
+);
+
 /// For technical values: hostnames, user@host:port, fingerprints, key lines.
 const monoStyle = TextStyle(fontFamily: 'monospace');
 
@@ -36,8 +52,12 @@ ThemeData pureShellTheme() {
     surfaceContainerLow: _black,
     outline: _dimGreen,
     outlineVariant: Color(0xFF14501F),
-    error: Color(0xFFFF5555),
+    error: errorRed,
     onError: _black,
+    // Nothing may fill with red: should a widget ever use these, it gets a
+    // black fill with red text.
+    errorContainer: _black,
+    onErrorContainer: errorRed,
   );
   return ThemeData(
     useMaterial3: true,

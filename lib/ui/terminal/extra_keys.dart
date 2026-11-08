@@ -31,12 +31,13 @@ class ExtraKeysRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     Widget key(String label, VoidCallback onTap, {bool active = false}) {
       return Expanded(
         child: Padding(
           padding: const EdgeInsets.all(2),
           child: Material(
-            color: active ? Colors.teal : const Color(0xFF2A2A2A),
+            color: active ? scheme.primary : const Color(0xFF2A2A2A),
             borderRadius: BorderRadius.circular(6),
             child: InkWell(
               borderRadius: BorderRadius.circular(6),
@@ -44,7 +45,13 @@ class ExtraKeysRow extends StatelessWidget {
               child: SizedBox(
                 height: 40,
                 child: Center(
-                  child: Text(label, style: const TextStyle(fontSize: 15)),
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: active ? scheme.onPrimary : null,
+                    ),
+                  ),
                 ),
               ),
             ),

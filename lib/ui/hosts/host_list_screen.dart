@@ -85,6 +85,7 @@ class _HostListScreenState extends State<HostListScreen> {
             child: const Text('Cancel'),
           ),
           TextButton(
+            style: destructiveTextStyle(),
             onPressed: () => Navigator.pop(c, true),
             child: const Text('Delete'),
           ),

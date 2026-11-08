@@ -48,7 +48,7 @@ class BuildErrorApp extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.error, size: 64, color: Colors.redAccent),
+                const Icon(Icons.error, size: 64, color: errorRed),
                 const SizedBox(height: 16),
                 const Text(
                   'PureShell refuses to start',

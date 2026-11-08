@@ -33,22 +33,23 @@ class HostKeyMismatchScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final mono = monoStyle.copyWith(fontSize: 13);
     return Scaffold(
-      backgroundColor: const Color(0xFF3B0A0A),
+      backgroundColor: Colors.black,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF7A1212),
+        backgroundColor: Colors.black,
+        foregroundColor: errorRed,
         title: const Text('Connection blocked'),
       ),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(20),
           children: [
-            const Icon(Icons.gpp_bad, size: 72, color: Colors.redAccent),
+            const Icon(Icons.gpp_bad, size: 72, color: errorRed),
             const SizedBox(height: 12),
             Text(
               'HOST KEY HAS CHANGED',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.headlineSmall
-                  ?.copyWith(fontWeight: FontWeight.bold),
+                  ?.copyWith(fontWeight: FontWeight.bold, color: errorRed),
             ),
             const SizedBox(height: 16),
             Text.rich(

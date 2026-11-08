@@ -86,10 +86,8 @@ class _KeyDetailScreenState extends State<KeyDetailScreen> {
             onPressed: () => Navigator.pop(c, false),
             child: const Text('Cancel'),
           ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(c).colorScheme.error,
-            ),
+          TextButton(
+            style: destructiveTextStyle(),
             onPressed: () => Navigator.pop(c, true),
             child: const Text('Delete key'),
           ),
@@ -170,10 +168,8 @@ class _KeyDetailScreenState extends State<KeyDetailScreen> {
             ],
           ),
           const SizedBox(height: 32),
-          FilledButton.tonalIcon(
-            style: FilledButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.error,
-            ),
+          OutlinedButton.icon(
+            style: destructiveOutlineStyle(),
             onPressed: _delete,
             icon: const Icon(Icons.delete_forever),
             label: const Text('Delete key'),

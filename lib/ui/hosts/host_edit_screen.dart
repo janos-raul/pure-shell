@@ -136,6 +136,7 @@ class _HostEditScreenState extends State<HostEditScreen> {
             child: const Text('Cancel'),
           ),
           TextButton(
+            style: destructiveTextStyle(),
             onPressed: () => Navigator.pop(c, true),
             child: const Text('Remove'),
           ),
@@ -259,6 +260,7 @@ class _HostEditScreenState extends State<HostEditScreen> {
                 SelectableText(_trusted!.fingerprint, style: monoStyle),
                 const SizedBox(height: 8),
                 OutlinedButton(
+                  style: destructiveOutlineStyle(),
                   onPressed: _removeKey,
                   child: const Text('Remove trusted key'),
                 ),
