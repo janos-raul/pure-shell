@@ -13,135 +13,17 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pinenacl/ed25519.dart' as nacl;
-import 'package:pointycastle/export.dart';
 import 'package:pureshell/core/keys/key_repository.dart';
 import 'package:pureshell/core/keys/key_service.dart';
 import 'package:pureshell/core/keys/keystore_api.dart';
 import 'package:pureshell/core/keys/ssh_ec_encoding.dart';
 import 'package:pureshell/core/keys/ssh_key.dart';
 import 'package:pureshell/core/storage/secure_store.dart';
+
+import 'fake_keystore.dart';
+
 // ignore: implementation_imports
 import 'package:dartssh2/src/hostkey/hostkey_ecdsa.dart';
-
-Uint8List _derInt(BigInt v) {
-  var bytes = <int>[];
-  var x = v;
-  while (x > BigInt.zero) {
-    bytes.add((x & BigInt.from(0xff)).toInt());
-    x >>= 8;
-  }
-  bytes = bytes.reversed.toList();
-  if (bytes.first & 0x80 != 0) bytes = [0, ...bytes];
-  return Uint8List.fromList([0x02, bytes.length, ...bytes]);
-}
-
-/// A Keystore stand-in with real P-256 keys in memory, so signatures can be
-/// verified end to end. (The real one never lets keys out.)
-class FakeKeystore implements KeystoreApi {
-  bool secureLock = true;
-  SecurityLevel level = SecurityLevel.tee;
-  bool cancelNext = false;
-  final ec = <String, ECPrivateKey>{};
-  final points = <String, Uint8List>{};
-  final wrapKeys = <String>{};
-  final calls = <String>[];
-  final _rnd = FortunaRandom()
-    ..seed(KeyParameter(Uint8List.fromList(List.generate(32, (i) => i + 3))));
-
-  @override
-  Future<KeystoreCapabilities> capabilities() async => KeystoreCapabilities(
-    secureLockScreen: secureLock,
-    canAuthenticate: secureLock,
-  );
-
-  @override
-  Future<GeneratedKey> generateKey(String alias) async {
-    calls.add('generateKey');
-    final gen = ECKeyGenerator()
-      ..init(
-        ParametersWithRandom(
-          ECKeyGeneratorParameters(ECCurve_secp256r1()),
-          _rnd,
-        ),
-      );
-    final pair = gen.generateKeyPair();
-    ec[alias] = pair.privateKey;
-    points[alias] = pair.publicKey.Q!.getEncoded(false);
-    return GeneratedKey(
-      level: level,
-      publicPoint: pair.publicKey.Q!.getEncoded(false),
-    );
-  }
-
-  @override
-  Future<Uint8List> sign(
-    String alias,
-    Uint8List data, {
-    String title = '',
-    String? subtitle,
-  }) async {
-    if (cancelNext) {
-      cancelNext = false;
-      throw const KeystoreException(KeystoreErrorKind.cancelled);
-    }
-    final signer = ECDSASigner(SHA256Digest())
-      ..init(true, ParametersWithRandom(PrivateKeyParameter(ec[alias]!), _rnd));
-    final sig = signer.generateSignature(data) as ECSignature;
-    final body = [..._derInt(sig.r), ..._derInt(sig.s)];
-    return Uint8List.fromList([0x30, body.length, ...body]);
-  }
-
-  @override
-  Future<SecurityLevel> generateWrapKey(String alias) async {
-    wrapKeys.add(alias);
-    return level;
-  }
-
-  @override
-  Future<({Uint8List iv, Uint8List data})> wrap(
-    String alias,
-    Uint8List data,
-  ) async {
-    if (cancelNext) {
-      cancelNext = false;
-      throw const KeystoreException(KeystoreErrorKind.cancelled);
-    }
-    return (
-      iv: Uint8List(12),
-      data: Uint8List.fromList(data.map((b) => b ^ 0x5a).toList()),
-    );
-  }
-
-  @override
-  Future<Uint8List> unwrap(String alias, Uint8List iv, Uint8List data) async {
-    if (cancelNext) {
-      cancelNext = false;
-      throw const KeystoreException(KeystoreErrorKind.cancelled);
-    }
-    return Uint8List.fromList(data.map((b) => b ^ 0x5a).toList());
-  }
-
-  @override
-  Future<void> deleteKey(String alias) async {
-    ec.remove(alias);
-    wrapKeys.remove(alias);
-  }
-
-  @override
-  Future<List<String>> listKeys() async => [...ec.keys, ...wrapKeys];
-
-  @override
-  Future<SecurityLevel> securityLevel(String alias) async => level;
-
-  @override
-  Future<Uint8List> publicKey(String alias) async => points[alias]!;
-
-  @override
-  Future<void> authenticate({String title = '', String? subtitle}) async {}
-
-  @override
-  Future<void> cancelPrompt() async {}
-}
 
 void main() {
   late FakeKeystore keystore;

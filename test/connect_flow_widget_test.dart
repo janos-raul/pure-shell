@@ -16,6 +16,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pureshell/core/hosts/host.dart';
 import 'package:pureshell/core/hosts/known_hosts.dart';
 import 'package:pureshell/core/ssh/connect_result.dart';
+import 'package:pureshell/core/keys/key_repository.dart';
+import 'package:pureshell/core/keys/key_service.dart';
+import 'package:pureshell/core/keys/keystore_api.dart';
 import 'package:pureshell/core/storage/secure_store.dart';
 import 'package:pureshell/core/storage/terminal_settings.dart';
 import 'package:pureshell/ui/hosts/connect_flow.dart';
@@ -42,6 +45,7 @@ Future<void> _start(
               host: _host,
               knownHosts: KnownHostsStore(store),
               settings: TerminalSettings(store),
+              keyService: KeyService(PlatformKeystore(), KeyRepository(store)),
               socketFactory: (h, p, {timeout}) => factory(),
             ),
             child: const Text('go'),

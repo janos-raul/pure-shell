@@ -29,8 +29,11 @@ enum ConnectResult {
   /// [ConnectOutcome.pendingKey] holds that key.
   serverClosed,
 
-  /// The user cancelled.
+  /// The user cancelled (including dismissing the fingerprint prompt).
   cancelled,
+
+  /// Key login only: the server does not accept the key.
+  keyRejected,
 
   /// Any other failure; see [ConnectFailure].
   otherError,
@@ -43,6 +46,10 @@ enum ConnectFailure {
   unreachable,
   authFailed,
   hostKeyRejected,
+
+  /// Key login: the key could not be used (lockout, invalidated, ...). The
+  /// fixed user text is in [ConnectOutcome.detail].
+  keyFailed,
   unknown,
 }
 
@@ -53,6 +60,7 @@ class ConnectOutcome {
     this.storedKey,
     this.presentedKey,
     this.pendingKey,
+    this.detail,
   });
 
   final ConnectResult result;
@@ -68,6 +76,9 @@ class ConnectOutcome {
   /// when the server closed the connection, if any.
   final HostKey? pendingKey;
 
+  /// Fixed user-facing text for [ConnectFailure.keyFailed]; never raw error text.
+  final String? detail;
+
   bool get connected =>
       result == ConnectResult.trusted ||
       result == ConnectResult.firstUseAccepted;
@@ -81,8 +92,11 @@ String connectFailureMessage(ConnectFailure failure) => switch (failure) {
   ConnectFailure.authFailed =>
     'Authentication failed. Check the username and password.',
   ConnectFailure.hostKeyRejected => 'The server host key was rejected.',
+  ConnectFailure.keyFailed => 'The key could not be used.',
   ConnectFailure.unknown => 'The connection failed.',
 };
 
 const serverClosedMessage =
     'The server closed the connection. Please try again.';
+
+const keyRejectedMessage = 'Server rejected the key.';

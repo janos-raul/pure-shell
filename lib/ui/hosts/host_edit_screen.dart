@@ -14,6 +14,8 @@ import 'package:flutter/material.dart';
 import '../../core/hosts/host.dart';
 import '../../core/hosts/host_repository.dart';
 import '../../core/hosts/known_hosts.dart';
+import '../../core/keys/key_service.dart';
+import '../../core/keys/ssh_key.dart';
 import '../private_input.dart';
 
 /// Add or edit a host. When editing, also shows the trusted host key with a
@@ -23,11 +25,13 @@ class HostEditScreen extends StatefulWidget {
     super.key,
     required this.hosts,
     required this.knownHosts,
+    required this.keyService,
     this.host,
   });
 
   final HostRepository hosts;
   final KnownHostsStore knownHosts;
+  final KeyService keyService;
   final Host? host;
 
   @override
@@ -43,11 +47,18 @@ class _HostEditScreenState extends State<HostEditScreen> {
   );
   late final _username = TextEditingController(text: widget.host?.username);
   HostKey? _trusted;
+  late AuthMethod _auth = widget.host?.authMethod ?? AuthMethod.password;
+  late String? _keyId = widget.host?.keyId;
+  late bool _fallback = widget.host?.allowPasswordFallback ?? false;
+  List<SshKey> _keys = const [];
 
   @override
   void initState() {
     super.initState();
     _loadTrusted();
+    widget.keyService.list().then((keys) {
+      if (mounted) setState(() => _keys = keys);
+    });
   }
 
   Future<void> _loadTrusted() async {
@@ -76,6 +87,14 @@ class _HostEditScreenState extends State<HostEditScreen> {
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_auth == AuthMethod.key && _keyId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Choose a key, or log in with a password.'),
+        ),
+      );
+      return;
+    }
     final old = widget.host;
     final host = Host(
       id: old?.id ?? _newId(),
@@ -83,6 +102,9 @@ class _HostEditScreenState extends State<HostEditScreen> {
       hostname: _hostname.text.trim(),
       port: int.parse(_port.text.trim()),
       username: _username.text.trim(),
+      authMethod: _auth,
+      keyId: _auth == AuthMethod.key ? _keyId : null,
+      allowPasswordFallback: _auth == AuthMethod.key && _fallback,
     );
     await widget.hosts.upsert(host);
     // A trusted key belongs to hostname:port. If that changed, the old entry
@@ -174,6 +196,50 @@ class _HostEditScreenState extends State<HostEditScreen> {
               decoration: const InputDecoration(labelText: 'Username'),
               validator: _required,
             ),
+            const SizedBox(height: 24),
+            Text('Login', style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 8),
+            SegmentedButton<AuthMethod>(
+              segments: const [
+                ButtonSegment(
+                  value: AuthMethod.password,
+                  label: Text('Password'),
+                ),
+                ButtonSegment(value: AuthMethod.key, label: Text('Key')),
+              ],
+              selected: {_auth},
+              onSelectionChanged: (v) => setState(() => _auth = v.first),
+            ),
+            if (_auth == AuthMethod.key) ...[
+              const SizedBox(height: 8),
+              if (_keys.isEmpty)
+                const Text(
+                  'No keys yet. Create one under Keys on the host list.',
+                )
+              else
+                DropdownButtonFormField<String>(
+                  initialValue: _keys.any((k) => k.id == _keyId)
+                      ? _keyId
+                      : null,
+                  decoration: const InputDecoration(labelText: 'Key'),
+                  items: [
+                    for (final k in _keys)
+                      DropdownMenuItem(value: k.id, child: Text(k.name)),
+                  ],
+                  onChanged: (v) => setState(() => _keyId = v),
+                ),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text(
+                  'Also allow password if the server rejects the key',
+                ),
+                subtitle: const Text(
+                  'You are asked before a password is used. Off by default.',
+                ),
+                value: _fallback,
+                onChanged: (v) => setState(() => _fallback = v),
+              ),
+            ],
             if (widget.host != null) ...[
               const SizedBox(height: 32),
               Text(

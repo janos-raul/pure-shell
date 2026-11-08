@@ -13,6 +13,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pureshell/core/hosts/host.dart';
 import 'package:pureshell/core/hosts/host_repository.dart';
 import 'package:pureshell/core/hosts/known_hosts.dart';
+import 'package:pureshell/core/keys/key_repository.dart';
+import 'package:pureshell/core/keys/key_service.dart';
+import 'package:pureshell/core/keys/keystore_api.dart';
 import 'package:pureshell/core/storage/secure_store.dart';
 import 'package:pureshell/core/storage/terminal_settings.dart';
 import 'package:pureshell/ui/hosts/connect_flow.dart';
@@ -120,6 +123,7 @@ void main() {
         home: HostEditScreen(
           hosts: HostRepository(store),
           knownHosts: KnownHostsStore(store),
+          keyService: KeyService(PlatformKeystore(), KeyRepository(store)),
           host: const Host(
             id: '1',
             label: 'L',
@@ -159,6 +163,10 @@ void main() {
                 ),
                 knownHosts: KnownHostsStore(store),
                 settings: TerminalSettings(store),
+                keyService: KeyService(
+                  PlatformKeystore(),
+                  KeyRepository(store),
+                ),
               ),
               child: const Text('go'),
             ),

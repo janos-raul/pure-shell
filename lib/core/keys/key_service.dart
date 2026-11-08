@@ -42,6 +42,11 @@ class KeyService {
 
   Future<List<SshKey>> list() => _repo.list();
 
+  Future<SshKey?> get(String id) => _repo.get(id);
+
+  /// Dismisses the fingerprint prompt if one is showing.
+  Future<void> dismissPrompt() => _keystore.cancelPrompt();
+
   String _newId() => List.generate(
     8,
     (_) => _random.nextInt(256).toRadixString(16).padLeft(2, '0'),

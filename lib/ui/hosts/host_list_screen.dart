@@ -13,6 +13,8 @@ import '../../core/hosts/host.dart';
 import '../../core/hosts/host_repository.dart';
 import '../../core/hosts/known_hosts.dart';
 import '../../core/storage/terminal_settings.dart';
+import '../../core/keys/key_service.dart';
+import '../keys/keys_screen.dart';
 import 'connect_flow.dart';
 import 'host_edit_screen.dart';
 
@@ -22,11 +24,13 @@ class HostListScreen extends StatefulWidget {
     required this.hosts,
     required this.knownHosts,
     required this.settings,
+    required this.keyService,
   });
 
   final HostRepository hosts;
   final KnownHostsStore knownHosts;
   final TerminalSettings settings;
+  final KeyService keyService;
 
   @override
   State<HostListScreen> createState() => _HostListScreenState();
@@ -52,6 +56,7 @@ class _HostListScreenState extends State<HostListScreen> {
         builder: (_) => HostEditScreen(
           hosts: widget.hosts,
           knownHosts: widget.knownHosts,
+          keyService: widget.keyService,
           host: host,
         ),
       ),
@@ -87,13 +92,27 @@ class _HostListScreenState extends State<HostListScreen> {
     host: host,
     knownHosts: widget.knownHosts,
     settings: widget.settings,
+    keyService: widget.keyService,
   );
 
   @override
   Widget build(BuildContext context) {
     final hosts = _hosts;
     return Scaffold(
-      appBar: AppBar(title: const Text('PureShell')),
+      appBar: AppBar(
+        title: const Text('PureShell'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.vpn_key),
+            tooltip: 'Keys',
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => KeysScreen(keyService: widget.keyService),
+              ),
+            ),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _edit(),
         tooltip: 'Add host',

@@ -12,6 +12,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../core/hosts/host.dart';
+import '../../core/keys/key_service.dart';
+import '../../core/keys/ssh_key.dart';
 import '../../core/hosts/known_hosts.dart';
 import '../../core/ssh/connect_result.dart';
 import '../../core/ssh/ssh_connection.dart';
@@ -247,6 +249,7 @@ Future<void> connectToHost(
   required Host host,
   required KnownHostsStore knownHosts,
   required TerminalSettings settings,
+  required KeyService keyService,
   SocketFactory? socketFactory,
 }) async {
   final navigator = Navigator.of(context);
@@ -254,9 +257,23 @@ Future<void> connectToHost(
   void snack(String message) =>
       messenger.showSnackBar(SnackBar(content: Text(message)));
 
+  // Key hosts log in with the key; only after an explicit "yes" to the
+  // fallback question does the password path run for this attempt.
+  var useKey = host.authMethod == AuthMethod.key;
+
   while (true) {
-    final password = await _askPassword(context, host);
-    if (password == null || !context.mounted) return;
+    String? password;
+    SshKey? key;
+    if (useKey) {
+      key = host.keyId == null ? null : await keyService.get(host.keyId!);
+      if (key == null) {
+        snack('The key for this host is missing. Choose one in Edit host.');
+        return;
+      }
+    } else {
+      password = await _askPassword(context, host);
+      if (password == null || !context.mounted) return;
+    }
 
     final controller = ConnectController(host: host, knownHosts: knownHosts);
     final conn = SshConnection(
@@ -265,6 +282,7 @@ Future<void> connectToHost(
       onTrustPrompt: controller.askTrust,
       socketFactory: socketFactory,
     );
+    if (!context.mounted) return;
     var reconnect = false;
     late final DialogRoute<void> route;
     void closeDialog() {
@@ -292,7 +310,22 @@ Future<void> connectToHost(
     );
     unawaited(navigator.push(route));
 
-    final outcome = await conn.connect(password);
+    final signKey = key;
+    final outcome = signKey == null
+        ? await conn.connect(password!)
+        : await conn.connectWithKey(
+            KeyAuth(
+              type: signKey.sshType,
+              publicKeyBlob: signKey.publicKeyBlob,
+              sign: (data) => keyService.sign(
+                signKey,
+                data,
+                title: 'Log in with your key',
+                subtitle: '${host.username}@${host.hostname}',
+              ),
+              dismissPrompt: () => unawaited(keyService.dismissPrompt()),
+            ),
+          );
     var keepDialog = false;
     switch (outcome.result) {
       case ConnectResult.trusted:
@@ -336,9 +369,39 @@ Future<void> connectToHost(
           closeDialog();
           snack(serverClosedMessage);
         }
+      case ConnectResult.keyRejected:
+        closeDialog();
+        if (host.allowPasswordFallback && context.mounted) {
+          final usePassword = await showDialog<bool>(
+            context: context,
+            builder: (c) => AlertDialog(
+              title: const Text(keyRejectedMessage),
+              content: const Text('Log in with password instead?'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(c, false),
+                  child: const Text('Cancel'),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.pop(c, true),
+                  child: const Text('Use password'),
+                ),
+              ],
+            ),
+          );
+          if (usePassword == true) {
+            useKey = false;
+            reconnect = true;
+          }
+        } else {
+          snack(keyRejectedMessage);
+        }
       case ConnectResult.otherError:
         closeDialog();
-        snack(connectFailureMessage(outcome.failure ?? ConnectFailure.unknown));
+        snack(
+          outcome.detail ??
+              connectFailureMessage(outcome.failure ?? ConnectFailure.unknown),
+        );
     }
     if (keepDialog) await route.completed;
     controller.dispose();

@@ -17,6 +17,7 @@ import 'package:flutter/foundation.dart' show visibleForTesting;
 import '../hosts/fingerprint.dart';
 import '../hosts/host.dart';
 import '../hosts/known_hosts.dart';
+import '../keys/keystore_api.dart';
 import 'connect_result.dart';
 
 const connectTimeout = Duration(seconds: 15);
@@ -71,6 +72,34 @@ List<SSHHostkeyType> hostKeyPreference({String? storedType}) {
 
 class _Aborted implements Exception {
   const _Aborted();
+}
+
+/// Key login credentials. The private key never reaches this layer: [sign]
+/// asks the Keystore (which asks the user) and returns the SSH signature blob.
+class KeyAuth {
+  const KeyAuth({
+    required this.type,
+    required this.publicKeyBlob,
+    required this.sign,
+    this.dismissPrompt,
+  });
+
+  /// `ecdsa-sha2-nistp256` or `ssh-ed25519`.
+  final String type;
+  final Uint8List publicKeyBlob;
+
+  /// Returns the SSH signature blob for [data]. Throws [KeystoreException].
+  final Future<Uint8List> Function(Uint8List data) sign;
+
+  /// Closes the fingerprint prompt if the attempt ends while it is showing.
+  final void Function()? dismissPrompt;
+}
+
+class _RawSignature implements SSHSignature {
+  _RawSignature(this._bytes);
+  final Uint8List _bytes;
+  @override
+  Uint8List encode() => _bytes;
 }
 
 /// Wraps the socket so that we see it closing (or failing) ourselves instead
@@ -142,6 +171,7 @@ class SshConnection {
   SSHClient? _client;
   SSHSocket? _socket;
   SSHSession? _session;
+  KeyAuth? _keyAuth;
   Timer? _watchdogTimer;
   var _active = Duration.zero;
   var _prompting = false;
@@ -155,11 +185,22 @@ class SshConnection {
 
   SSHSession? get session => _session;
 
+  /// For tests: whether a client or socket is still referenced.
+  @visibleForTesting
+  bool get holdsTransport => _client != null || _socket != null;
+
   /// True once [connect] has produced its outcome.
   bool get finished => _outcome.isCompleted;
 
   Future<ConnectOutcome> connect(String password) {
-    unawaited(_start(password));
+    unawaited(_start(password: password));
+    return _outcome.future;
+  }
+
+  /// Logs in with a key instead of a password. There is no password fallback
+  /// here: a rejected key ends as [ConnectResult.keyRejected].
+  Future<ConnectOutcome> connectWithKey(KeyAuth key) {
+    unawaited(_start(key: key));
     return _outcome.future;
   }
 
@@ -170,7 +211,8 @@ class SshConnection {
   Future<T> _race<T>(Future<T> f) =>
       Future.any([f, _outcome.future.then<T>((_) => throw const _Aborted())]);
 
-  Future<void> _start(String password) async {
+  Future<void> _start({String? password, KeyAuth? key}) async {
+    _keyAuth = key;
     _watchdogTimer = Timer.periodic(watchdogTick, (_) {
       if (_prompting) return;
       _active += watchdogTick;
@@ -203,7 +245,9 @@ class SshConnection {
       final client = SSHClient(
         socket,
         username: host.username,
-        onPasswordRequest: () => password,
+        // Key login offers no password at all.
+        onPasswordRequest: password == null ? null : () => password,
+        identities: key == null ? null : [buildIdentity(key)],
         keepAliveInterval: keepAliveInterval,
         algorithms: SSHAlgorithms(
           hostkey: hostKeyPreference(storedType: storedKey?.type),
@@ -221,6 +265,57 @@ class SshConnection {
     } catch (e) {
       _finish(_classify(e));
     }
+  }
+
+  /// The identity handed to dartssh2. Its signer never throws: dartssh2 awaits
+  /// it in an un-awaited handler, where a thrown error would be unhandled and
+  /// the authentication would just hang. Instead, every failure completes the
+  /// connect outcome here and the signer returns a future that never
+  /// completes (it references this connection, never the client).
+  @visibleForTesting
+  SSHIdentity buildIdentity(KeyAuth auth) => SSHIdentity.custom(
+    type: auth.type,
+    publicKey: SSHRawHostKey(auth.publicKeyBlob),
+    // Ask the server first, so the fingerprint prompt only appears for a
+    // key the server would accept.
+    shouldProbe: true,
+    signer: (data) => _signWithPrompt(auth, data),
+  );
+
+  Future<SSHSignature> _never() => Completer<SSHSignature>().future;
+
+  Future<SSHSignature> _signWithPrompt(KeyAuth auth, Uint8List data) async {
+    if (_outcome.isCompleted) return _never();
+    // The user is at the fingerprint prompt: our watchdog must not run.
+    _prompting = true;
+    SSHSignature? signature;
+    try {
+      final blob = await _race(auth.sign(data));
+      if (!_outcome.isCompleted) signature = _RawSignature(blob);
+    } on _Aborted {
+      // cancelled or timed out meanwhile: nothing more to do
+    } on KeystoreException catch (e) {
+      _finish(
+        e.kind == KeystoreErrorKind.cancelled
+            ? const ConnectOutcome(ConnectResult.cancelled)
+            : ConnectOutcome(
+                ConnectResult.otherError,
+                failure: ConnectFailure.keyFailed,
+                detail: e.message,
+              ),
+      );
+    } catch (_) {
+      _finish(
+        const ConnectOutcome(
+          ConnectResult.otherError,
+          failure: ConnectFailure.keyFailed,
+          detail: 'The key could not be used.',
+        ),
+      );
+    } finally {
+      _prompting = false;
+    }
+    return signature ?? _never();
   }
 
   void _onSocketClosed() {
@@ -242,6 +337,7 @@ class SshConnection {
       _closedSignal.complete();
     }
     _outcome.complete(outcome);
+    if (_prompting) _keyAuth?.dismissPrompt?.call();
     if (!outcome.connected) _closeTransport();
   }
 
@@ -312,11 +408,21 @@ class SshConnection {
     }
   }
 
+  /// Maps a dartssh2 error to our result. Public for tests.
+  @visibleForTesting
+  ConnectOutcome classifyError(Object error) => _classify(error);
+
   ConnectOutcome _classify(Object error) {
     if (error is SSHAuthAbortError) {
       // Authentication was cut short because the connection went away.
       return ConnectOutcome(
         ConnectResult.serverClosed,
+        presentedKey: _presented,
+      );
+    }
+    if (_keyAuth != null && error is SSHAuthFailError) {
+      return ConnectOutcome(
+        ConnectResult.keyRejected,
         presentedKey: _presented,
       );
     }

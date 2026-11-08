@@ -11,6 +11,9 @@ import 'package:flutter/material.dart';
 
 import 'core/hosts/host_repository.dart';
 import 'core/hosts/known_hosts.dart';
+import 'core/keys/key_repository.dart';
+import 'core/keys/key_service.dart';
+import 'core/keys/keystore_api.dart';
 import 'core/storage/secure_store.dart';
 import 'core/storage/terminal_settings.dart';
 import 'ui/hosts/host_list_screen.dart';
@@ -25,6 +28,7 @@ void main() {
       hosts: hosts,
       knownHosts: knownHosts,
       settings: TerminalSettings(store),
+      keyService: KeyService(PlatformKeystore(), KeyRepository(store)),
     ),
   );
 }
@@ -35,11 +39,13 @@ class PureShellApp extends StatelessWidget {
     required this.hosts,
     required this.knownHosts,
     required this.settings,
+    required this.keyService,
   });
 
   final HostRepository hosts;
   final KnownHostsStore knownHosts;
   final TerminalSettings settings;
+  final KeyService keyService;
 
   @override
   Widget build(BuildContext context) {
@@ -51,6 +57,7 @@ class PureShellApp extends StatelessWidget {
         hosts: hosts,
         knownHosts: knownHosts,
         settings: settings,
+        keyService: keyService,
       ),
     );
   }

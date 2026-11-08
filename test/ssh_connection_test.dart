@@ -14,6 +14,7 @@ import 'dart:typed_data';
 import 'package:dartssh2/dartssh2.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pureshell/core/hosts/host.dart';
+import 'package:pureshell/core/keys/keystore_api.dart';
 import 'package:pureshell/core/hosts/known_hosts.dart';
 import 'package:pureshell/core/ssh/connect_result.dart';
 import 'package:pureshell/core/ssh/ssh_connection.dart';
@@ -243,6 +244,163 @@ void main() {
       expect(outcome.result, ConnectResult.mismatch);
       expect(outcome.storedKey?.fingerprint, 'SHA256:old');
       expect(outcome.presentedKey?.fingerprint, 'SHA256:new');
+    });
+  });
+
+  group('key login', () {
+    const host = Host(
+      id: '1',
+      label: 'Test',
+      hostname: 'example.com',
+      username: 'user',
+    );
+    late FakeSocket socket;
+    final challenge = Uint8List.fromList(utf8.encode('challenge'));
+
+    SshConnection make({Duration watchdog = const Duration(seconds: 30)}) =>
+        SshConnection(
+          host: host,
+          knownHosts: KnownHostsStore(MemorySecureStore()),
+          onTrustPrompt: (key, closed) async => true,
+          socketFactory: (h, p, {timeout}) => Future.value(socket),
+          watchdog: watchdog,
+          watchdogTick: const Duration(milliseconds: 20),
+        );
+
+    KeyAuth auth(
+      Future<Uint8List> Function(Uint8List) sign, {
+      void Function()? dismiss,
+    }) => KeyAuth(
+      type: 'ecdsa-sha2-nistp256',
+      publicKeyBlob: Uint8List(8),
+      sign: sign,
+      dismissPrompt: dismiss,
+    );
+
+    setUp(() => socket = FakeSocket());
+
+    test('a cancelled fingerprint prompt ends as cancelled within 2 s, '
+        'cleanly', () async {
+      final conn = make();
+      final a = auth(
+        (data) async =>
+            throw const KeystoreException(KeystoreErrorKind.cancelled),
+      );
+      final outcomeF = conn.connectWithKey(a);
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+
+      // dartssh2 would now ask the identity to sign.
+      final signing = Future.value(conn.buildIdentity(a).sign(challenge));
+
+      final outcome = await outcomeF.timeout(const Duration(seconds: 2));
+      expect(outcome.result, ConnectResult.cancelled);
+      // The client and socket are closed and no longer referenced; the
+      // abandoned signer only references the connection.
+      expect(conn.holdsTransport, isFalse);
+      expect(socket.destroyed, isTrue);
+      // It never throws into dartssh2 (that would leave the login hanging
+      // and the error unhandled) and never completes.
+      await expectLater(
+        signing.timeout(const Duration(milliseconds: 200)),
+        throwsA(isA<TimeoutException>()),
+      );
+    });
+
+    test(
+      'a key that cannot be used ends as keyFailed with fixed text',
+      () async {
+        final conn = make();
+        final a = auth(
+          (data) async =>
+              throw const KeystoreException(KeystoreErrorKind.lockout),
+        );
+        final outcomeF = conn.connectWithKey(a);
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        unawaited(Future.value(conn.buildIdentity(a).sign(challenge)));
+        final outcome = await outcomeF.timeout(const Duration(seconds: 2));
+        expect(outcome.result, ConnectResult.otherError);
+        expect(outcome.failure, ConnectFailure.keyFailed);
+        expect(outcome.detail, 'Too many failed attempts. Try again later.');
+        expect(conn.holdsTransport, isFalse);
+      },
+    );
+
+    test('an unexpected signer error is reported without its text', () async {
+      final conn = make();
+      final a = auth((data) async => throw StateError('secret details'));
+      final outcomeF = conn.connectWithKey(a);
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      unawaited(Future.value(conn.buildIdentity(a).sign(challenge)));
+      final outcome = await outcomeF.timeout(const Duration(seconds: 2));
+      expect(outcome.failure, ConnectFailure.keyFailed);
+      expect(outcome.detail, isNot(contains('secret')));
+    });
+
+    test('cancel() while the prompt shows dismisses it and closes', () async {
+      var dismissed = false;
+      final pending = Completer<Uint8List>();
+      final conn = make();
+      final a = auth((data) => pending.future, dismiss: () => dismissed = true);
+      final outcomeF = conn.connectWithKey(a);
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      unawaited(Future.value(conn.buildIdentity(a).sign(challenge)));
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      conn.cancel();
+      expect(
+        (await outcomeF.timeout(const Duration(seconds: 1))).result,
+        ConnectResult.cancelled,
+      );
+      expect(dismissed, isTrue);
+      expect(conn.holdsTransport, isFalse);
+    });
+
+    test('the watchdog waits while the user is at the prompt', () async {
+      final pending = Completer<Uint8List>();
+      final conn = make(watchdog: const Duration(milliseconds: 150));
+      final a = auth((data) => pending.future);
+      final outcomeF = conn.connectWithKey(a);
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      unawaited(Future.value(conn.buildIdentity(a).sign(challenge)));
+      await Future<void>.delayed(const Duration(milliseconds: 500));
+      expect(conn.finished, isFalse);
+      conn.cancel();
+      expect((await outcomeF).result, ConnectResult.cancelled);
+    });
+
+    test('the identity asks the server first and signs with the key', () async {
+      final conn = make();
+      final a = auth((data) async => Uint8List.fromList([1, 2, 3]));
+      final id = conn.buildIdentity(a);
+      expect(id.shouldProbe, isTrue);
+      expect(id.type, 'ecdsa-sha2-nistp256');
+      final sig = await id.sign(challenge);
+      expect(sig.encode(), [1, 2, 3]);
+      conn.cancel();
+    });
+
+    test(
+      'a server that rejects the key is keyRejected, never a password',
+      () async {
+        final conn = make();
+        unawaited(conn.connectWithKey(auth((d) async => Uint8List(1))));
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+        final outcome = conn.classifyError(
+          SSHAuthFailError('All authentication methods failed'),
+        );
+        expect(outcome.result, ConnectResult.keyRejected);
+        conn.cancel();
+      },
+    );
+
+    test('password mode still maps auth failure to authFailed', () async {
+      final conn = make();
+      unawaited(conn.connect('pw'));
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      final outcome = conn.classifyError(
+        SSHAuthFailError('All authentication methods failed'),
+      );
+      expect(outcome.failure, ConnectFailure.authFailed);
+      conn.cancel();
     });
   });
 }
