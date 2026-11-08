@@ -109,7 +109,9 @@ class FakeKeystore implements KeystoreApi {
       cancelNext = false;
       throw const KeystoreException(KeystoreErrorKind.cancelled);
     }
-    return Uint8List.fromList(data.map((b) => b ^ 0x5a).toList());
+    // Like the real platform channel: a read-only view.
+    return Uint8List.fromList(data.map((b) => b ^ 0x5a).toList())
+        .asUnmodifiableView();
   }
 
   @override

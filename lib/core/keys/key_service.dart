@@ -149,7 +149,11 @@ class KeyService {
       return sshSignatureFromDer(der);
     }
     final w = key.wrapped!;
-    final seed = await _keystore.unwrap(key.wrapAlias, w.iv, w.data);
+    // The platform channel hands back a read-only view; keep our own copy so
+    // it can be wiped after use.
+    final seed = Uint8List.fromList(
+      await _keystore.unwrap(key.wrapAlias, w.iv, w.data),
+    );
     try {
       final signature = SigningKey.fromSeed(seed).sign(data).signature;
       return ed25519SignatureBlob(Uint8List.fromList(signature));
