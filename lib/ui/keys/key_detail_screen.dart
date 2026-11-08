@@ -35,6 +35,15 @@ class _KeyDetailScreenState extends State<KeyDetailScreen> {
   late SshKey _key = widget.sshKey;
   late final _name = TextEditingController(text: _key.name);
   late final _comment = TextEditingController(text: _key.comment);
+  SecurityLevel? _level;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.keyService.displayLevel(_key).then((l) {
+      if (mounted) setState(() => _level = l);
+    });
+  }
 
   @override
   void dispose() {
@@ -106,7 +115,7 @@ class _KeyDetailScreenState extends State<KeyDetailScreen> {
         children: [
           Row(
             children: [
-              SecurityBadge(sshKey: _key),
+              SecurityBadge(sshKey: _key, level: _level),
               const SizedBox(width: 12),
               Text(_key.sshType),
             ],

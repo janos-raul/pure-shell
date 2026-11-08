@@ -31,6 +31,11 @@ class FakeKeystore implements KeystoreApi {
   SecurityLevel level = SecurityLevel.tee;
   bool cancelNext = false;
   bool failSign = false;
+  int sdkInt = 35;
+
+  /// Levels the "live" Keystore reports, by alias (default: [level]).
+  final liveLevels = <String, SecurityLevel>{};
+  final _createdLevels = <String, SecurityLevel>{};
   final ec = <String, ECPrivateKey>{};
   final points = <String, Uint8List>{};
   final wrapKeys = <String>{};
@@ -42,6 +47,7 @@ class FakeKeystore implements KeystoreApi {
   Future<KeystoreCapabilities> capabilities() async => KeystoreCapabilities(
     secureLockScreen: secureLock,
     canAuthenticate: secureLock,
+    sdkInt: sdkInt,
   );
 
   @override
@@ -57,6 +63,7 @@ class FakeKeystore implements KeystoreApi {
     final pair = gen.generateKeyPair();
     ec[alias] = pair.privateKey;
     points[alias] = pair.publicKey.Q!.getEncoded(false);
+    _createdLevels[alias] = level;
     return GeneratedKey(
       level: level,
       publicPoint: pair.publicKey.Q!.getEncoded(false),
@@ -85,6 +92,7 @@ class FakeKeystore implements KeystoreApi {
   @override
   Future<SecurityLevel> generateWrapKey(String alias) async {
     wrapKeys.add(alias);
+    _createdLevels[alias] = level;
     return level;
   }
 
@@ -124,7 +132,12 @@ class FakeKeystore implements KeystoreApi {
   Future<List<String>> listKeys() async => [...ec.keys, ...wrapKeys];
 
   @override
-  Future<SecurityLevel> securityLevel(String alias) async => level;
+  Future<SecurityLevel> securityLevel(String alias) async {
+    if (!ec.containsKey(alias) && !wrapKeys.contains(alias)) {
+      throw const KeystoreException(KeystoreErrorKind.failed);
+    }
+    return liveLevels[alias] ?? _createdLevels[alias] ?? level;
+  }
 
   @override
   Future<Uint8List> publicKey(String alias) async => points[alias]!;

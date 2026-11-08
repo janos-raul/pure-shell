@@ -119,6 +119,7 @@ class KeystoreBridge(private val activity: FragmentActivity) {
         return mapOf(
             "secureLockScreen" to isDeviceSecure(),
             "canAuthenticate" to (status == BiometricManager.BIOMETRIC_SUCCESS),
+            "sdkInt" to Build.VERSION.SDK_INT,
         )
     }
 

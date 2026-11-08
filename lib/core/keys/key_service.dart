@@ -54,6 +54,25 @@ class KeyService {
 
   Future<SshKey?> get(String id) => _repo.get(id);
 
+  /// The security level to show for [key].
+  ///
+  /// The level is stored in the key's encrypted metadata when the key is
+  /// created and shown from there. On Android 12+ (API 31), where the Keystore
+  /// reports it authoritatively, it is compared with the live value; if they
+  /// disagree the live one is shown. Nothing is logged either way. On API 30
+  /// the platform cannot tell StrongBox from TEE later, so the stored value
+  /// stands.
+  Future<SecurityLevel> displayLevel(SshKey key) async {
+    if (key.isSoftware) return key.level;
+    try {
+      final caps = await _keystore.capabilities();
+      if (caps.sdkInt < 31) return key.level;
+      return await _keystore.securityLevel(key.signAlias);
+    } on KeystoreException {
+      return key.level; // e.g. the key no longer exists
+    }
+  }
+
   /// Dismisses the fingerprint prompt if one is showing.
   Future<void> dismissPrompt() => _keystore.cancelPrompt();
 

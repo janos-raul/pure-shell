@@ -14,16 +14,19 @@ import '../../core/keys/ssh_key.dart';
 
 /// "StrongBox" / "TEE" / "Software key" badge.
 class SecurityBadge extends StatelessWidget {
-  const SecurityBadge({super.key, required this.sshKey});
+  const SecurityBadge({super.key, required this.sshKey, this.level});
 
   final SshKey sshKey;
+
+  /// The level to show (the live one if it differs from the stored one).
+  final SecurityLevel? level;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final software =
-        sshKey.isSoftware || sshKey.level == SecurityLevel.software;
-    final label = sshKey.isSoftware ? 'Software key' : sshKey.level.label;
+    final shown = level ?? sshKey.level;
+    final software = sshKey.isSoftware || shown == SecurityLevel.software;
+    final label = sshKey.isSoftware ? 'Software key' : shown.label;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(

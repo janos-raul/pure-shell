@@ -217,4 +217,59 @@ void main() {
     expect(allowSoftwareKeystore, isFalse);
     expect(forceSoftwareKeys, isFalse);
   });
+
+  group('security level', () {
+    test(
+      'is stored in the encrypted metadata when the key is created',
+      () async {
+        keystore.level = SecurityLevel.strongBox;
+        final key = await service.generate(name: 'k');
+        final raw = store.data[KeyRepository.storageKey]!;
+        expect((jsonDecode(raw) as List).single['level'], 'strongBox');
+        // A new service instance (a later app run) reads it back.
+        final later = KeyService(keystore, KeyRepository(store));
+        expect((await later.list()).single.level, SecurityLevel.strongBox);
+        expect(key.level, SecurityLevel.strongBox);
+      },
+    );
+
+    test('shown from the stored value when the live one agrees', () async {
+      final key = await service.generate(name: 'k');
+      expect(await service.displayLevel(key), SecurityLevel.tee);
+    });
+
+    test('API 31+: a different live value wins', () async {
+      final key = await service.generate(name: 'k'); // stored: tee
+      keystore.liveLevels[key.signAlias] = SecurityLevel.software;
+      expect(await service.displayLevel(key), SecurityLevel.software);
+      keystore.liveLevels[key.signAlias] = SecurityLevel.strongBox;
+      expect(await service.displayLevel(key), SecurityLevel.strongBox);
+    });
+
+    test(
+      'API 30 cannot tell StrongBox from TEE, so the stored value stands',
+      () async {
+        keystore.level = SecurityLevel.strongBox;
+        final key = await service.generate(name: 'k');
+        keystore.sdkInt = 30;
+        keystore.liveLevels[key.signAlias] = SecurityLevel.tee;
+        expect(await service.displayLevel(key), SecurityLevel.strongBox);
+      },
+    );
+
+    test(
+      'a key the Keystore no longer has falls back to the stored value',
+      () async {
+        final key = await service.generate(name: 'k');
+        keystore.ec.remove(key.signAlias);
+        expect(await service.displayLevel(key), SecurityLevel.tee);
+      },
+    );
+
+    test('software keys keep their own level', () async {
+      keystore.level = SecurityLevel.software;
+      final key = await service.generate(name: 'soft');
+      expect(await service.displayLevel(key), SecurityLevel.software);
+    });
+  });
 }

@@ -133,6 +133,19 @@ void main() {
     expect(keystore.ec, isEmpty);
   });
 
+  testWidgets('the badge shows the live level when it differs from the '
+      'stored one', (t) async {
+    await openKeys(t);
+    await createKey(t, 'Phone key'); // stored: TEE
+    expect(find.text('TEE'), findsOneWidget);
+    final key = (await service.list()).single;
+    keystore.liveLevels[key.signAlias] = SecurityLevel.strongBox;
+    await t.pumpWidget(const SizedBox()); // leave the screen
+    await openKeys(t); // reopen: stored TEE, live StrongBox
+    expect(find.text('StrongBox'), findsOneWidget);
+    expect(find.text('TEE'), findsNothing);
+  });
+
   group('host login settings', () {
     Future<HostRepository> openHostForm(WidgetTester t, {Host? host}) async {
       final repo = HostRepository(store);

@@ -28,6 +28,7 @@ class KeysScreen extends StatefulWidget {
 
 class _KeysScreenState extends State<KeysScreen> {
   List<SshKey>? _keys;
+  final _levels = <String, SecurityLevel>{};
   bool _busy = false;
 
   @override
@@ -38,7 +39,17 @@ class _KeysScreenState extends State<KeysScreen> {
 
   Future<void> _reload() async {
     final keys = await widget.keyService.list();
-    if (mounted) setState(() => _keys = keys);
+    // Stored level, replaced by the live one where the two disagree.
+    final levels = {
+      for (final k in keys) k.id: await widget.keyService.displayLevel(k),
+    };
+    if (!mounted) return;
+    setState(() {
+      _keys = keys;
+      _levels
+        ..clear()
+        ..addAll(levels);
+    });
   }
 
   void _snack(String m) =>
@@ -130,7 +141,7 @@ class _KeysScreenState extends State<KeysScreen> {
                   ListTile(
                     title: Text(k.name),
                     subtitle: Text(k.fingerprint),
-                    trailing: SecurityBadge(sshKey: k),
+                    trailing: SecurityBadge(sshKey: k, level: _levels[k.id]),
                     onTap: () async {
                       await Navigator.of(context).push(
                         MaterialPageRoute<void>(

@@ -80,6 +80,7 @@ class KeystoreCapabilities {
   const KeystoreCapabilities({
     required this.secureLockScreen,
     required this.canAuthenticate,
+    this.sdkInt = 0,
   });
 
   /// The phone has a PIN, pattern, password or biometric lock.
@@ -87,6 +88,11 @@ class KeystoreCapabilities {
 
   /// BIOMETRIC_STRONG or DEVICE_CREDENTIAL can be used right now.
   final bool canAuthenticate;
+
+  /// Android API level. From 31 the Keystore reports a key's security level
+  /// authoritatively (StrongBox / TEE / software); on 30 it cannot tell
+  /// StrongBox from TEE after the fact.
+  final int sdkInt;
 }
 
 class GeneratedKey {
@@ -177,6 +183,7 @@ class PlatformKeystore implements KeystoreApi {
     return KeystoreCapabilities(
       secureLockScreen: m?['secureLockScreen'] == true,
       canAuthenticate: m?['canAuthenticate'] == true,
+      sdkInt: (m?['sdkInt'] as num?)?.toInt() ?? 0,
     );
   }
 
