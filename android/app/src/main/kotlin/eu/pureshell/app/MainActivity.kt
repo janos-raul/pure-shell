@@ -9,11 +9,15 @@
 
 package eu.pureshell.app
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.WindowManager
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
+import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.MethodChannel
 
-class MainActivity : FlutterActivity() {
+// FlutterFragmentActivity: BiometricPrompt needs a FragmentActivity.
+class MainActivity : FlutterFragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         // Block screenshots, screen recording and the recent-apps preview.
         window.setFlags(
@@ -21,5 +25,29 @@ class MainActivity : FlutterActivity() {
             WindowManager.LayoutParams.FLAG_SECURE
         )
         super.onCreate(savedInstanceState)
+    }
+
+    override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
+        super.configureFlutterEngine(flutterEngine)
+        val messenger = flutterEngine.dartExecutor.binaryMessenger
+        val keystore = KeystoreBridge(this)
+        MethodChannel(messenger, "eu.pureshell.app/keystore")
+            .setMethodCallHandler { call, result -> keystore.handle(call, result) }
+
+        // Share a piece of text (the public key) through the system share
+        // sheet. Public data only.
+        MethodChannel(messenger, "eu.pureshell.app/share")
+            .setMethodCallHandler { call, result ->
+                if (call.method == "shareText") {
+                    val send = Intent(Intent.ACTION_SEND).apply {
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_TEXT, call.argument<String>("text"))
+                    }
+                    startActivity(Intent.createChooser(send, null))
+                    result.success(null)
+                } else {
+                    result.notImplemented()
+                }
+            }
     }
 }

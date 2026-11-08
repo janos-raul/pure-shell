@@ -26,7 +26,7 @@ Early development (phase 1): host list, password login, terminal, and host key
 verification (trust on first use, SHA-256 fingerprints). Passwords are asked
 for on every connection and are never stored.
 
-Requires Android 9 (API 28) or newer.
+Requires Android 11 (API 30) or newer.
 
 ## Building
 
