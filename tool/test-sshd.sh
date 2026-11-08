@@ -5,8 +5,9 @@
 #
 # Throwaway OpenSSH server in Docker for testing PureShell on an emulator.
 # Bound to 127.0.0.1:2222 only (the Android emulator reaches it as 10.0.2.2).
-# Password login for the throwaway user below. LoginGraceTime is 30 s so the
-# "slow Trust prompt" test takes 30 seconds instead of two minutes.
+# Password login for the throwaway user below. LoginGraceTime defaults to 30 s
+# (override: LOGIN_GRACE_TIME=10 tool/test-sshd.sh reset) so the "slow Trust
+# prompt" test takes seconds instead of two minutes.
 #
 # Usage: tool/test-sshd.sh [start|stop|reset|fingerprints|status]
 #   start         build the image if needed, start the container (default)
@@ -21,6 +22,7 @@ IMAGE=pureshell-test-sshd
 PORT=2222
 TEST_USER=test
 TEST_PASSWORD=pureshell-test   # throwaway, only reachable from 127.0.0.1
+LOGIN_GRACE_TIME=${LOGIN_GRACE_TIME:-30}
 
 build() {
   docker image inspect "$IMAGE" >/dev/null 2>&1 && return
@@ -33,11 +35,10 @@ RUN apk add --no-cache openssh-server shadow procps iputils htop vim \\
     'PasswordAuthentication yes' \\
     'PermitRootLogin no' \\
     'KbdInteractiveAuthentication no' \\
-    'LoginGraceTime 30' \\
     > /etc/ssh/sshd_config.d/test.conf
 # Host keys are generated at container start, so every new container (reset)
 # gets new ones.
-CMD ["sh", "-c", "ssh-keygen -A && exec /usr/sbin/sshd -D -e"]
+CMD ["sh", "-c", "ssh-keygen -A && exec /usr/sbin/sshd -D -e -o LoginGraceTime=$LOGIN_GRACE_TIME"]
 DOCKERFILE
 }
 
@@ -53,10 +54,10 @@ start() {
     echo "already running"
   else
     docker rm -f "$NAME" >/dev/null 2>&1 || true
-    docker run -d --name "$NAME" -p "127.0.0.1:$PORT:22" "$IMAGE" >/dev/null
+    docker run -d --name "$NAME" -e "LOGIN_GRACE_TIME=$LOGIN_GRACE_TIME" -p "127.0.0.1:$PORT:22" "$IMAGE" >/dev/null
     sleep 2
   fi
-  echo "sshd on 127.0.0.1:$PORT (emulator: 10.0.2.2:$PORT), user '$TEST_USER', password '$TEST_PASSWORD'"
+  echo "sshd on 127.0.0.1:$PORT (emulator: 10.0.2.2:$PORT), LoginGraceTime ${LOGIN_GRACE_TIME}s, user '$TEST_USER', password '$TEST_PASSWORD'"
   echo "host keys:"
   fingerprints
 }

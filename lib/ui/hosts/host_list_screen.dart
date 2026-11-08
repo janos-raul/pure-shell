@@ -12,21 +12,21 @@ import 'package:flutter/material.dart';
 import '../../core/hosts/host.dart';
 import '../../core/hosts/host_repository.dart';
 import '../../core/hosts/known_hosts.dart';
-import '../../core/ssh/connect_result.dart';
-import '../../core/ssh/ssh_connection.dart';
-import '../terminal/terminal_screen.dart';
+import '../../core/storage/terminal_settings.dart';
+import 'connect_flow.dart';
 import 'host_edit_screen.dart';
-import 'host_key_mismatch_screen.dart';
 
 class HostListScreen extends StatefulWidget {
   const HostListScreen({
     super.key,
     required this.hosts,
     required this.knownHosts,
+    required this.settings,
   });
 
   final HostRepository hosts;
   final KnownHostsStore knownHosts;
+  final TerminalSettings settings;
 
   @override
   State<HostListScreen> createState() => _HostListScreenState();
@@ -82,151 +82,12 @@ class _HostListScreenState extends State<HostListScreen> {
     await _reload();
   }
 
-  Future<String?> _askPassword(Host host) {
-    final controller = TextEditingController();
-    return showDialog<String>(
-      context: context,
-      builder: (c) => AlertDialog(
-        title: Text('${host.username}@${host.hostname}'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          obscureText: true,
-          autocorrect: false,
-          enableSuggestions: false,
-          decoration: const InputDecoration(labelText: 'Password'),
-          onSubmitted: (v) => Navigator.pop(c, v),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(c),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(c, controller.text),
-            child: const Text('Connect'),
-          ),
-        ],
-      ),
-    ).whenComplete(controller.dispose);
-  }
-
-  Future<bool> _askTrust(Host host, HostKey key) async {
-    final trusted = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (c) => AlertDialog(
-        title: const Text('New host key'),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('First connection to ${host.hostname}:${host.port}.'),
-              const SizedBox(height: 12),
-              const Text(
-                'Key type',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              Text(key.type),
-              const SizedBox(height: 8),
-              const Text(
-                'SHA-256 fingerprint',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              SelectableText(
-                key.fingerprint,
-                style: const TextStyle(fontFamily: 'monospace'),
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                'Compare it with the fingerprint from your server '
-                '(ssh-keygen -lf). The server drops the connection after '
-                'about two minutes of waiting.',
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(c, false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(c, true),
-            child: const Text('Trust'),
-          ),
-        ],
-      ),
-    );
-    return trusted == true;
-  }
-
-  Future<void> _connect(Host host) async {
-    final password = await _askPassword(host);
-    if (password == null || !mounted) return;
-
-    final conn = SshConnection(
-      host: host,
-      knownHosts: widget.knownHosts,
-      onTrustPrompt: (key) => _askTrust(host, key),
-    );
-
-    final navigator = Navigator.of(context);
-    showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => const PopScope(
-        canPop: false,
-        child: AlertDialog(
-          content: Row(
-            children: [
-              CircularProgressIndicator(),
-              SizedBox(width: 20),
-              Text('Connecting...'),
-            ],
-          ),
-        ),
-      ),
-    );
-    final outcome = await conn.connect(password);
-    if (!mounted) {
-      conn.close();
-      return;
-    }
-    navigator.pop(); // progress dialog
-
-    switch (outcome.result) {
-      case ConnectResult.trusted:
-      case ConnectResult.firstUseAccepted:
-        await navigator.push(
-          MaterialPageRoute<void>(
-            builder: (_) => TerminalScreen(host: host, connection: conn),
-          ),
-        );
-      case ConnectResult.mismatch:
-        await navigator.push(
-          MaterialPageRoute<void>(
-            builder: (_) => HostKeyMismatchScreen(
-              host: host,
-              stored: outcome.storedKey,
-              presented: outcome.presentedKey,
-            ),
-          ),
-        );
-      case ConnectResult.firstUseDeclined:
-        _snack('Host key not trusted. Connection cancelled.');
-      case ConnectResult.otherError:
-        _snack(
-          connectFailureMessage(outcome.failure ?? ConnectFailure.unknown),
-        );
-    }
-  }
-
-  void _snack(String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
-  }
+  Future<void> _connect(Host host) => connectToHost(
+    context,
+    host: host,
+    knownHosts: widget.knownHosts,
+    settings: widget.settings,
+  );
 
   @override
   Widget build(BuildContext context) {

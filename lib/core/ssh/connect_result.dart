@@ -24,6 +24,14 @@ enum ConnectResult {
   /// The presented key differs from the stored one. Hard block.
   mismatch,
 
+  /// The server (or the network) closed the connection before we were
+  /// connected. If that happened while the user was looking at the host key,
+  /// [ConnectOutcome.pendingKey] holds that key.
+  serverClosed,
+
+  /// The user cancelled.
+  cancelled,
+
   /// Any other failure; see [ConnectFailure].
   otherError,
 }
@@ -34,11 +42,6 @@ enum ConnectFailure {
   timeout,
   unreachable,
   authFailed,
-
-  /// The server dropped the connection while we waited for the user to decide
-  /// on the host key (sshd LoginGraceTime, 120 s by default).
-  serverClosedDuringPrompt,
-  serverClosed,
   hostKeyRejected,
   unknown,
 }
@@ -49,6 +52,7 @@ class ConnectOutcome {
     this.failure,
     this.storedKey,
     this.presentedKey,
+    this.pendingKey,
   });
 
   final ConnectResult result;
@@ -59,6 +63,10 @@ class ConnectOutcome {
 
   /// For [ConnectResult.mismatch] and first use: the key the server presented.
   final HostKey? presentedKey;
+
+  /// For [ConnectResult.serverClosed]: the key the user was still deciding on
+  /// when the server closed the connection, if any.
+  final HostKey? pendingKey;
 
   bool get connected =>
       result == ConnectResult.trusted ||
@@ -72,11 +80,9 @@ String connectFailureMessage(ConnectFailure failure) => switch (failure) {
     'Could not reach the server. Check the hostname, port and your network.',
   ConnectFailure.authFailed =>
     'Authentication failed. Check the username and password.',
-  ConnectFailure.serverClosedDuringPrompt =>
-    'The server closed the connection while you were deciding. '
-        'Servers drop idle logins after about two minutes. Please try again.',
-  ConnectFailure.serverClosed =>
-    'The server closed the connection. Please try again.',
   ConnectFailure.hostKeyRejected => 'The server host key was rejected.',
   ConnectFailure.unknown => 'The connection failed.',
 };
+
+const serverClosedMessage =
+    'The server closed the connection. Please try again.';

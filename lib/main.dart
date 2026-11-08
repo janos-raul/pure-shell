@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'core/hosts/host_repository.dart';
 import 'core/hosts/known_hosts.dart';
 import 'core/storage/secure_store.dart';
+import 'core/storage/terminal_settings.dart';
 import 'ui/hosts/host_list_screen.dart';
 
 void main() {
@@ -19,7 +20,13 @@ void main() {
   final store = FlutterSecureStore();
   final knownHosts = KnownHostsStore(store);
   final hosts = HostRepository(store, knownHosts: knownHosts);
-  runApp(PureShellApp(hosts: hosts, knownHosts: knownHosts));
+  runApp(
+    PureShellApp(
+      hosts: hosts,
+      knownHosts: knownHosts,
+      settings: TerminalSettings(store),
+    ),
+  );
 }
 
 class PureShellApp extends StatelessWidget {
@@ -27,10 +34,12 @@ class PureShellApp extends StatelessWidget {
     super.key,
     required this.hosts,
     required this.knownHosts,
+    required this.settings,
   });
 
   final HostRepository hosts;
   final KnownHostsStore knownHosts;
+  final TerminalSettings settings;
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +47,11 @@ class PureShellApp extends StatelessWidget {
       title: 'PureShell',
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark(useMaterial3: true),
-      home: HostListScreen(hosts: hosts, knownHosts: knownHosts),
+      home: HostListScreen(
+        hosts: hosts,
+        knownHosts: knownHosts,
+        settings: settings,
+      ),
     );
   }
 }

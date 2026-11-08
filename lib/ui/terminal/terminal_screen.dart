@@ -15,6 +15,7 @@ import 'package:xterm/xterm.dart';
 
 import '../../core/hosts/host.dart';
 import '../../core/ssh/ssh_connection.dart';
+import '../../core/storage/terminal_settings.dart';
 import 'extra_keys.dart';
 
 /// Converts a single typed character to its Ctrl-modified control character
@@ -35,10 +36,12 @@ class TerminalScreen extends StatefulWidget {
     super.key,
     required this.host,
     required this.connection,
+    required this.settings,
   });
 
   final Host host;
   final SshConnection connection;
+  final TerminalSettings settings;
 
   @override
   State<TerminalScreen> createState() => _TerminalScreenState();
