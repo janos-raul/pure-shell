@@ -38,7 +38,7 @@ RUN apk add --no-cache openssh-server shadow procps iputils htop vim \\
     > /etc/ssh/sshd_config.d/test.conf
 # Host keys are generated at container start, so every new container (reset)
 # gets new ones.
-CMD ["sh", "-c", "ssh-keygen -A && exec /usr/sbin/sshd -D -e -o LoginGraceTime=$LOGIN_GRACE_TIME"]
+CMD ["sh", "-c", "ssh-keygen -A && exec /usr/sbin/sshd -D -e -o LoginGraceTime=\$LOGIN_GRACE_TIME"]
 DOCKERFILE
 }
 
