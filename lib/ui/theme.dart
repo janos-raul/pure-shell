@@ -34,6 +34,14 @@ ButtonStyle destructiveOutlineStyle() => OutlinedButton.styleFrom(
   side: const BorderSide(color: errorRed),
 );
 
+/// A text button used as a link inside content: its text lines up with the
+/// text around it (no button padding on the left).
+ButtonStyle linkButtonStyle() => TextButton.styleFrom(
+  padding: const EdgeInsets.symmetric(vertical: 12),
+  alignment: Alignment.centerLeft,
+  minimumSize: const Size(48, 48),
+);
+
 /// For technical values: hostnames, user@host:port, fingerprints, key lines.
 const monoStyle = TextStyle(fontFamily: 'monospace');
 

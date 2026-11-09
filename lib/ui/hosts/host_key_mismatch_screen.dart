@@ -102,6 +102,7 @@ class HostKeyMismatchScreen extends StatelessWidget {
             Align(
               alignment: Alignment.centerLeft,
               child: TextButton(
+                style: linkButtonStyle(),
                 onPressed: () => openHelpTopic(context, helpFirstConnect),
                 child: const Text('Why is this blocked?'),
               ),

@@ -167,6 +167,7 @@ class _KeyDetailScreenState extends State<KeyDetailScreen> {
           Align(
             alignment: Alignment.centerLeft,
             child: TextButton(
+              style: linkButtonStyle(),
               onPressed: () => openHelpTopic(context, helpAddKey),
               child: const Text('How to add this key to a server'),
             ),
