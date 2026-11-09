@@ -11,6 +11,8 @@
 Writes (all committed):
   assets/icon/pure-shell-icon.svg        SVG master, 512 x 512, full bleed
   assets/icon/pure-shell-icon-512.png    Play Store icon, 512 x 512, opaque
+  github-pages/web_assets/               website: icon.svg, favicon.png,
+                                         apple-touch-icon.png, og_image.png
   android/app/src/main/res/
     drawable/ic_launcher_foreground.xml  adaptive foreground (inside the 66 dp
                                          safe circle of the 108 dp canvas)
@@ -193,7 +195,8 @@ def notification_parts():
 
 def render_png(svg, out, size, opaque=False):
     cmd = ["convert", "-background", "none", "-density", "384", svg,
-           "-resize", f"{size}x{size}", "-depth", "8"]
+           "-resize", f"{size}x{size}", "-depth", "8",
+           "-strip"]  # no timestamps: regenerating gives identical files
     if opaque:
         cmd += ["-alpha", "off"]
     subprocess.run(cmd + ["PNG24:" + out], check=True)
@@ -264,6 +267,37 @@ def preview(out):
     print("wrote", out)
 
 
+def site_assets(svg):
+    """Favicon, touch icon and the social preview image for the website."""
+    from PIL import Image, ImageDraw, ImageFont  # only needed for the site
+
+    web = os.path.join(ROOT, "github-pages/web_assets")
+    os.makedirs(web, exist_ok=True)
+    with open(svg) as f, open(os.path.join(web, "icon.svg"), "w") as g:
+        g.write(f.read())
+    print("wrote", os.path.relpath(os.path.join(web, "icon.svg"), ROOT))
+    render_png(svg, os.path.join(web, "favicon.png"), 64, opaque=True)
+    render_png(svg, os.path.join(web, "apple-touch-icon.png"), 180, opaque=True)
+
+    # Social preview, 1200 x 630: the icon, the name and one line.
+    icon = os.path.join(web, "_icon-tmp.png")
+    render_png(svg, icon, 380, opaque=True)
+    img = Image.new("RGB", (1200, 630), BACKGROUND)
+    img.paste(Image.open(icon), (90, 125))
+    os.remove(icon)
+    d = ImageDraw.Draw(img)
+    bold = "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf"
+    regular = "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf"
+    mono = "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf"
+    d.text((530, 170), "Pure-Shell", font=ImageFont.truetype(bold, 104), fill=GREEN)
+    for i, line in enumerate(["A private, open-source", "SSH client for Android."]):
+        d.text((534, 305 + 52 * i), line, font=ImageFont.truetype(regular, 40), fill="#BFF5CC")
+    d.text((534, 470), "pure-shell.eu", font=ImageFont.truetype(mono, 30), fill="#6FCB88")
+    out = os.path.join(web, "og_image.png")
+    img.save(out)
+    print("wrote", os.path.relpath(out, ROOT))
+
+
 def main():
     if len(sys.argv) == 3 and sys.argv[1] == "--preview":
         return preview(sys.argv[2])
@@ -271,6 +305,7 @@ def main():
     svg = os.path.join(ICON_DIR, "pure-shell-icon.svg")
     write(svg, master_svg())
     render_png(svg, os.path.join(ICON_DIR, "pure-shell-icon-512.png"), 512, opaque=True)
+    site_assets(svg)
 
     # Adaptive icon.
     parts, k = adaptive_parts()
