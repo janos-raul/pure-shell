@@ -92,7 +92,7 @@ class _AppLockGateState extends State<AppLockGate> with WidgetsBindingObserver {
           'protect the app (and to create keys).',
         ),
         actions: [
-          TextButton(
+          FilledButton(
             onPressed: () => Navigator.pop(c),
             child: const Text('OK'),
           ),

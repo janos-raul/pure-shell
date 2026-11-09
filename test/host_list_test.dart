@@ -72,12 +72,15 @@ void main() {
     expect(
       find.descendant(
         of: row('Web server'),
-        matching: find.byIcon(Icons.vpn_key),
+        matching: find.byIcon(Icons.vpn_key_outlined),
       ),
       findsOneWidget,
     );
     expect(
-      find.descendant(of: row('Backup'), matching: find.byIcon(Icons.password)),
+      find.descendant(
+        of: row('Backup'),
+        matching: find.byIcon(Icons.lock_outline),
+      ),
       findsOneWidget,
     );
 

@@ -208,7 +208,7 @@ void main() {
     testWidgets('keep-open toggle: the box stays and is cleared', (t) async {
       await pumpScreen(t);
       await openBox(t);
-      await t.tap(find.byIcon(Icons.push_pin_outlined));
+      await t.tap(find.text('Keep open'));
       await t.pump();
       await t.enterText(field, 'one');
       await t.tap(find.byIcon(Icons.send));
@@ -371,6 +371,26 @@ void main() {
       await t.pumpAndSettle();
       await typeNative(t, 'c');
       expect(serverGot(), 'c'); // not Ctrl+C (\x03)
+    });
+
+    testWidgets('the extra keys are dimmed and inert once the session ends', (
+      t,
+    ) async {
+      await pumpScreen(t);
+      conn.fake!.doneC.complete();
+      await t.pumpAndSettle();
+      for (final label in ['Esc', '←', '|']) {
+        final inkWell = find.ancestor(
+          of: find.text(label),
+          matching: find.byType(InkWell),
+        );
+        expect(t.widget<InkWell>(inkWell).onTap, isNull);
+        final opacity = find.ancestor(
+          of: find.text(label),
+          matching: find.byType(Opacity),
+        );
+        expect(t.widget<Opacity>(opacity).opacity, lessThan(1));
+      }
     });
 
     testWidgets('the box cannot open without a live session', (t) async {

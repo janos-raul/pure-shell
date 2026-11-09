@@ -46,7 +46,17 @@ class _KeyDetailScreenState extends State<KeyDetailScreen> {
     widget.keyService.displayLevel(_key).then((l) {
       if (mounted) setState(() => _level = l);
     });
+    _name.addListener(_changed);
+    _comment.addListener(_changed);
   }
+
+  void _changed() => setState(() {});
+
+  /// Save sits in the app bar (like Edit host) and only shows when there is
+  /// something to save.
+  bool get _dirty =>
+      _name.text.trim().isNotEmpty &&
+      (_name.text.trim() != _key.name || _comment.text != _key.comment);
 
   @override
   void dispose() {
@@ -110,7 +120,12 @@ class _KeyDetailScreenState extends State<KeyDetailScreen> {
   Widget build(BuildContext context) {
     final line = _key.authorizedKeysLine;
     return Scaffold(
-      appBar: AppBar(title: Text(_key.name)),
+      appBar: AppBar(
+        title: Text(_key.name),
+        actions: [
+          if (_dirty) TextButton(onPressed: _save, child: const Text('Save')),
+        ],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -138,11 +153,7 @@ class _KeyDetailScreenState extends State<KeyDetailScreen> {
             controller: _comment,
             decoration: const InputDecoration(labelText: 'Comment'),
           ),
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton(onPressed: _save, child: const Text('Save')),
-          ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 16),
           Text(
             'Public key (authorized_keys line)',
             style: Theme.of(context).textTheme.titleSmall,

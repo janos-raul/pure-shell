@@ -40,6 +40,7 @@ Future<T?> showChoiceDialog<T>(
       children: [
         for (final o in options)
           ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 24),
             title: Text(o.label),
             subtitle: Text(o.description),
             trailing: o.value == current ? const Icon(Icons.check) : null,
@@ -276,7 +277,7 @@ class _Section extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 4),
+      padding: const EdgeInsets.fromLTRB(16, 28, 16, 4),
       child: Text(
         title,
         style: Theme.of(context).textTheme.titleSmall?.copyWith(

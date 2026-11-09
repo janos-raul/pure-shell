@@ -21,6 +21,7 @@ class ExtraKeysRow extends StatelessWidget {
     required this.onBox,
     required this.onPaste,
     this.boxOpen = false,
+    this.enabled = true,
   });
 
   /// The Paste key: pastes the clipboard (into the box while it is open).
@@ -28,6 +29,9 @@ class ExtraKeysRow extends StatelessWidget {
 
   /// The command-line box button was tapped (open or close it).
   final VoidCallback onBox;
+
+  /// False once the session is over: every key is dimmed and does nothing.
+  final bool enabled;
 
   /// While the box is open the keys act on the box: Tab and Ctrl are disabled.
   final bool boxOpen;
@@ -51,6 +55,7 @@ class ExtraKeysRow extends StatelessWidget {
       bool enabled = true,
       String? tooltip,
     }) {
+      enabled = enabled && this.enabled;
       final color = active ? scheme.onPrimary : null;
       Widget face = label is IconData
           ? Icon(label, size: 20, color: color)

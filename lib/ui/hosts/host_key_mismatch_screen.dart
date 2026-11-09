@@ -12,7 +12,9 @@ import 'package:flutter/material.dart';
 import '../theme.dart';
 
 import '../../core/hosts/host.dart';
+import '../../core/hosts/host_key_command.dart';
 import '../../core/hosts/known_hosts.dart';
+import '../command_block.dart';
 
 /// Full-screen hard block shown when the server's host key differs from the
 /// trusted one. There is deliberately no way to continue from here: the user
@@ -59,11 +61,11 @@ class HostKeyMismatchScreen extends StatelessWidget {
                     text: '${host.hostname}:${host.port}',
                     style: monoStyle,
                   ),
-                  const TextSpan(
+                  TextSpan(
                     text:
                         ' presented a different key than the one you trusted. '
                         'Someone may be intercepting the connection, or the '
-                        'server was reinstalled. No password was sent.',
+                        'server was reinstalled. ${host.authMethod == AuthMethod.key ? 'Nothing was sent to the server.' : 'No password was sent.'}',
                   ),
                 ],
               ),
@@ -83,6 +85,12 @@ class HostKeyMismatchScreen extends StatelessWidget {
             Text(presented?.type ?? 'unknown'),
             SelectableText(presented?.fingerprint ?? 'unknown', style: mono),
             const SizedBox(height: 24),
+            const Text(
+              'To check the key it presents now, run this on the server:',
+            ),
+            const SizedBox(height: 8),
+            CommandBlock(hostKeyCheckCommand(presented?.type ?? '')),
+            const SizedBox(height: 16),
             const Text(
               'If you are sure the change is legitimate, verify the new '
               'fingerprint with the server administrator, then remove the old '

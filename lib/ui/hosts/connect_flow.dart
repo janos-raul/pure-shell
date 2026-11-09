@@ -16,7 +16,9 @@ import 'package:flutter/material.dart';
 import '../../core/hosts/host.dart';
 import '../../core/keys/key_service.dart';
 import '../../core/keys/ssh_key.dart';
+import '../../core/hosts/host_key_command.dart';
 import '../../core/hosts/known_hosts.dart';
+import '../command_block.dart';
 import '../../core/ssh/connect_result.dart';
 import '../../core/ssh/ssh_connection.dart';
 import '../../core/storage/terminal_settings.dart';
@@ -177,9 +179,15 @@ class ConnectDialog extends StatelessWidget {
             SelectableText(key.fingerprint, style: monoStyle),
             const SizedBox(height: 12),
             const Text(
-              'Compare it with the fingerprint from your server '
-              '(ssh-keygen -lf). The server only waits a limited time '
-              'before closing the connection.',
+              'Compare it with the fingerprint from your server. On the '
+              'server, run:',
+            ),
+            const SizedBox(height: 8),
+            CommandBlock(hostKeyCheckCommand(key.type)),
+            const SizedBox(height: 8),
+            const Text(
+              'The server only waits a limited time before closing the '
+              'connection.',
             ),
             if (controller.serverClosed) ...[
               const SizedBox(height: 12),
@@ -237,7 +245,7 @@ class _PasswordDialogState extends State<_PasswordDialog> {
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancel'),
         ),
-        TextButton(
+        FilledButton(
           onPressed: () => Navigator.pop(context, _controller.text),
           child: const Text('Connect'),
         ),

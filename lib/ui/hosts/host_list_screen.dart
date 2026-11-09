@@ -73,6 +73,18 @@ class _HostListScreenState extends State<HostListScreen> {
     await _reload();
   }
 
+  void _openMenuItem(String item) {
+    final Widget page = switch (item) {
+      'keys' => KeysScreen(keyService: widget.keyService),
+      _ => SettingsScreen(
+        lock: widget.lock,
+        screenshots: widget.screenshots,
+        terminal: widget.settings,
+      ),
+    };
+    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => page));
+  }
+
   Future<void> _delete(Host host) async {
     final ok = await showDialog<bool>(
       context: context,
@@ -111,28 +123,16 @@ class _HostListScreenState extends State<HostListScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('PureShell'),
+        // One menu instead of icons: the key icon in the bar looked like the
+        // per-host key icon in the list.
         actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            tooltip: 'Settings',
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (_) => SettingsScreen(
-                  lock: widget.lock,
-                  screenshots: widget.screenshots,
-                  terminal: widget.settings,
-                ),
-              ),
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.vpn_key),
-            tooltip: 'Keys',
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (_) => KeysScreen(keyService: widget.keyService),
-              ),
-            ),
+          PopupMenuButton<String>(
+            tooltip: 'Menu',
+            onSelected: _openMenuItem,
+            itemBuilder: (_) => const [
+              PopupMenuItem(value: 'keys', child: Text('Keys')),
+              PopupMenuItem(value: 'settings', child: Text('Settings')),
+            ],
           ),
         ],
       ),
@@ -153,8 +153,9 @@ class _HostListScreenState extends State<HostListScreen> {
                 return ListTile(
                   leading: Tooltip(
                     message: byKey ? 'Key login' : 'Password login',
+                    // A matching pair, same size and weight.
                     child: Icon(
-                      byKey ? Icons.vpn_key : Icons.password,
+                      byKey ? Icons.vpn_key_outlined : Icons.lock_outline,
                       semanticLabel: byKey ? 'Key login' : 'Password login',
                     ),
                   ),

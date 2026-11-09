@@ -392,7 +392,7 @@ class _TerminalScreenState extends State<TerminalScreen>
             onPressed: () => Navigator.pop(c, false),
             child: const Text('Not now'),
           ),
-          TextButton(
+          FilledButton(
             onPressed: () => Navigator.pop(c, true),
             child: const Text('Continue'),
           ),
@@ -487,7 +487,7 @@ class _TerminalScreenState extends State<TerminalScreen>
               onPressed: () => Navigator.pop(c, false),
               child: const Text('Cancel'),
             ),
-            TextButton(
+            FilledButton(
               onPressed: () => Navigator.pop(c, true),
               child: const Text('Paste'),
             ),
@@ -584,7 +584,7 @@ class _TerminalScreenState extends State<TerminalScreen>
             onPressed: () => Navigator.pop(c, false),
             child: const Text('Stay'),
           ),
-          TextButton(
+          FilledButton(
             onPressed: () => Navigator.pop(c, true),
             child: const Text('Disconnect'),
           ),
@@ -772,6 +772,8 @@ class _TerminalScreenState extends State<TerminalScreen>
                 },
                 onKey: _key,
                 onText: _text,
+                // Nothing to send to once the session is over.
+                enabled: !_disconnected,
                 boxOpen: _boxOpen,
                 onBox: _toggleBox,
                 onPaste: _paste,

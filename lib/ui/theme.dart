@@ -80,6 +80,32 @@ ThemeData pureShellTheme() {
       color: _panel,
       surfaceTintColor: Colors.transparent,
     ),
+    // Selected segments use the same bright green fill as buttons (one green
+    // fill everywhere), unselected ones are outlined.
+    segmentedButtonTheme: SegmentedButtonThemeData(
+      style: ButtonStyle(
+        backgroundColor: WidgetStateProperty.resolveWith(
+          (s) => s.contains(WidgetState.selected) ? _green : _black,
+        ),
+        foregroundColor: WidgetStateProperty.resolveWith(
+          (s) => s.contains(WidgetState.selected) ? _black : _green,
+        ),
+        side: const WidgetStatePropertyAll(BorderSide(color: _dimGreen)),
+      ),
+    ),
+    // Off must not look like on: a dim thumb on an outlined track; on is a
+    // bright track with a black thumb.
+    switchTheme: SwitchThemeData(
+      trackColor: WidgetStateProperty.resolveWith(
+        (s) => s.contains(WidgetState.selected) ? _green : _black,
+      ),
+      trackOutlineColor: WidgetStateProperty.resolveWith(
+        (s) => s.contains(WidgetState.selected) ? _green : _dimGreen,
+      ),
+      thumbColor: WidgetStateProperty.resolveWith(
+        (s) => s.contains(WidgetState.selected) ? _black : _dimGreen,
+      ),
+    ),
     dividerColor: const Color(0xFF14501F),
     // Proportional font for the UI; technical values use [monoStyle].
     textTheme: ThemeData.dark().textTheme.apply(

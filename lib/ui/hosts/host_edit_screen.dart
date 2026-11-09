@@ -171,13 +171,19 @@ class _HostEditScreenState extends State<HostEditScreen> {
             ),
             PrivateTextFormField(
               controller: _hostname,
-              decoration: const InputDecoration(labelText: 'Hostname'),
+              decoration: const InputDecoration(
+                labelText: 'Hostname',
+                helperText: 'Name or address only, without user@',
+              ),
               style: monoStyle,
               keyboardType: TextInputType.url,
               validator: (v) {
                 if (_required(v) != null) return 'Required';
                 if (RegExp(r'\s').hasMatch(v!.trim())) {
                   return 'No spaces allowed';
+                }
+                if (v.contains('@')) {
+                  return 'Put the username in the Username field';
                 }
                 return null;
               },
@@ -236,11 +242,15 @@ class _HostEditScreenState extends State<HostEditScreen> {
                 ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text(
+                title: Text(
                   'Also allow password if the server rejects the key',
+                  style: Theme.of(context).textTheme.bodyLarge,
                 ),
-                subtitle: const Text(
+                subtitle: Text(
                   'You are asked before a password is used. Off by default.',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
                 value: _fallback,
                 onChanged: (v) => setState(() => _fallback = v),

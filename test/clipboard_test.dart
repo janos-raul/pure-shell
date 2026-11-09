@@ -227,7 +227,7 @@ void main() {
 
       await t.tap(pasteKey);
       await t.pumpAndSettle();
-      await t.tap(find.widgetWithText(TextButton, 'Paste'));
+      await t.tap(find.widgetWithText(FilledButton, 'Paste'));
       await t.pumpAndSettle();
       expect(serverGot(), 'one\rtwo');
     });

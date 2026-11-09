@@ -113,14 +113,18 @@ class CommandLineBox extends StatelessWidget {
                 ),
               ),
             ),
-            IconButton(
-              tooltip: keepOpen
-                  ? 'Stays open after sending'
-                  : 'Closes after sending',
-              isSelected: keepOpen,
-              icon: const Icon(Icons.push_pin_outlined),
-              selectedIcon: Icon(Icons.push_pin, color: scheme.primary),
-              onPressed: () => onKeepOpenChanged(!keepOpen),
+            Padding(
+              padding: const EdgeInsets.only(left: 6),
+              child: FilterChip(
+                label: const Text('Keep open', style: TextStyle(fontSize: 13)),
+                tooltip: keepOpen
+                    ? 'Stays open after sending'
+                    : 'Closes after sending',
+                selected: keepOpen,
+                showCheckmark: true,
+                visualDensity: VisualDensity.compact,
+                onSelected: onKeepOpenChanged,
+              ),
             ),
             IconButton(
               tooltip: 'Send',

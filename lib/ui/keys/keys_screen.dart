@@ -123,7 +123,7 @@ class _KeysScreenState extends State<KeysScreen> {
               'fingerprint or screen lock, but not by secure hardware.',
             ),
             actions: [
-              TextButton(
+              FilledButton(
                 onPressed: () => Navigator.pop(c),
                 child: const Text('OK'),
               ),
@@ -205,6 +205,10 @@ class _NewKeyDialogState extends State<_NewKeyDialog> {
   final _comment = TextEditingController(text: defaultKeyComment);
   final _form = GlobalKey<FormState>();
 
+  /// "Required" is only shown after Create was tapped with an empty name;
+  /// from then on it follows what is typed.
+  var _triedCreate = false;
+
   @override
   void dispose() {
     _name.dispose();
@@ -218,13 +222,19 @@ class _NewKeyDialogState extends State<_NewKeyDialog> {
       title: const Text('Create key'),
       content: Form(
         key: _form,
+        autovalidateMode: _triedCreate
+            ? AutovalidateMode.onUserInteraction
+            : AutovalidateMode.disabled,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             PrivateTextFormField(
               controller: _name,
               autofocus: true,
-              decoration: const InputDecoration(labelText: 'Name'),
+              decoration: const InputDecoration(
+                labelText: 'Name',
+                helperText: 'Only shown on this phone',
+              ),
               validator: (v) =>
                   (v == null || v.trim().isEmpty) ? 'Required' : null,
             ),
@@ -233,6 +243,7 @@ class _NewKeyDialogState extends State<_NewKeyDialog> {
               decoration: const InputDecoration(
                 labelText: 'Comment (shown on servers)',
                 helperText: 'Nothing personal is added unless you type it.',
+                helperMaxLines: 2,
               ),
             ),
           ],
@@ -245,6 +256,7 @@ class _NewKeyDialogState extends State<_NewKeyDialog> {
         ),
         FilledButton(
           onPressed: () {
+            setState(() => _triedCreate = true);
             if (_form.currentState!.validate()) {
               Navigator.pop(context, (
                 name: _name.text.trim(),
