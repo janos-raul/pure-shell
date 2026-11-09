@@ -15,6 +15,8 @@ import '../../core/hosts/host.dart';
 import '../../core/hosts/host_key_command.dart';
 import '../../core/hosts/known_hosts.dart';
 import '../command_block.dart';
+import '../help/help_content.dart';
+import '../help/help_screen.dart';
 
 /// Full-screen hard block shown when the server's host key differs from the
 /// trusted one. There is deliberately no way to continue from here: the user
@@ -96,7 +98,15 @@ class HostKeyMismatchScreen extends StatelessWidget {
               'fingerprint with the server administrator, then remove the old '
               'key under Edit host > Trusted host key and connect again.',
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton(
+                onPressed: () => openHelpTopic(context, helpFirstConnect),
+                child: const Text('Why is this blocked?'),
+              ),
+            ),
+            const SizedBox(height: 16),
             FilledButton(
               onPressed: () => Navigator.of(context).pop(),
               child: const Text('Back'),

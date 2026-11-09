@@ -17,6 +17,8 @@ import '../../core/keys/key_service.dart';
 import '../../core/keys/keystore_api.dart';
 import '../../core/keys/ssh_key.dart';
 import '../private_input.dart';
+import '../help/help_content.dart';
+import '../help/help_screen.dart';
 import 'key_widgets.dart';
 import 'share.dart';
 
@@ -162,7 +164,13 @@ class _KeyDetailScreenState extends State<KeyDetailScreen> {
           SelectableText(line, style: monoStyle.copyWith(fontSize: 12)),
           const SizedBox(height: 8),
           Text(_key.fingerprint, style: monoStyle.copyWith(fontSize: 12)),
-          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton(
+              onPressed: () => openHelpTopic(context, helpAddKey),
+              child: const Text('How to add this key to a server'),
+            ),
+          ),
           Row(
             children: [
               OutlinedButton.icon(
