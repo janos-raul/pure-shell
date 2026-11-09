@@ -44,11 +44,17 @@ class TerminalScreen extends StatefulWidget {
     required this.host,
     required this.connection,
     required this.settings,
+    this.onReconnect,
   });
 
   final Host host;
   final SshConnection connection;
   final TerminalSettings settings;
+
+  /// Runs the full connect flow for [host] again (host key check, password or
+  /// key prompt) and returns the new connection, or null if it did not
+  /// connect. Null here means the banner has no Reconnect button.
+  final Future<SshConnection?> Function(BuildContext context)? onReconnect;
 
   @override
   State<TerminalScreen> createState() => _TerminalScreenState();
@@ -75,7 +81,8 @@ class _TerminalScreenState extends State<TerminalScreen>
   var _barVisible = false;
   Timer? _barTimer;
 
-  SshConnection get _conn => widget.connection;
+  late SshConnection _conn = widget.connection;
+  var _reconnecting = false;
 
   /// Resizes of the PTY are coalesced: none during a pinch, one at its end.
   late final _resizer = PtyResizeCoalescer(
@@ -148,11 +155,56 @@ class _TerminalScreenState extends State<TerminalScreen>
     _syncInput();
   }
 
+  /// Written to the terminal between two sessions: closes whatever the old
+  /// program left open (alternate screen, bracketed paste, mouse reporting,
+  /// colors, hidden cursor) so the scrollback stays but the new shell starts
+  /// clean, then a dim separator line.
+  static const reconnectSeparator =
+      '\x1b[0m\x1b[?1049l\x1b[?2004l\x1b[?1000l\x1b[?1002l\x1b[?1003l'
+      '\x1b[?1006l\x1b[?25h\r\n\x1b[2m--- reconnected ---\x1b[0m\r\n';
+
+  /// Runs the normal connect flow again. The old scrollback stays; on success
+  /// a separator is printed and the new session continues below it.
+  Future<void> _reconnect() async {
+    final reconnect = widget.onReconnect;
+    if (reconnect == null || _reconnecting || !_disconnected) return;
+    _reconnecting = true;
+    try {
+      final fresh = await reconnect(context);
+      if (fresh == null) return;
+      if (!mounted) {
+        fresh.close();
+        return;
+      }
+      _conn.close();
+      for (final s in _subscriptions) {
+        s.cancel();
+      }
+      _subscriptions.clear();
+      _terminal.write(reconnectSeparator);
+      setState(() {
+        _conn = fresh;
+        _disconnected = false;
+        _endMessage = null;
+        _ctrl = false;
+      });
+      await _openShell();
+    } finally {
+      _reconnecting = false;
+    }
+  }
+
   Future<void> _openShell() async {
+    final conn = _conn;
+    // A late event from a replaced connection must not end the new session.
+    void ended(String message) {
+      if (identical(conn, _conn)) _ended(message);
+    }
+
     try {
       final columns = _terminal.viewWidth;
       final rows = _terminal.viewHeight;
-      final session = await _conn.openShell(columns, rows);
+      final session = await conn.openShell(columns, rows);
       _syncInput(); // there is a session now: input can be accepted
       _resizer.markSent(columns, rows); // the server has this size already
       _subscriptions
@@ -168,15 +220,15 @@ class _TerminalScreenState extends State<TerminalScreen>
               .transform(const Utf8Decoder(allowMalformed: true))
               .listen(_terminal.write),
         );
-      unawaited(session.done.then((_) => _ended('The session ended.')));
+      unawaited(session.done.then((_) => ended('The session ended.')));
       unawaited(
-        _conn.done?.then(
-          (_) => _ended('The server closed the connection.'),
-          onError: (_) => _ended('The connection was lost.'),
+        conn.done?.then(
+          (_) => ended('The server closed the connection.'),
+          onError: (_) => ended('The connection was lost.'),
         ),
       );
     } catch (_) {
-      _ended('Could not start a shell on the server.');
+      ended('Could not start a shell on the server.');
     }
   }
 
@@ -395,6 +447,11 @@ class _TerminalScreenState extends State<TerminalScreen>
                                     style: const TextStyle(color: errorRed),
                                   ),
                                 ),
+                                if (widget.onReconnect != null)
+                                  TextButton(
+                                    onPressed: _reconnect,
+                                    child: const Text('Reconnect'),
+                                  ),
                                 TextButton(
                                   onPressed: () => Navigator.of(context).pop(),
                                   child: const Text('Close'),

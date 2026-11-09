@@ -113,7 +113,9 @@ const standardTerminalTheme = TerminalTheme(
   brightWhite: Color(0xFFF2F2F2),
   searchHitBackground: Color(0xFFFFFF2B),
   searchHitBackgroundCurrent: Color(0xFF31FF26),
-  searchHitForeground: Color(0xFF000000),  // Bold text in a normal color is drawn bright, like Windows Terminal
+  searchHitForeground: Color(
+    0xFF000000,
+  ), // Bold text in a normal color is drawn bright, like Windows Terminal
   // (needs our xterm fork, see docs/xterm-fork.md).
   boldIsBright: true,
 );

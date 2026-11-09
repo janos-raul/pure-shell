@@ -254,6 +254,11 @@ Future<String?> _askPassword(BuildContext context, Host host) =>
 
 /// Password prompt, connect (with the one connect dialog), then the terminal
 /// or the right error. The password only lives in this function's locals.
+///
+/// The terminal's Reconnect button runs [establishConnection] again, so a
+/// reconnect goes through exactly the same steps as the first connect: host
+/// key check (never skipped), fingerprint/biometric prompt for a key, password
+/// prompt for a password. Nothing is remembered from the previous attempt.
 Future<void> connectToHost(
   BuildContext context, {
   required Host host,
@@ -263,9 +268,49 @@ Future<void> connectToHost(
   SocketFactory? socketFactory,
 }) async {
   final navigator = Navigator.of(context);
+  Future<SshConnection?> establish(BuildContext c) => establishConnection(
+    c,
+    host: host,
+    knownHosts: knownHosts,
+    keyService: keyService,
+    socketFactory: socketFactory,
+  );
+  final conn = await establish(context);
+  if (conn == null) return;
+  if (!context.mounted) {
+    conn.close();
+    return;
+  }
+  await navigator.push(
+    MaterialPageRoute<void>(
+      builder: (_) => TerminalScreen(
+        host: host,
+        connection: conn,
+        settings: settings,
+        onReconnect: establish,
+      ),
+    ),
+  );
+}
+
+/// The whole connect flow for one host. Returns the connected (and verified)
+/// connection, or null if the user cancelled or something failed (already
+/// explained on screen).
+Future<SshConnection?> establishConnection(
+  BuildContext context, {
+  required Host host,
+  required KnownHostsStore knownHosts,
+  required KeyService keyService,
+  SocketFactory? socketFactory,
+}) async {
+  final navigator = Navigator.of(context);
   final messenger = ScaffoldMessenger.of(context);
-  void snack(String message) =>
-      messenger.showSnackBar(SnackBar(content: Text(message)));
+  void snack(String message, {Duration? duration}) => messenger.showSnackBar(
+    SnackBar(
+      content: Text(message),
+      duration: duration ?? const Duration(seconds: 4),
+    ),
+  );
 
   // Key hosts log in with the key; only after an explicit "yes" to the
   // fallback question does the password path run for this attempt.
@@ -278,11 +323,11 @@ Future<void> connectToHost(
       key = host.keyId == null ? null : await keyService.get(host.keyId!);
       if (key == null) {
         snack('The key for this host is missing. Choose one in Edit host.');
-        return;
+        return null;
       }
     } else {
       password = await _askPassword(context, host);
-      if (password == null || !context.mounted) return;
+      if (password == null || !context.mounted) return null;
     }
 
     final controller = ConnectController(host: host, knownHosts: knownHosts);
@@ -292,8 +337,9 @@ Future<void> connectToHost(
       onTrustPrompt: controller.askTrust,
       socketFactory: socketFactory,
     );
-    if (!context.mounted) return;
+    if (!context.mounted) return null;
     var reconnect = false;
+    SshConnection? established;
     late final DialogRoute<void> route;
     void closeDialog() {
       if (route.isActive) navigator.removeRoute(route);
@@ -342,15 +388,7 @@ Future<void> connectToHost(
       case ConnectResult.firstUseAccepted:
         closeDialog();
         if (context.mounted) {
-          await navigator.push(
-            MaterialPageRoute<void>(
-              builder: (_) => TerminalScreen(
-                host: host,
-                connection: conn,
-                settings: settings,
-              ),
-            ),
-          );
+          established = conn;
         } else {
           conn.close();
         }
@@ -415,6 +453,7 @@ Future<void> connectToHost(
     }
     if (keepDialog) await route.completed;
     controller.dispose();
-    if (!reconnect || !context.mounted) return;
+    if (established != null) return established;
+    if (!reconnect || !context.mounted) return null;
   }
 }
