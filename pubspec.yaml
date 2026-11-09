@@ -55,7 +55,6 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
-  flutter_launcher_icons: ^0.14.4
   fake_async: ^1.3.3
 
 # For information on the generic Dart part of this file, see the
@@ -100,14 +99,5 @@ flutter:
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
 
-# App icon: a green ">_" prompt on a dark rounded square. Regenerate the launcher
-# files with: dart run flutter_launcher_icons
-flutter_launcher_icons:
-  android: "ic_launcher"
-  ios: false
-  image_path: "assets/icon/icon.png"
-  min_sdk_android: 28
-  adaptive_icon_background: "#0f1115"
-  adaptive_icon_foreground: "assets/icon/icon_foreground.png"
-  adaptive_icon_foreground_inset: 0
-  adaptive_icon_monochrome: "assets/icon/icon_monochrome.png"
+# App icon: generated from assets/icon/pure-shell-icon.svg's geometry with
+# tool/make-icons.py (vector drawables, no launcher-icon package).
