@@ -19,9 +19,9 @@ import '../hosts/host.dart';
 import '../hosts/known_hosts.dart';
 import '../keys/keystore_api.dart';
 import 'connect_result.dart';
+import 'keep_alive.dart';
 
 const connectTimeout = Duration(seconds: 15);
-const keepAliveInterval = Duration(seconds: 30);
 
 /// Hard limit for the whole connect flow (socket, handshake, authentication),
 /// not counting the time the user spends looking at the host key prompt.
@@ -169,6 +169,7 @@ class SshConnection {
   final _outcome = Completer<ConnectOutcome>();
   final _closedSignal = Completer<void>();
   SSHClient? _client;
+  SessionKeepAlive? _keepAlive;
   SSHSocket? _socket;
   SSHSession? _session;
   KeyAuth? _keyAuth;
@@ -248,13 +249,16 @@ class SshConnection {
         // Key login offers no password at all.
         onPasswordRequest: password == null ? null : () => password,
         identities: key == null ? null : [buildIdentity(key)],
-        keepAliveInterval: keepAliveInterval,
+        // dartssh2's own keep-alive is off: ours (SessionKeepAlive) times out
+        // unanswered pings and ends a dead connection.
+        keepAliveInterval: null,
         algorithms: SSHAlgorithms(
           hostkey: hostKeyPreference(storedType: storedKey?.type),
         ),
         onVerifyHostKey: verifyHostKey,
       );
       _client = client;
+      _keepAlive = SessionKeepAlive(ping: client.ping, onDead: _closeTransport);
       // Errors surface through authenticated and the socket watcher below;
       // keep done from reporting them a second time as unhandled.
       unawaited(client.done.catchError((Object _) {}));
@@ -337,11 +341,14 @@ class SshConnection {
       _closedSignal.complete();
     }
     _outcome.complete(outcome);
+    if (outcome.connected) _keepAlive?.start();
     if (_prompting) _keyAuth?.dismissPrompt?.call();
     if (!outcome.connected) _closeTransport();
   }
 
   void _closeTransport() {
+    _keepAlive?.stop();
+    _keepAlive = null;
     _session = null;
     try {
       _client?.close();
