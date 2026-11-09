@@ -28,9 +28,16 @@ const keyLossNotice =
     'second key.';
 
 class KeysScreen extends StatefulWidget {
-  const KeysScreen({super.key, required this.keyService});
+  const KeysScreen({
+    super.key,
+    required this.keyService,
+    this.startCreating = false,
+  });
 
   final KeyService keyService;
+
+  /// Go straight into creating a key (from the welcome screen).
+  final bool startCreating;
 
   @override
   State<KeysScreen> createState() => _KeysScreenState();
@@ -45,6 +52,11 @@ class _KeysScreenState extends State<KeysScreen> {
   void initState() {
     super.initState();
     _reload();
+    if (widget.startCreating) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _generate();
+      });
+    }
   }
 
   Future<void> _reload() async {

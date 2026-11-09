@@ -24,6 +24,7 @@ import '../keys/keys_screen.dart';
 import '../settings/settings_screen.dart';
 import 'connect_flow.dart';
 import 'host_edit_screen.dart';
+import 'welcome_view.dart';
 
 class HostListScreen extends StatefulWidget {
   const HostListScreen({
@@ -49,6 +50,7 @@ class HostListScreen extends StatefulWidget {
 
 class _HostListScreenState extends State<HostListScreen> {
   List<Host>? _hosts;
+  var _hasKeys = false;
 
   @override
   void initState() {
@@ -58,7 +60,13 @@ class _HostListScreenState extends State<HostListScreen> {
 
   Future<void> _reload() async {
     final list = await widget.hosts.list();
-    if (mounted) setState(() => _hosts = list);
+    final keys = await widget.keyService.list();
+    if (mounted) {
+      setState(() {
+        _hosts = list;
+        _hasKeys = keys.isNotEmpty;
+      });
+    }
   }
 
   Future<void> _edit([Host? host]) async {
@@ -75,7 +83,7 @@ class _HostListScreenState extends State<HostListScreen> {
     await _reload();
   }
 
-  void _openMenuItem(String item) {
+  Future<void> _openMenuItem(String item) async {
     final Widget page = switch (item) {
       'keys' => KeysScreen(keyService: widget.keyService),
       'help' => const HelpScreen(),
@@ -86,7 +94,19 @@ class _HostListScreenState extends State<HostListScreen> {
         terminal: widget.settings,
       ),
     };
-    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => page));
+    await Navigator.of(context)
+        .push(MaterialPageRoute<void>(builder: (_) => page));
+    await _reload(); // a key may have been made or deleted
+  }
+
+  Future<void> _createKey() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) =>
+            KeysScreen(keyService: widget.keyService, startCreating: true),
+      ),
+    );
+    await _reload();
   }
 
   Future<void> _delete(Host host) async {
@@ -150,7 +170,14 @@ class _HostListScreenState extends State<HostListScreen> {
       body: hosts == null
           ? const SizedBox.shrink()
           : hosts.isEmpty
-          ? const Center(child: Text('No hosts yet. Tap + to add one.'))
+          ? WelcomeView(
+              hasKeys: _hasKeys,
+              onAddHost: () => _edit(),
+              onCreateKey: _createKey,
+              onHelp: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const HelpScreen()),
+              ),
+            )
           : ListView.builder(
               itemCount: hosts.length,
               itemBuilder: (context, i) {
