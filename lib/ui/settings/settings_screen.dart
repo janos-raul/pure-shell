@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/lock/app_lock_controller.dart';
 import '../../core/lock/app_lock_settings.dart';
+import '../../core/ssh/session_keeper.dart';
 import '../../core/storage/screenshot_settings.dart';
 import '../../core/storage/terminal_settings.dart';
 
@@ -68,10 +69,14 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   var _inputMode = InputMode.direct;
   var _colors = TerminalColors.standard;
+  var _keepSessions = true;
 
   @override
   void initState() {
     super.initState();
+    widget.terminal.loadKeepSessions().then((v) {
+      if (mounted) setState(() => _keepSessions = v);
+    });
     widget.terminal.loadInputMode().then((m) {
       if (mounted) setState(() => _inputMode = m);
     });
@@ -148,6 +153,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (chosen != null) await widget.screenshots.setAllowed(chosen);
   }
 
+  Future<void> _chooseKeepSessions() async {
+    final chosen = await showChoiceDialog<bool>(
+      context,
+      title: 'Keep sessions alive',
+      current: _keepSessions,
+      options: const [
+        ChoiceOption(
+          true,
+          'On',
+          'Shows a notification with the number of sessions (nothing else) '
+              'while you are connected, so Android does not cut the '
+              'connections a few seconds after you leave the app.',
+        ),
+        ChoiceOption(
+          false,
+          'Off',
+          'No notification. Android ends your sessions shortly after you '
+              'leave the app.',
+        ),
+      ],
+    );
+    if (chosen == null) return;
+    setState(() => _keepSessions = chosen);
+    await widget.terminal.saveKeepSessions(chosen);
+    await SessionKeeper.instance.setEnabled(chosen);
+  }
+
   Future<void> _chooseInputMode() async {
     final chosen = await showChoiceDialog<InputMode>(
       context,
@@ -210,6 +242,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: const Text('Allow screenshots'),
                 subtitle: Text(widget.screenshots.allowed ? 'On' : 'Off'),
                 onTap: _chooseScreenshots,
+              ),
+              const _Section('Connection'),
+              ListTile(
+                title: const Text('Keep sessions alive'),
+                subtitle: Text(_keepSessions ? 'On' : 'Off'),
+                onTap: _chooseKeepSessions,
               ),
               const _Section('Terminal'),
               ListTile(

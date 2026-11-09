@@ -46,6 +46,8 @@ class TerminalSettings {
   static const fontSizeKey = 'terminal.fontSize';
   static const colorsKey = 'terminal.colors';
   static const inputModeKey = 'terminal.inputMode';
+  static const keepSessionsKey = 'connection.keepSessions';
+  static const notificationAskedKey = 'connection.notificationAsked';
 
   /// About 60+ columns in portrait on a Pixel 7-sized screen.
   static const defaultFontSize = 11.0;
@@ -88,4 +90,19 @@ class TerminalSettings {
 
   Future<void> saveInputMode(InputMode mode) =>
       _store.write(inputModeKey, mode.name);
+
+  /// Keep connected sessions alive in the background (foreground service with
+  /// a notification). On by default.
+  Future<bool> loadKeepSessions() async =>
+      (await _store.read(keepSessionsKey)) != 'false';
+
+  Future<void> saveKeepSessions(bool keep) =>
+      _store.write(keepSessionsKey, keep.toString());
+
+  /// Whether the notification permission was explained and asked for once.
+  Future<bool> loadNotificationAsked() async =>
+      (await _store.read(notificationAskedKey)) == 'true';
+
+  Future<void> saveNotificationAsked() =>
+      _store.write(notificationAskedKey, 'true');
 }

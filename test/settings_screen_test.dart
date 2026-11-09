@@ -12,6 +12,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pureshell/core/keys/keystore_api.dart';
 import 'package:pureshell/core/lock/app_lock_controller.dart';
 import 'package:pureshell/core/lock/app_lock_settings.dart';
+import 'package:pureshell/core/ssh/session_keeper.dart';
 import 'package:pureshell/core/storage/screenshot_settings.dart';
 import 'package:pureshell/core/storage/secure_store.dart';
 import 'package:pureshell/core/storage/terminal_settings.dart';
@@ -140,5 +141,28 @@ void main() {
       isNot('monospace'),
     );
     expect(monoStyle.fontFamily, 'monospace');
+  });
+
+  testWidgets('Connection: keep sessions alive is on by default and saved', (
+    t,
+  ) async {
+    await pump(t);
+    expect(find.text('Connection'), findsOneWidget);
+    expect(find.text('Keep sessions alive'), findsOneWidget);
+    expect(await terminal.loadKeepSessions(), isTrue);
+
+    await t.tap(find.text('Keep sessions alive'));
+    await t.pumpAndSettle();
+    await t.tap(inDialog('Off'));
+    await t.pumpAndSettle();
+    expect(await terminal.loadKeepSessions(), isFalse);
+    expect(SessionKeeper.instance.enabled, isFalse);
+
+    await t.tap(find.text('Keep sessions alive'));
+    await t.pumpAndSettle();
+    await t.tap(inDialog('On'));
+    await t.pumpAndSettle();
+    expect(await terminal.loadKeepSessions(), isTrue);
+    expect(SessionKeeper.instance.enabled, isTrue);
   });
 }

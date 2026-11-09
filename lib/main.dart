@@ -17,6 +17,7 @@ import 'core/keys/key_service.dart';
 import 'core/keys/keystore_api.dart';
 import 'core/lock/app_lock_controller.dart';
 import 'core/lock/app_lock_settings.dart';
+import 'core/ssh/session_keeper.dart';
 import 'core/storage/screenshot_settings.dart';
 import 'core/storage/secure_store.dart';
 import 'core/storage/terminal_settings.dart';
@@ -44,13 +45,17 @@ Future<void> main() async {
   await lock.init();
   final screenshots = ScreenshotSettings(store);
   await screenshots.init();
+  final terminalSettings = TerminalSettings(store);
+  await SessionKeeper.instance.setEnabled(
+    await terminalSettings.loadKeepSessions(),
+  );
   final knownHosts = KnownHostsStore(store);
   final hosts = HostRepository(store, knownHosts: knownHosts);
   runApp(
     PureShellApp(
       hosts: hosts,
       knownHosts: knownHosts,
-      settings: TerminalSettings(store),
+      settings: terminalSettings,
       keyService: KeyService(keystore, KeyRepository(store)),
       lock: lock,
       screenshots: screenshots,

@@ -13,7 +13,9 @@ import android.content.ClipData
 import android.content.ClipDescription
 import android.content.ClipboardManager
 import android.content.Context
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.PersistableBundle
 import android.os.Bundle
@@ -35,6 +37,33 @@ class MainActivity : FlutterFragmentActivity() {
     }
 
     private var inputView: TerminalInputView? = null
+    private var pendingNotificationResult: MethodChannel.Result? = null
+    private val notificationRequestCode = 4711
+
+    private fun notificationsAllowed(): Boolean =
+        Build.VERSION.SDK_INT < 33 ||
+            checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) ==
+            PackageManager.PERMISSION_GRANTED
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray,
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == notificationRequestCode) {
+            pendingNotificationResult?.success(notificationsAllowed())
+            pendingNotificationResult = null
+        }
+    }
+
+    override fun onDestroy() {
+        // The Flutter engine, and with it every session, goes with the
+        // activity: nothing left for the service to keep alive.
+        SessionService.onDisconnectAll = null
+        stopService(Intent(this, SessionService::class.java))
+        super.onDestroy()
+    }
 
     private fun inputView(channel: MethodChannel): TerminalInputView =
         inputView ?: TerminalInputView(this) { event ->
@@ -80,6 +109,51 @@ class MainActivity : FlutterFragmentActivity() {
                 "detach" -> {
                     inputView?.detach(call.argument<Boolean>("hide") ?: true)
                     result.success(null)
+                }
+                else -> result.notImplemented()
+            }
+        }
+
+        // Keep-alive foreground service: Dart reports how many sessions are
+        // connected; the notification shows that number and nothing else.
+        val sessionsChannel = MethodChannel(messenger, "eu.pureshell.app/sessions")
+        SessionService.onDisconnectAll = {
+            runOnUiThread { sessionsChannel.invokeMethod("disconnectAll", null) }
+        }
+        sessionsChannel.setMethodCallHandler { call, result ->
+            when (call.method) {
+                "update" -> {
+                    val count = call.argument<Int>("count") ?: 0
+                    val intent = Intent(this, SessionService::class.java)
+                        .setAction(SessionService.ACTION_UPDATE)
+                        .putExtra(SessionService.EXTRA_COUNT, count)
+                    try {
+                        if (count <= 0) {
+                            stopService(Intent(this, SessionService::class.java))
+                        } else if (SessionService.running) {
+                            startService(intent)
+                        } else {
+                            startForegroundService(intent)
+                        }
+                    } catch (e: Exception) {
+                        // Not allowed to start a foreground service right now
+                        // (app in the background): the sessions just are not
+                        // kept alive. Nothing to log.
+                    }
+                    result.success(null)
+                }
+                "notificationsAllowed" -> result.success(notificationsAllowed())
+                "requestNotifications" -> {
+                    if (notificationsAllowed()) {
+                        result.success(true)
+                    } else {
+                        pendingNotificationResult?.success(false)
+                        pendingNotificationResult = result
+                        requestPermissions(
+                            arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                            notificationRequestCode,
+                        )
+                    }
                 }
                 else -> result.notImplemented()
             }

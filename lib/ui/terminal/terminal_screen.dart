@@ -15,6 +15,7 @@ import 'package:xterm/xterm.dart';
 
 import '../../core/hosts/host.dart';
 import '../../core/lock/app_lock_controller.dart';
+import '../../core/ssh/session_keeper.dart';
 import '../../core/ssh/ssh_connection.dart';
 import '../../core/storage/terminal_settings.dart';
 import '../theme.dart';
@@ -323,6 +324,12 @@ class _TerminalScreenState extends State<TerminalScreen>
       final columns = _terminal.viewWidth;
       final rows = _terminal.viewHeight;
       final session = await conn.openShell(columns, rows);
+      if (!mounted || !identical(conn, _conn)) return;
+      // Counted for the keep-alive notification; "Disconnect all" ends it.
+      unawaited(
+        SessionKeeper.instance.opened(this, _disconnectFromNotification),
+      );
+      unawaited(_maybeAskNotifications());
       _syncInput(); // there is a session now: input can be accepted
       _resizer.markSent(columns, rows); // the server has this size already
       _subscriptions
@@ -350,8 +357,54 @@ class _TerminalScreenState extends State<TerminalScreen>
     }
   }
 
+  /// "Disconnect all" in the notification: works without unlocking.
+  void _disconnectFromNotification() {
+    if (!mounted || _disconnected) return;
+    _ended('Disconnected from the notification.');
+    _conn.close();
+  }
+
+  /// After the first connect: explain the notification once, then ask for the
+  /// permission (Android 13+). Never blocks; "Not now" is fine, the service
+  /// still keeps the sessions alive, only its notification is hidden.
+  Future<void> _maybeAskNotifications() async {
+    final keeper = SessionKeeper.instance;
+    if (!keeper.enabled) return;
+    if (await widget.settings.loadNotificationAsked()) return;
+    if (await keeper.notificationsAllowed()) return;
+    if (!mounted || !_sessionLive) return;
+    await widget.settings.saveNotificationAsked();
+    if (!mounted) return;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: const Text('Keep sessions alive'),
+        content: const Text(
+          'While you are connected, PureShell shows a notification with the '
+          'number of sessions, so Android does not cut them a few seconds '
+          'after you leave the app. It never shows hostnames, usernames or '
+          'terminal content.\n\nAndroid will ask to allow notifications. '
+          'You can say no: sessions are still kept alive, just without the '
+          'notification.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(c, false),
+            child: const Text('Not now'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(c, true),
+            child: const Text('Continue'),
+          ),
+        ],
+      ),
+    );
+    if (ok == true) await keeper.requestNotifications();
+  }
+
   void _ended(String message) {
     if (!mounted || _disconnected) return;
+    unawaited(SessionKeeper.instance.closed(this));
     setState(() {
       _disconnected = true;
       _endMessage = message;
@@ -546,6 +599,7 @@ class _TerminalScreenState extends State<TerminalScreen>
     WidgetsBinding.instance.removeObserver(this);
     _lock?.removeListener(_syncInput);
     _focus.removeListener(_syncInput);
+    unawaited(SessionKeeper.instance.closed(this));
     _direct?.dispose();
     _boxText.dispose();
     _termController.dispose();
