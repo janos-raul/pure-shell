@@ -12,6 +12,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pureshell/core/hosts/host.dart';
 import 'package:pureshell/core/hosts/host_key_command.dart';
@@ -293,6 +294,45 @@ void main() {
       await t.pumpAndSettle();
       expect(find.text('Put the username in the Username field'), findsOne);
       expect(await HostRepository(store).list(), isEmpty);
+    });
+  });
+
+  group('host form text sizes', () {
+    testWidgets('the password fallback title is as big as the fields', (
+      t,
+    ) async {
+      final store = MemorySecureStore();
+      final service = KeyService(
+        FakeKeystore(),
+        KeyRepository(store),
+        random: Random(1),
+      );
+      await service.generate(name: 'k', comment: 'c');
+      await t.pumpWidget(
+        MaterialApp(
+          theme: pureShellTheme(),
+          home: HostEditScreen(
+            hosts: HostRepository(store),
+            knownHosts: KnownHostsStore(store),
+            keyService: service,
+          ),
+        ),
+      );
+      await t.pumpAndSettle();
+      await t.tap(find.text('Key'));
+      await t.pumpAndSettle();
+      double sizeOf(Finder f) =>
+          t.renderObject<RenderParagraph>(f.first).text.style!.fontSize!;
+      final field = t
+          .widget<EditableText>(find.byType(EditableText).first)
+          .style
+          .fontSize!;
+      final title = sizeOf(
+        find.text('Also allow password if the server rejects the key'),
+      );
+      final caption = sizeOf(find.textContaining('You are asked before'));
+      expect(title, field);
+      expect(caption, lessThan(title)); // one title, one smaller caption
     });
   });
 

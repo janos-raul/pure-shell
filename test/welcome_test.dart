@@ -75,6 +75,23 @@ void main() {
     expect(find.textContaining('No hosts yet'), findsNothing);
   });
 
+  testWidgets('no + button while the welcome is shown, it comes with hosts', (
+    t,
+  ) async {
+    await pumpList(t);
+    expect(find.byType(FloatingActionButton), findsNothing);
+    expect(find.text('Add a host'), findsOneWidget); // the same action
+
+    await HostRepository(store).upsert(
+      const Host(id: '1', label: 'Web', hostname: 'example.com', username: 'u'),
+    );
+    // A new list screen (the old one keeps what it loaded).
+    await t.pumpWidget(const MaterialApp(home: SizedBox()));
+    await pumpList(t);
+    expect(find.byType(FloatingActionButton), findsOneWidget);
+    expect(find.byTooltip('Add host'), findsOneWidget);
+  });
+
   testWidgets('Add a host opens the host form', (t) async {
     await pumpList(t);
     await t.tap(find.text('Add a host'));

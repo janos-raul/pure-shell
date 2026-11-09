@@ -162,11 +162,14 @@ class _HostListScreenState extends State<HostListScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _edit(),
-        tooltip: 'Add host',
-        child: const Icon(Icons.add),
-      ),
+      // Not while the welcome is shown: its "Add a host" is the same action.
+      floatingActionButton: (hosts == null || hosts.isEmpty)
+          ? null
+          : FloatingActionButton(
+              onPressed: () => _edit(),
+              tooltip: 'Add host',
+              child: const Icon(Icons.add),
+            ),
       body: hosts == null
           ? const SizedBox.shrink()
           : hosts.isEmpty
