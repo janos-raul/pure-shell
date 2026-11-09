@@ -1,0 +1,34 @@
+# Publishes the github-pages/ folder to GitHub Pages (pure-shell.eu).
+# Runs on every push to main that touches github-pages/, or manually from the Actions tab.
+# The custom domain is set in the repo's Pages settings; github-pages/CNAME is kept only as a record of it.
+name: Deploy website
+
+on:
+  push:
+    branches: [main]
+    paths: ["github-pages/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: github-pages
+      - id: deployment
+        uses: actions/deploy-pages@v5

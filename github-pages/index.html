@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pure-Shell | A private, open-source SSH client for Android</title>
+  <meta name="description" content="Pure-Shell is a private, open-source SSH client for Android with hardware-backed keys, strict host key checking and no tracking.">
+  <meta name="color-scheme" content="dark light">
+  <meta property="og:title" content="Pure-Shell | A private, open-source SSH client for Android">
+  <meta property="og:description" content="Hardware-backed keys, strict host key checking, no tracking. Open source under the GPL.">
+  <meta property="og:image" content="https://pure-shell.eu/web_assets/og_image.png">
+  <meta property="og:url" content="https://pure-shell.eu/">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Pure-Shell | A private, open-source SSH client for Android">
+  <meta name="twitter:description" content="Hardware-backed keys, strict host key checking, no tracking. Open source under the GPL.">
+  <meta name="twitter:image" content="https://pure-shell.eu/web_assets/og_image.png">
+  <link rel="icon" type="image/png" href="web_assets/favicon.png">
+  <link rel="apple-touch-icon" href="web_assets/apple-touch-icon.png">
+  <link rel="canonical" href="https://pure-shell.eu/">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <nav class="nav" aria-label="Main">
+    <div class="wrap">
+      <a class="brand" href="index.html">
+        <img src="web_assets/icon.svg" width="32" height="32" alt="">
+        <span>Pure-Shell</span>
+      </a>
+      <ul>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#private">Privacy</a></li>
+        <li><a href="#get">Get it</a></li>
+        <li><a href="https://github.com/janos-raul/pure-shell">GitHub</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="wrap">
+      <div>
+        <h1>Pure-Shell</h1>
+        <p class="lead">A private, open-source SSH client for Android.</p>
+        <p>It connects to your servers and gets out of the way. No accounts, no analytics, no ads.</p>
+        <div class="cta">
+          <span class="btn primary" aria-disabled="true">Google Play: coming soon</span>
+          <a class="btn" href="https://github.com/janos-raul/pure-shell">Source on GitHub</a>
+        </div>
+      </div>
+      <img class="icon" src="web_assets/icon.svg" width="200" height="200" alt="The Pure-Shell icon: a green terminal window with a &gt;_ prompt">
+    </div>
+  </header>
+
+  <main>
+    <section id="features">
+      <div class="wrap">
+        <h2>Built for people who care where their keys live</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>Hardware-backed keys</h3>
+            <p>Keys are made inside your phone's secure hardware (StrongBox or TEE) where it exists. They can't be exported, and every use asks for your fingerprint or screen lock. A phone without secure hardware gets a clearly labelled software key.</p>
+          </div>
+          <div class="card">
+            <h3>Strict host keys</h3>
+            <p>Trust on first use, with SHA-256 fingerprints and the exact command to check them on your server. A changed server key is a hard block: nothing is sent, and there is no "connect anyway" button.</p>
+          </div>
+          <div class="card">
+            <h3>No tracking</h3>
+            <p>No accounts, analytics, ads or crash reporting. The app talks to the servers you add and to nothing else.</p>
+          </div>
+          <div class="card">
+            <h3>Open source</h3>
+            <p>Licensed under the GNU GPL, version 3 or later. Read the code, build it yourself, change it.</p>
+          </div>
+          <div class="card">
+            <h3>Stays connected</h3>
+            <p>Sessions survive leaving the app. A notification shows only how many are active: never hostnames, usernames or terminal text.</p>
+          </div>
+          <div class="card">
+            <h3>A keyboard that behaves</h3>
+            <p>A command box with swipe typing and suggestions, bracketed paste so pasted text is never run line by line, and an app lock that covers everything the moment you leave.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="private">
+      <div class="wrap">
+        <h2>Private by design</h2>
+        <ul class="checks">
+          <li>Hosts are stored only on your phone. Passwords are asked every time and never stored.</li>
+          <li>Keys live in the Android Keystore. They are not backed up and never leave the device.</li>
+          <li>Screenshots and the recent-apps preview are blocked unless you allow them.</li>
+          <li>Nothing you type or see in a session is logged.</li>
+        </ul>
+        <p>Read the <a href="privacy.html">privacy policy</a> and the <a href="terms/">terms</a>.</p>
+      </div>
+    </section>
+
+    <section id="get">
+      <div class="wrap">
+        <h2>Get Pure-Shell</h2>
+        <p>Pure-Shell will be on Google Play as a paid app: the signed, maintained build, with updates. The source code is free: anyone may build it under the GPL.</p>
+        <div class="cta">
+          <span class="btn primary" aria-disabled="true">Google Play: coming soon</span>
+          <a class="btn" href="https://github.com/janos-raul/pure-shell">Build it from source</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <span>&copy; 2026 Pure-Shell. Designed for privacy.</span>
+      <ul>
+        <li><a href="privacy.html">Privacy</a></li>
+        <li><a href="terms/">Terms</a></li>
+        <li><a href="https://github.com/janos-raul/pure-shell">GitHub</a></li>
+        <li><a href="mailto:janos.szabo@gmail.com">Contact</a></li>
+      </ul>
+    </div>
+  </footer>
+
+</body>
+</html>

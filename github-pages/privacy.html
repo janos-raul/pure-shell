@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy Policy | Pure-Shell</title>
+  <meta name="description" content="Pure-Shell collects no data. No analytics, ads, accounts or crash reporting. Hosts and keys stay on your device.">
+  <meta name="color-scheme" content="dark light">
+  <link rel="icon" type="image/png" href="web_assets/favicon.png">
+  <link rel="apple-touch-icon" href="web_assets/apple-touch-icon.png">
+  <link rel="canonical" href="https://pure-shell.eu/privacy.html">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <nav class="nav" aria-label="Main">
+    <div class="wrap">
+      <a class="brand" href="index.html">
+        <img src="web_assets/icon.svg" width="32" height="32" alt="">
+        <span>Pure-Shell</span>
+      </a>
+      <ul>
+        <li><a href="index.html">Back to Home</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="doc docpage">
+    <h1>Privacy Policy</h1>
+    <p class="date">Last updated: November 9, 2026</p>
+
+    <p>Pure-Shell is an SSH client for Android. It is designed so that your data stays with you: it does not collect, store, or transmit any personal data to the developer.</p>
+
+    <h2>1. No Data Collection</h2>
+    <p>Pure-Shell does not collect, share, or process any personal information about you. The app does not use:</p>
+    <ul>
+      <li>Analytics or tracking technologies</li>
+      <li>Advertising SDKs</li>
+      <li>Accounts or sign-in</li>
+      <li>Crash reporting</li>
+      <li>Any server or cloud service run by the developer</li>
+    </ul>
+    <p>Nothing is sent to the developer. The app has no way to do so.</p>
+
+    <h2>2. Network Access</h2>
+    <p>Pure-Shell uses the internet permission for one thing: to connect, over SSH, to the servers you add yourself. It makes no other network requests. Links shown in the app (for example the source code address) are plain text you can copy; the app does not open a browser or load anything from the web.</p>
+
+    <h2>3. What Is Stored on Your Device</h2>
+    <ul>
+      <li><strong>Hosts:</strong> the label, hostname, port and username you enter, and which login method each uses. They are kept in the device's encrypted storage, only on your phone.</li>
+      <li><strong>Passwords:</strong> never saved. Pure-Shell asks for a password every time it is needed and does not store it anywhere.</li>
+      <li><strong>SSH keys:</strong> generated and kept in the Android Keystore, in the phone's secure hardware (StrongBox or TEE) where the phone has it. They can't be exported and never leave the device. A phone without secure hardware gets a clearly labelled software key, which is encrypted by a Keystore key.</li>
+      <li><strong>Trusted host keys:</strong> the fingerprint of each server's key you chose to trust, so that a changed key can be detected.</li>
+      <li><strong>Settings:</strong> your choices, such as font size, colours, input mode and app lock.</li>
+    </ul>
+    <p>Terminal content is shown on screen and kept in memory while a session is open. It is not saved, and nothing you type or see in a session is logged. Android's backup and data extraction are switched off for the app, so none of this is copied to a cloud backup.</p>
+    <p>Because everything is on your device, uninstalling Pure-Shell or clearing its data removes all of it, including your keys.</p>
+
+    <h2>4. Fingerprint and Screen Lock</h2>
+    <p>The app asks Android to confirm it is you, with your fingerprint or screen lock, to unlock the app and to use a key. This is handled entirely by Android. Pure-Shell never receives your fingerprint or any biometric data, only the answer yes or no.</p>
+
+    <h2>5. Notifications and Background Service</h2>
+    <p>Android cuts off the network of an app that is in the background, which would end your SSH sessions. While you are connected, Pure-Shell therefore runs a small background service with a notification. It uses the notification permission, and nothing else, for that. The notification shows only how many sessions are active (for example "2 active sessions"): never hostnames, usernames or terminal content. You can turn this off in Settings, and you can deny the notification permission; the app still works.</p>
+
+    <h2>6. Keyboard and Clipboard</h2>
+    <p>Pure-Shell asks your keyboard not to learn from or store what you type in it. This is a request: a third-party keyboard may ignore it. The app reads the clipboard only when you tap Paste, never in the background. Text you copy from the terminal is marked as sensitive on Android 13 and later, so the system's clipboard preview does not show it.</p>
+
+    <h2>7. Screenshots</h2>
+    <p>By default Pure-Shell blocks screenshots, screen recording and the recent-apps preview, so what is on screen stays private. You can allow screenshots in Settings.</p>
+
+    <h2>8. The Servers You Connect To</h2>
+    <p>Pure-Shell connects only to servers you choose. What those servers do with your connection is up to them and you; the developer has no access to it. SSH encrypts the traffic between your phone and the server.</p>
+
+    <h2>9. Google Play</h2>
+    <p>If you buy Pure-Shell on Google Play, the purchase, billing and refunds are handled by Google under Google's own policies. Pure-Shell itself receives nothing about your purchase or your Google account.</p>
+
+    <h2>10. Children's Privacy</h2>
+    <p>Pure-Shell does not collect any data from users of any age, including children.</p>
+
+    <h2>11. Changes to This Policy</h2>
+    <p>If this privacy policy is updated, the new version will be posted on this page, and significant changes will be noted in the app's Google Play release notes.</p>
+
+    <h2>12. Contact</h2>
+    <p>If you have questions about this privacy policy, you can contact the developer:</p>
+    <ul>
+      <li><a href="mailto:janos.szabo@gmail.com">janos.szabo@gmail.com</a></li>
+      <li><a href="https://pure-shell.eu">https://pure-shell.eu</a></li>
+    </ul>
+
+    <p class="back"><a href="index.html">&larr; Back to Home</a></p>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <span>&copy; 2026 Pure-Shell. Designed for privacy.</span>
+      <ul>
+        <li><a href="privacy.html">Privacy</a></li>
+        <li><a href="terms/">Terms</a></li>
+        <li><a href="https://github.com/janos-raul/pure-shell">GitHub</a></li>
+        <li><a href="mailto:janos.szabo@gmail.com">Contact</a></li>
+      </ul>
+    </div>
+  </footer>
+
+</body>
+</html>
