@@ -67,7 +67,7 @@ void main() {
 
   group('public key', () {
     test('authorized_keys line matches ssh-keygen output plus the comment', () {
-      expect(authorizedKeysLine(q), '$_line pureshell');
+      expect(authorizedKeysLine(q), '$_line pure-shell');
       expect(authorizedKeysLine(q, comment: 'laptop key'), '$_line laptop key');
       expect(authorizedKeysLine(q, comment: '  '), _line);
     });
@@ -99,7 +99,7 @@ void main() {
     });
 
     test('default comment carries nothing personal', () {
-      expect(defaultKeyComment, 'pureshell');
+      expect(defaultKeyComment, 'pure-shell');
     });
   });
 

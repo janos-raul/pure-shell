@@ -26,7 +26,7 @@ void main() {
 
   test('blob and line match ssh-keygen output', () {
     expect(ed25519PublicKeyBlob(pk), blob);
-    expect(ed25519AuthorizedKeysLine(pk), 'ssh-ed25519 $_blobB64 pureshell');
+    expect(ed25519AuthorizedKeysLine(pk), 'ssh-ed25519 $_blobB64 pure-shell');
   });
 
   test('fingerprint equals ssh-keygen -lf', () {

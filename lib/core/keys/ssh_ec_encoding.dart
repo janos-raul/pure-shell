@@ -19,7 +19,11 @@ const ecdsaP256Type = 'ecdsa-sha2-nistp256';
 const ecdsaP256Curve = 'nistp256';
 
 /// Default key comment. Nothing personal: no device name, no username.
-const defaultKeyComment = 'pureshell';
+const defaultKeyComment = 'pure-shell';
+
+/// What keys made before the comment was stored (and before the rename) got.
+/// A stored key without a comment keeps this: existing keys never change.
+const legacyKeyComment = 'pureshell';
 
 class SshEncodingException implements Exception {
   const SshEncodingException(this.message);

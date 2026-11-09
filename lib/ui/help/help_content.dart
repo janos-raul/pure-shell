@@ -91,7 +91,7 @@ final List<HelpTopic> helpTopics = [
         'You can write `from=` in front of the key on its line to say where '
         'it may log in from, for example:',
       ),
-      HelpCommand('from="192.168.1.0/24" $ecdsaP256Type AAAA... pureshell'),
+      HelpCommand('from="192.168.1.0/24" $ecdsaP256Type AAAA... pure-shell'),
       const HelpText(
         "On your home Wi-Fi the server sees your phone's address on the local "
         'network (for example 192.168.1.23), so a local subnet like this '

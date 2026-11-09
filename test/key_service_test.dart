@@ -43,9 +43,9 @@ void main() {
     expect(key.kind, KeyKind.hardwareEcdsa);
     expect(key.level, SecurityLevel.tee);
     expect(key.isSoftware, isFalse);
-    expect(key.comment, 'pureshell');
+    expect(key.comment, 'pure-shell');
     expect(key.authorizedKeysLine, startsWith('ecdsa-sha2-nistp256 AAAA'));
-    expect(key.authorizedKeysLine, endsWith(' pureshell'));
+    expect(key.authorizedKeysLine, endsWith(' pure-shell'));
     expect(key.fingerprint, startsWith('SHA256:'));
 
     final blob = await service.sign(key, message);
@@ -187,10 +187,46 @@ void main() {
     expect(k.publicKey, key.publicKey);
   });
 
+  group('the comment of existing keys', () {
+    Future<Map<String, dynamic>> storedJson() async {
+      final key = await service.generate(name: 'old');
+      return Map<String, dynamic>.from(key.toJson());
+    }
+
+    test('a key made before the rename keeps its comment', () async {
+      final json = await storedJson()
+        ..['comment'] = 'pureshell';
+      final back = SshKey.fromJson(json);
+      expect(back.comment, 'pureshell');
+      expect(back.authorizedKeysLine, endsWith(' pureshell'));
+      // ... also after being saved again.
+      expect(SshKey.fromJson(back.toJson()).comment, 'pureshell');
+    });
+
+    test('a stored key with no comment at all keeps the old default', () async {
+      final json = await storedJson()
+        ..remove('comment');
+      expect(SshKey.fromJson(json).comment, 'pureshell');
+      expect(legacyKeyComment, 'pureshell');
+    });
+
+    test('a comment the user chose is never touched', () async {
+      final json = await storedJson()
+        ..['comment'] = 'work phone';
+      expect(SshKey.fromJson(json).comment, 'work phone');
+    });
+
+    test('only new keys get pure-shell', () async {
+      final key = await service.generate(name: 'new');
+      expect(key.comment, 'pure-shell');
+      expect(defaultKeyComment, 'pure-shell');
+    });
+  });
+
   test('keys carry nothing personal by default', () async {
     final key = await service.generate(name: 'x');
-    expect(key.authorizedKeysLine.split(' ').last, 'pureshell');
-    expect(defaultKeyComment, 'pureshell');
+    expect(key.authorizedKeysLine.split(' ').last, 'pure-shell');
+    expect(defaultKeyComment, 'pure-shell');
   });
 
   test(

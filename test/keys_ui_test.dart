@@ -118,16 +118,16 @@ void main() {
     expect(find.text('StrongBox'), findsOneWidget);
   });
 
-  testWidgets('the comment defaults to pureshell and is editable', (t) async {
+  testWidgets('the comment defaults to pure-shell and is editable', (t) async {
     await service.markLossNoticeShown();
     await openKeys(t);
     await t.tap(find.byType(FloatingActionButton));
     await t.pumpAndSettle();
-    expect(find.widgetWithText(TextFormField, 'pureshell'), findsOneWidget);
+    expect(find.widgetWithText(TextFormField, 'pure-shell'), findsOneWidget);
     await t.enterText(find.widgetWithText(TextFormField, 'Name'), 'k');
     await t.tap(find.text('Create'));
     await t.pumpAndSettle();
-    expect((await service.list()).single.comment, 'pureshell');
+    expect((await service.list()).single.comment, 'pure-shell');
   });
 
   testWidgets('without a screen lock: a plain message, no key dialog', (

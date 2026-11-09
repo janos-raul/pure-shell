@@ -123,7 +123,7 @@ class SshKey {
     level: SecurityLevel.values.byName(j['level'] as String),
     publicKey: base64.decode(j['publicKey'] as String),
     createdAt: DateTime.parse(j['createdAt'] as String),
-    comment: (j['comment'] as String?) ?? ec.defaultKeyComment,
+    comment: (j['comment'] as String?) ?? ec.legacyKeyComment,
     wrapped: j['wrapped'] == null
         ? null
         : WrappedSeed.fromJson(j['wrapped'] as Map<String, dynamic>),
