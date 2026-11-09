@@ -20,6 +20,7 @@ import '../../core/storage/terminal_settings.dart';
 import '../theme.dart';
 import '../lock/app_lock_gate.dart';
 import '../private_input.dart';
+import 'command_box.dart';
 import 'direct_input.dart';
 import 'extra_keys.dart';
 import 'pinch_zoom.dart';
@@ -78,6 +79,14 @@ class _TerminalScreenState extends State<TerminalScreen>
   var _resumed = true;
   AppLockController? _lock;
 
+  /// The command-line box. Its text lives only in this controller and is
+  /// cleared whenever the box closes, the app is covered, or the session ends.
+  final _boxText = TextEditingController();
+  final _boxFocus = FocusNode();
+  var _boxOpen = false;
+  var _boxKeepOpen = false;
+  var _boxPrevLength = 0;
+
   var _barVisible = false;
   Timer? _barTimer;
 
@@ -91,11 +100,15 @@ class _TerminalScreenState extends State<TerminalScreen>
 
   /// Typed input may reach the server only while the app is in front,
   /// unlocked, and the shell session is alive.
-  bool get _acceptingInput =>
+  bool get _sessionLive =>
       _resumed &&
       !(_lock?.hidden ?? false) &&
       !_disconnected &&
       _conn.session != null;
+
+  /// Same, and the native Direct-mode view is the one meant to be typing: not
+  /// while the command-line box has the keyboard.
+  bool get _acceptingInput => _sessionLive && !_boxOpen;
 
   @override
   void initState() {
@@ -128,12 +141,110 @@ class _TerminalScreenState extends State<TerminalScreen>
   /// has focus and input is allowed, detached when a dialog or the lock cover
   /// takes over, the app is backgrounded, or the session ends.
   void _syncInput() {
+    // Covered, backgrounded or ended: the box and its text go away first.
+    if (_boxOpen && (!_resumed || (_lock?.hidden ?? false) || _disconnected)) {
+      _closeBox();
+    }
     final direct = _direct;
     if (direct == null) return;
     if (_inputMode == InputMode.direct && _focus.hasFocus && _acceptingInput) {
       direct.attach();
     } else {
-      direct.detach();
+      // With the box open the keyboard stays up: it moves to the box's field.
+      direct.detach(hide: !_boxOpen);
+    }
+  }
+
+  void _toggleBox() {
+    if (_boxOpen) {
+      _closeBox();
+    } else if (_sessionLive) {
+      setState(() {
+        _ctrl = false; // sticky Ctrl is released when the box opens
+        _boxOpen = true;
+        _boxPrevLength = 0;
+      });
+      // The native view lets go of the keyboard (without hiding it) and the
+      // box's field takes the focus, so the keyboard connects to it. (Not
+      // autofocus: that does nothing while the terminal holds the focus.)
+      _syncInput();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _boxOpen) _boxFocus.requestFocus();
+      });
+    }
+  }
+
+  void _closeBox() {
+    if (!_boxOpen) return;
+    _boxText.clear();
+    _boxPrevLength = 0;
+    if (mounted) setState(() => _boxOpen = false);
+    _boxOpen = false;
+    _boxFocus.unfocus();
+    _focus.requestFocus();
+    // Once the field is gone the native view takes the keyboard back.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _syncInput();
+    });
+    _syncInput();
+  }
+
+  /// A typed Enter at the very end of the box sends (the box is not
+  /// single-line, so the keyboard inserts a line break instead).
+  void _onBoxChanged(String text) {
+    final sel = _boxText.selection;
+    if (text.length == _boxPrevLength + 1 &&
+        text.endsWith('\n') &&
+        sel.isCollapsed &&
+        sel.baseOffset == text.length) {
+      _boxText.text = text.substring(0, text.length - 1);
+      _sendBox();
+      return;
+    }
+    _boxPrevLength = text.length;
+  }
+
+  /// Single-line text is sent with Enter; text with line breaks is a paste
+  /// (bracketed when the program asked for it) with no Enter added.
+  void _sendBox() {
+    if (!_sessionLive) {
+      _closeBox();
+      return;
+    }
+    final text = _boxText.text;
+    if (text.contains('\n') || text.contains('\r')) {
+      _terminal.paste(text.replaceAll('\r\n', '\r').replaceAll('\n', '\r'));
+    } else {
+      _send('$text\r');
+    }
+    _boxText.clear();
+    _boxPrevLength = 0;
+    if (!_boxKeepOpen) {
+      _closeBox();
+    } else {
+      _boxFocus.requestFocus();
+    }
+  }
+
+  /// Extra keys while the box is open: they act on the box only.
+  void _boxKey(String name) {
+    final text = _boxText.text;
+    final at = _boxText.selection.isValid
+        ? _boxText.selection.extentOffset
+        : text.length;
+    final to = switch (name) {
+      'esc' => null,
+      'left' => moveCaret(text, at, dx: -1),
+      'right' => moveCaret(text, at, dx: 1),
+      'up' => moveCaret(text, at, dy: -1),
+      'down' => moveCaret(text, at, dy: 1),
+      _ => at,
+    };
+    if (name == 'esc') {
+      _closeBox();
+    } else if (to != null) {
+      _boxText.selection = TextSelection.collapsed(offset: to);
+      _boxFocus.requestFocus();
     }
   }
 
@@ -252,6 +363,10 @@ class _TerminalScreenState extends State<TerminalScreen>
   }
 
   void _key(String name) {
+    if (_boxOpen) {
+      _boxKey(name);
+      return;
+    }
     final ctrl = _ctrl;
     if (ctrl) setState(() => _ctrl = false);
     final key = switch (name) {
@@ -267,6 +382,12 @@ class _TerminalScreenState extends State<TerminalScreen>
   }
 
   void _text(String text) {
+    if (_boxOpen) {
+      insertAtCursor(_boxText, text);
+      _boxPrevLength = _boxText.text.length;
+      _boxFocus.requestFocus();
+      return;
+    }
     _send(text);
     _focus.requestFocus();
   }
@@ -309,6 +430,8 @@ class _TerminalScreenState extends State<TerminalScreen>
     _lock?.removeListener(_syncInput);
     _focus.removeListener(_syncInput);
     _direct?.dispose();
+    _boxText.dispose();
+    _boxFocus.dispose();
     _barTimer?.cancel();
     for (final s in _subscriptions) {
       s.cancel();
@@ -472,7 +595,18 @@ class _TerminalScreenState extends State<TerminalScreen>
                 },
                 onKey: _key,
                 onText: _text,
+                boxOpen: _boxOpen,
+                onBox: _toggleBox,
               ),
+              if (_boxOpen)
+                CommandLineBox(
+                  controller: _boxText,
+                  focusNode: _boxFocus,
+                  keepOpen: _boxKeepOpen,
+                  onKeepOpenChanged: (v) => setState(() => _boxKeepOpen = v),
+                  onChanged: _onBoxChanged,
+                  onSend: _sendBox,
+                ),
             ],
           ),
         ),

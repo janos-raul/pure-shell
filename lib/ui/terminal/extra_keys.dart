@@ -18,7 +18,15 @@ class ExtraKeysRow extends StatelessWidget {
     required this.onCtrl,
     required this.onKey,
     required this.onText,
+    required this.onBox,
+    this.boxOpen = false,
   });
+
+  /// The command-line box button was tapped (open or close it).
+  final VoidCallback onBox;
+
+  /// While the box is open the keys act on the box: Tab and Ctrl are disabled.
+  final bool boxOpen;
 
   final bool ctrlActive;
   final VoidCallback onCtrl;
@@ -32,24 +40,41 @@ class ExtraKeysRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    Widget key(String label, VoidCallback onTap, {bool active = false}) {
+    Widget key(
+      Object label,
+      VoidCallback onTap, {
+      bool active = false,
+      bool enabled = true,
+      String? tooltip,
+    }) {
+      final color = active ? scheme.onPrimary : null;
+      Widget face = label is IconData
+          ? Icon(label, size: 20, color: color)
+          : FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                label as String,
+                style: TextStyle(fontSize: 15, color: color),
+              ),
+            );
+      if (tooltip != null) face = Tooltip(message: tooltip, child: face);
       return Expanded(
         child: Padding(
           padding: const EdgeInsets.all(2),
-          child: Material(
-            color: active ? scheme.primary : const Color(0xFF2A2A2A),
-            borderRadius: BorderRadius.circular(6),
-            child: InkWell(
+          child: Opacity(
+            opacity: enabled ? 1 : 0.35,
+            child: Material(
+              color: active ? scheme.primary : const Color(0xFF2A2A2A),
               borderRadius: BorderRadius.circular(6),
-              onTap: onTap,
-              child: SizedBox(
-                height: 40,
-                child: Center(
-                  child: Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: active ? scheme.onPrimary : null,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(6),
+                onTap: enabled ? onTap : null,
+                child: SizedBox(
+                  height: 40,
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 2),
+                      child: face,
                     ),
                   ),
                 ),
@@ -66,8 +91,8 @@ class ExtraKeysRow extends StatelessWidget {
       child: Row(
         children: [
           key('Esc', () => onKey('esc')),
-          key('Tab', () => onKey('tab')),
-          key('Ctrl', onCtrl, active: ctrlActive),
+          key('Tab', () => onKey('tab'), enabled: !boxOpen),
+          key('Ctrl', onCtrl, active: ctrlActive, enabled: !boxOpen),
           key('←', () => onKey('left')),
           key('↑', () => onKey('up')),
           key('↓', () => onKey('down')),
@@ -75,6 +100,7 @@ class ExtraKeysRow extends StatelessWidget {
           key('|', () => onText('|')),
           key('~', () => onText('~')),
           key('/', () => onText('/')),
+          key(Icons.edit_note, onBox, active: boxOpen, tooltip: 'Command line'),
         ],
       ),
     );
