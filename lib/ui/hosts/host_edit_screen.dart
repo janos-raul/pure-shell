@@ -243,11 +243,12 @@ class _HostEditScreenState extends State<HostEditScreen> {
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
                 title: Text(
-                  'Also allow password if the server rejects the key',
+                  'Password fallback',
                   style: Theme.of(context).textTheme.bodyLarge,
                 ),
                 subtitle: Text(
-                  'You are asked before a password is used. Off by default.',
+                  "If the server rejects the key, you're asked before a password is used. "
+                  'Off by default.',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),

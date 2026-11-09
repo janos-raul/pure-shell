@@ -327,10 +327,10 @@ void main() {
           .widget<EditableText>(find.byType(EditableText).first)
           .style
           .fontSize!;
-      final title = sizeOf(
-        find.text('Also allow password if the server rejects the key'),
+      final title = sizeOf(find.text('Password fallback'));
+      final caption = sizeOf(
+        find.textContaining('you\'re asked before a password is used'),
       );
-      final caption = sizeOf(find.textContaining('You are asked before'));
       expect(title, field);
       expect(caption, lessThan(title)); // one title, one smaller caption
     });

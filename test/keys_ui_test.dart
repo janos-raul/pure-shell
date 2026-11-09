@@ -222,10 +222,7 @@ void main() {
     ) async {
       await openHostForm(t);
       expect(find.text('Key'), findsOneWidget); // the segment
-      expect(
-        find.text('Also allow password if the server rejects the key'),
-        findsNothing,
-      );
+      expect(find.text('Password fallback'), findsNothing);
       await t.tap(find.text('Key'));
       await t.pumpAndSettle();
       expect(find.textContaining('No keys yet'), findsOneWidget);
