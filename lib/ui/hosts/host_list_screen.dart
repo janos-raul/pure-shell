@@ -149,7 +149,16 @@ class _HostListScreenState extends State<HostListScreen> {
               itemCount: hosts.length,
               itemBuilder: (context, i) {
                 final h = hosts[i];
+                final byKey = h.authMethod == AuthMethod.key;
                 return ListTile(
+                  leading: Tooltip(
+                    message: byKey ? 'Key login' : 'Password login',
+                    child: Icon(
+                      byKey ? Icons.vpn_key : Icons.password,
+                      semanticLabel: byKey ? 'Key login' : 'Password login',
+                    ),
+                  ),
+                  // Proportional (the app font); only the address is mono.
                   title: Text(h.label),
                   subtitle: Text(
                     '${h.username}@${h.hostname}${h.port == 22 ? '' : ':${h.port}'}',
