@@ -8,6 +8,7 @@ key.properties
 local.properties
 
 # Flutter / Dart
+.kotlin/
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
