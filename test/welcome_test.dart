@@ -64,7 +64,7 @@ void main() {
 
   testWidgets('no hosts: a short welcome with both ways to start', (t) async {
     await pumpList(t);
-    expect(find.text('Welcome to PureShell'), findsOneWidget);
+    expect(find.text('Welcome to Pure-Shell'), findsOneWidget);
     expect(find.text('>_'), findsOneWidget);
     expect(find.textContaining('saved on this phone only'), findsOneWidget);
     expect(find.textContaining('can never leave it'), findsOneWidget);
@@ -116,7 +116,7 @@ void main() {
     // Back on the welcome: a key exists, so it is not offered again.
     await t.pageBack();
     await t.pumpAndSettle();
-    expect(find.text('Welcome to PureShell'), findsOneWidget);
+    expect(find.text('Welcome to Pure-Shell'), findsOneWidget);
     expect(find.text('Create a key'), findsNothing);
     expect(find.text('Add a host'), findsOneWidget);
   });
@@ -143,7 +143,7 @@ void main() {
       const Host(id: '1', label: 'Web', hostname: 'example.com', username: 'u'),
     );
     await pumpList(t);
-    expect(find.text('Welcome to PureShell'), findsNothing);
+    expect(find.text('Welcome to Pure-Shell'), findsNothing);
     expect(find.text('Web'), findsOneWidget);
   });
 

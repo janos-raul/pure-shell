@@ -1,5 +1,5 @@
 name: pureshell
-description: "PureShell - a private, open-source SSH client for Android."
+description: "Pure-Shell - a private, open-source SSH client for Android."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev

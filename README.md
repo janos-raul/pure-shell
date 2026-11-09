@@ -1,6 +1,6 @@
-# PureShell
+# Pure-Shell
 
-PureShell is an open-source SSH client for Android, built with Flutter.
+Pure-Shell is an open-source SSH client for Android, built with Flutter.
 It connects to your servers and gets out of the way.
 
 ## Principles
@@ -33,7 +33,7 @@ It connects to your servers and gets out of the way.
 ## Keys can be lost
 
 Keys live in the phone's Keystore and are not backed up or exportable. They are
-destroyed if you uninstall PureShell, clear its data, or reinstall it signed
+destroyed if you uninstall Pure-Shell, clear its data, or reinstall it signed
 with a different key (for example a build from another source). Keep another
 way into your servers, such as a password or a second key. The app tells you
 this once, before you create your first key.
@@ -69,7 +69,7 @@ The application ID is `eu.pureshell.app`.
 
 ## License
 
-PureShell is free software, licensed under the GNU General Public License,
+Pure-Shell is free software, licensed under the GNU General Public License,
 version 3 or (at your option) any later version. See [LICENSE](LICENSE).
 
 Copyright (C) 2026 Janos-Raul

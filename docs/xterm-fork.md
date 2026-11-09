@@ -1,6 +1,6 @@
 # The xterm fork
 
-PureShell draws its terminal with [xterm.dart](https://github.com/TerminalStudio/xterm.dart)
+Pure-Shell draws its terminal with [xterm.dart](https://github.com/TerminalStudio/xterm.dart)
 (MIT license). It uses our fork, **janos-raul/xterm.dart**, pinned in
 `pubspec.yaml` to an exact commit (not a branch), so what is built is exactly
 what is listed here.
@@ -27,7 +27,7 @@ Three commits on top of `v4.0.0` (four changes). To audit them:
    *Why:* it is the default of Windows Terminal and many terminals, so bold-blue
    directories in `ls` come out as the readable bright blue (`#3B78FF` in the
    Default theme). Upstream xterm only changes the font weight.
-   PureShell turns it on in the Default (Campbell) terminal colors and leaves
+   Pure-Shell turns it on in the Default (Campbell) terminal colors and leaves
    it off in Phosphor green.
 2. **Palette index 15 is `brightWhite`.** Upstream returned `white`, so
    `ESC[97m` and 256-color index 15 drew the normal white.

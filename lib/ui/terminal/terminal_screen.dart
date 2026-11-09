@@ -380,7 +380,7 @@ class _TerminalScreenState extends State<TerminalScreen>
       builder: (c) => AlertDialog(
         title: const Text('Keep sessions alive'),
         content: const Text(
-          'While you are connected, PureShell shows a notification with the '
+          'While you are connected, Pure-Shell shows a notification with the '
           'number of sessions, so Android does not cut them a few seconds '
           'after you leave the app. It never shows hostnames, usernames or '
           'terminal content.\n\nAndroid will ask to allow notifications. '

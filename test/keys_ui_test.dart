@@ -58,7 +58,7 @@ void main() {
       await t.tap(find.byType(FloatingActionButton));
       await t.pumpAndSettle();
       expect(find.text('Keys can be lost'), findsOneWidget);
-      expect(find.textContaining('uninstall PureShell'), findsOneWidget);
+      expect(find.textContaining('uninstall Pure-Shell'), findsOneWidget);
       expect(find.textContaining('clear its data'), findsOneWidget);
       expect(find.textContaining('different key'), findsOneWidget);
       expect(

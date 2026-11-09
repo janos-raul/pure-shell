@@ -5,5 +5,5 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
-    <application android:label="PureShell debug" tools:replace="android:label" />
+    <application android:label="Pure-Shell debug" tools:replace="android:label" />
 </manifest>

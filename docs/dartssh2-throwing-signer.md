@@ -1,7 +1,7 @@
 # dartssh2: a throwing `SSHIdentity` signer hangs the login
 
 Status: observed in code review of dartssh2 4.1.0; possible upstream issue,
-**not filed**. PureShell works around it (see below).
+**not filed**. Pure-Shell works around it (see below).
 
 ## What happens
 
@@ -33,7 +33,7 @@ fail authentication, e.g. `_authenticated.completeError(SSHAuthAbortError(...))`
 and close the transport, so callers get a normal `SSHAuthError` instead of a
 hang.
 
-## PureShell's workaround
+## Pure-Shell's workaround
 
 `SshConnection.buildIdentity` (`lib/core/ssh/ssh_connection.dart`) gives
 dartssh2 an identity whose signer **never throws**. Any failure (user

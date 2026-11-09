@@ -47,7 +47,7 @@ class WelcomeView extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Welcome to PureShell',
+              'Welcome to Pure-Shell',
               style: theme.textTheme.headlineSmall,
               textAlign: TextAlign.center,
             ),

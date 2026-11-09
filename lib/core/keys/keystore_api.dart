@@ -139,7 +139,7 @@ abstract class KeystoreApi {
 
   /// Biometric or device credential, no key involved (app lock).
   Future<void> authenticate({
-    String title = 'Unlock PureShell',
+    String title = 'Unlock Pure-Shell',
     String? subtitle,
   });
 
@@ -259,7 +259,7 @@ class PlatformKeystore implements KeystoreApi {
 
   @override
   Future<void> authenticate({
-    String title = 'Unlock PureShell',
+    String title = 'Unlock Pure-Shell',
     String? subtitle,
   }) => _call<void>('authenticate', {'title': title, 'subtitle': subtitle});
 

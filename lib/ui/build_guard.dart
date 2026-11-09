@@ -51,7 +51,7 @@ class BuildErrorApp extends StatelessWidget {
                 const Icon(Icons.error, size: 64, color: errorRed),
                 const SizedBox(height: 16),
                 const Text(
-                  'PureShell refuses to start',
+                  'Pure-Shell refuses to start',
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 12),

@@ -91,7 +91,7 @@ class _PureShellAppState extends State<PureShellApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'PureShell',
+      title: 'Pure-Shell',
       navigatorKey: _navigatorKey,
       debugShowCheckedModeBanner: false,
       theme: pureShellTheme(),

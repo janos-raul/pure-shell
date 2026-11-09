@@ -21,7 +21,7 @@ import 'key_widgets.dart';
 
 /// Shown once, before the first key is created (and mirrored in the README).
 const keyLossNotice =
-    'Keys are destroyed if you uninstall PureShell, clear its data, or '
+    'Keys are destroyed if you uninstall Pure-Shell, clear its data, or '
     'reinstall it signed with a different key (for example a build from '
     'another source). They are not backed up and cannot be recovered or '
     'exported. Keep another way into your servers, such as a password or a '

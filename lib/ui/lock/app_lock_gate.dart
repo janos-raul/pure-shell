@@ -87,7 +87,7 @@ class _AppLockGateState extends State<AppLockGate> with WidgetsBindingObserver {
       builder: (c) => AlertDialog(
         title: const Text('App lock needs a screen lock'),
         content: const Text(
-          'PureShell cannot lock itself because this phone has no screen lock. '
+          'Pure-Shell cannot lock itself because this phone has no screen lock. '
           'Set a PIN, pattern, password or fingerprint in Android settings to '
           'protect the app (and to create keys).',
         ),
@@ -146,7 +146,7 @@ class _LockScreen extends StatelessWidget {
               const SizedBox(height: 16),
               if (locked) ...[
                 const Text(
-                  'PureShell is locked',
+                  'Pure-Shell is locked',
                   style: TextStyle(color: Colors.white, fontSize: 20),
                 ),
                 const SizedBox(height: 24),

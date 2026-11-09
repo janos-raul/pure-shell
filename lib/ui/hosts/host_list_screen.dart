@@ -146,7 +146,7 @@ class _HostListScreenState extends State<HostListScreen> {
     final hosts = _hosts;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('PureShell'),
+        title: const Text('Pure-Shell'),
         // One menu instead of icons: the key icon in the bar looked like the
         // per-host key icon in the list.
         actions: [

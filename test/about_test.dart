@@ -210,7 +210,7 @@ void main() {
       t.view.physicalSize = const Size(1080, 4000);
       addTearDown(t.view.reset);
       await t.pumpAndSettle();
-      await t.tap(find.text('About PureShell'));
+      await t.tap(find.text('About Pure-Shell'));
       await t.pumpAndSettle();
       expect(find.byType(AboutScreen), findsOneWidget);
     });

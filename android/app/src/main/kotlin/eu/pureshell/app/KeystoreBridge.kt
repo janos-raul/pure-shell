@@ -90,7 +90,7 @@ class KeystoreBridge(private val activity: FragmentActivity) {
                     result,
                 )
                 "authenticate" -> authenticate(
-                    call.argument<String>("title") ?: "Unlock PureShell",
+                    call.argument<String>("title") ?: "Unlock Pure-Shell",
                     call.argument<String>("subtitle"),
                     result,
                 )

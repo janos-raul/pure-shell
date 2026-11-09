@@ -13,7 +13,7 @@ import 'package:flutter/services.dart';
 import '../core/app_info.dart';
 import 'theme.dart';
 
-/// Where the source lives. The links are shown as text you can copy: PureShell
+/// Where the source lives. The links are shown as text you can copy: Pure-Shell
 /// opens no browser and makes no network request of its own.
 const sourceUrl = 'https://github.com/janos-raul/pure-shell';
 const xtermForkDocUrl = '$sourceUrl/blob/main/docs/xterm-fork.md';
@@ -45,11 +45,11 @@ class _AboutScreenState extends State<AboutScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('About PureShell')),
+      appBar: AppBar(title: const Text('About Pure-Shell')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Text('PureShell', style: theme.textTheme.headlineSmall),
+          Text('Pure-Shell', style: theme.textTheme.headlineSmall),
           const SizedBox(height: 4),
           Text(
             _version?.toString() ?? 'Version unknown',
@@ -60,7 +60,7 @@ class _AboutScreenState extends State<AboutScreen> {
           const Text('An open-source SSH client for Android.'),
           const _Heading('License'),
           const Text(
-            'GNU General Public License, version 3 or later. PureShell comes '
+            'GNU General Public License, version 3 or later. Pure-Shell comes '
             'with no warranty. You may share and change it under the terms of '
             'that license.',
           ),
@@ -84,7 +84,7 @@ class _AboutScreenState extends State<AboutScreen> {
             label: const Text('Open-source licenses'),
             onPressed: () => showLicensePage(
               context: context,
-              applicationName: 'PureShell',
+              applicationName: 'Pure-Shell',
               applicationVersion: _version?.name,
               applicationLegalese: copyrightLine,
             ),

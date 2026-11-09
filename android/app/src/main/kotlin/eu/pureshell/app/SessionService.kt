@@ -106,7 +106,7 @@ class SessionService : Service() {
         )
         val notification = Notification.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_stat_session)
-            .setContentTitle("PureShell")
+            .setContentTitle("Pure-Shell")
             .setContentText(if (count == 1) "1 active session" else "$count active sessions")
             .setOngoing(true)
             .setOnlyAlertOnce(true)

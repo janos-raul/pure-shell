@@ -264,7 +264,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               const _Section('About'),
               ListTile(
-                title: const Text('About PureShell'),
+                title: const Text('About Pure-Shell'),
                 subtitle: const Text('Version, license and source code'),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute<void>(builder: (_) => const AboutScreen()),

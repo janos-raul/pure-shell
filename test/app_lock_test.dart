@@ -237,7 +237,7 @@ void main() {
     ) async {
       keystore.cancelAuth = true; // the automatic prompt is dismissed
       final (c, key) = await pump(t);
-      expect(find.text('PureShell is locked'), findsOneWidget);
+      expect(find.text('Pure-Shell is locked'), findsOneWidget);
       expect(keystore.authenticateCalls, 1, reason: 'asks right away, once');
 
       // A dialog opened underneath is covered as well.
@@ -248,14 +248,14 @@ void main() {
         ),
       );
       await t.pump();
-      expect(find.text('PureShell is locked'), findsOneWidget);
+      expect(find.text('Pure-Shell is locked'), findsOneWidget);
       final lockBox = t.getRect(find.byType(ColoredBox).last);
       expect(lockBox.size, t.view.physicalSize / t.view.devicePixelRatio);
 
       keystore.cancelAuth = false;
       await t.tap(find.text('Unlock'));
       await t.pumpAndSettle();
-      expect(find.text('PureShell is locked'), findsNothing);
+      expect(find.text('Pure-Shell is locked'), findsNothing);
       expect(c.locked, isFalse);
       expect(keystore.authenticateCalls, 2);
     });
@@ -272,20 +272,20 @@ void main() {
       keystore.cancelAuth = true;
       await pump(t);
       expect(await t.binding.handlePopRoute(), isTrue); // consumed
-      expect(find.text('PureShell is locked'), findsOneWidget);
+      expect(find.text('Pure-Shell is locked'), findsOneWidget);
     });
 
     testWidgets('focus loss shows an opaque cover with no content', (t) async {
       final (c, _) = await pump(t);
       await c.unlock();
       await t.pumpAndSettle();
-      expect(find.text('PureShell is locked'), findsNothing);
+      expect(find.text('Pure-Shell is locked'), findsNothing);
       t.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
       await t.pump();
       await t.pump();
       expect(find.byIcon(Icons.lock), findsOneWidget);
       expect(
-        find.text('PureShell is locked'),
+        find.text('Pure-Shell is locked'),
         findsNothing,
         reason: 'just a cover, not the lock prompt',
       );

@@ -63,7 +63,7 @@ final List<HelpTopic> helpTopics = [
     'The authorized_keys line, and the from= restriction',
     [
       const HelpText(
-        'PureShell makes your key inside the phone. The private part never '
+        'Pure-Shell makes your key inside the phone. The private part never '
         'leaves it; the server only needs the public part.',
       ),
       HelpSteps([
@@ -71,7 +71,7 @@ final List<HelpTopic> helpTopics = [
             '`authorized_keys` line. It starts with `$ecdsaP256Type`, or with '
             '`$ed25519Type` for a software key on a phone without secure '
             'hardware.',
-        'On the server, log in as the user PureShell will log in as. Add that '
+        'On the server, log in as the user Pure-Shell will log in as. Add that '
             'line as a new line at the end of `~/.ssh/authorized_keys`.',
         'Make sure the permissions are strict, or the server ignores the file:',
       ]),
@@ -79,7 +79,7 @@ final List<HelpTopic> helpTopics = [
         'mkdir -p ~/.ssh && chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys',
       ),
       const HelpText(
-        'Then edit the host in PureShell, set Login to Key and choose the key.',
+        'Then edit the host in Pure-Shell, set Login to Key and choose the key.',
       ),
       const HelpText(
         'The fingerprint shown under the key (`SHA256:...`) is only a short '
@@ -114,13 +114,13 @@ final List<HelpTopic> helpTopics = [
     [
       HelpText(
         'The first time you connect to a server, it presents its host key. '
-        'PureShell shows the key type and its fingerprint and asks whether to '
+        'Pure-Shell shows the key type and its fingerprint and asks whether to '
         "trust it. Compare the fingerprint with the server's, using the "
         'command shown in the prompt, for example:',
       ),
       HelpCommand('ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub'),
       HelpText(
-        'If they match, tap Trust. PureShell remembers the key for that host '
+        'If they match, tap Trust. Pure-Shell remembers the key for that host '
         'and port. Cancel stores nothing. The server only waits a limited '
         'time for you to decide and then closes the connection; if that '
         'happens, just connect again.',
@@ -128,7 +128,7 @@ final List<HelpTopic> helpTopics = [
       HelpHeading('When the key changes'),
       HelpText(
         'Every later connection must present the same key. If it differs, '
-        'PureShell blocks the connection and shows both fingerprints. Nothing '
+        'Pure-Shell blocks the connection and shows both fingerprints. Nothing '
         'is sent to the server: no password and no key signature. There is '
         'only Back, and no "continue anyway" button, because that is the '
         'button an attacker relies on.',
@@ -213,7 +213,7 @@ final List<HelpTopic> helpTopics = [
         'Pasted text goes to the server as one paste. Programs that support '
         'bracketed paste (most shells and editors) receive it as a block and '
         'never run it line by line. If the running program did not ask for '
-        'that and the text has several lines, PureShell asks first, because '
+        'that and the text has several lines, Pure-Shell asks first, because '
         'each line would run as it is entered.',
       ),
       HelpText(
@@ -222,7 +222,7 @@ final List<HelpTopic> helpTopics = [
         'breaks.',
       ),
       HelpText(
-        'PureShell reads the clipboard only when you tap Paste, never in the '
+        'Pure-Shell reads the clipboard only when you tap Paste, never in the '
         'background. On Android 13 and later, text you copy from the '
         "terminal is marked sensitive so the system's clipboard preview does "
         'not show it; older versions do a normal copy. Copy and paste are '
@@ -239,13 +239,13 @@ final List<HelpTopic> helpTopics = [
       HelpText(
         'Android cuts off the network of an app a few seconds after you '
         'leave it, which would end your SSH sessions. While you are '
-        'connected, PureShell therefore runs a small background service with '
+        'connected, Pure-Shell therefore runs a small background service with '
         'a notification that shows only how many sessions are active (for '
         'example "2 active sessions"): never hostnames, usernames or '
         'terminal content. The notification has a Disconnect all button.',
       ),
       HelpText(
-        'The first time you connect, PureShell explains this and Android '
+        'The first time you connect, Pure-Shell explains this and Android '
         'asks to allow notifications. If you say no, sessions are still kept '
         'alive; you just do not see the notification.',
       ),
@@ -258,7 +258,7 @@ final List<HelpTopic> helpTopics = [
         'Closing the app (Back from the host list, or swiping it away in the '
         'recent apps) ends your sessions. They also end when the server '
         'closes the connection, when the network drops or when the phone '
-        'restarts. PureShell pings idle sessions every 30 seconds and '
+        'restarts. Pure-Shell pings idle sessions every 30 seconds and '
         'treats a connection that stops answering as lost after roughly a '
         'minute.',
       ),
@@ -289,7 +289,7 @@ final List<HelpTopic> helpTopics = [
     [
       HelpText(
         "Keys live in the phone's Keystore. They are not backed up and "
-        'cannot be exported. They are destroyed if you uninstall PureShell, '
+        'cannot be exported. They are destroyed if you uninstall Pure-Shell, '
         'clear its data, or reinstall it signed with a different key (for '
         'example a build from another source). Android also deletes keys '
         "like these if you remove the phone's screen lock.",

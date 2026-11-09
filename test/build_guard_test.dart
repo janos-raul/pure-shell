@@ -67,7 +67,7 @@ void main() {
         forceSoftwareKeys: false,
       )!;
       await t.pumpWidget(BuildErrorApp(message: problem));
-      expect(find.text('PureShell refuses to start'), findsOneWidget);
+      expect(find.text('Pure-Shell refuses to start'), findsOneWidget);
       expect(
         find.textContaining('PURESHELL_ALLOW_SOFTWARE_KEYSTORE'),
         findsOneWidget,
