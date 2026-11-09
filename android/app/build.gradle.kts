@@ -51,6 +51,11 @@ android {
     }
 
     buildTypes {
+        debug {
+            // Installs next to the release app (own data, own Keystore keys),
+            // never over it.
+            applicationIdSuffix = ".debug"
+        }
         release {
             signingConfig = signingConfigs.findByName("release")
         }
