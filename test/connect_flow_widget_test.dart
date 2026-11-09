@@ -88,4 +88,13 @@ void main() {
     await t.pumpAndSettle();
     expect(find.byType(AlertDialog), findsNothing);
   });
+
+  test(
+    'the key-rejected help names authorized_keys, from= and the auth log',
+    () {
+      expect(keyRejectedHelp, contains('~/.ssh/authorized_keys'));
+      expect(keyRejectedHelp, contains('from='));
+      expect(keyRejectedHelp, contains('auth log'));
+    },
+  );
 }

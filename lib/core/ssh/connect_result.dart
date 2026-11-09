@@ -100,3 +100,10 @@ const serverClosedMessage =
     'The server closed the connection. Please try again.';
 
 const keyRejectedMessage = 'Server rejected the key.';
+
+/// Shown under [keyRejectedMessage]: the server never says why, so this lists
+/// where to look.
+const keyRejectedHelp =
+    "Check that this public key is in the user's ~/.ssh/authorized_keys "
+    "(including any from= restriction), and see the server's auth log for "
+    'the exact reason.';

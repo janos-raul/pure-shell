@@ -424,7 +424,15 @@ Future<SshConnection?> establishConnection(
             context: context,
             builder: (c) => AlertDialog(
               title: const Text(keyRejectedMessage),
-              content: const Text('Log in with password instead?'),
+              content: const Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(keyRejectedHelp),
+                  SizedBox(height: 12),
+                  Text('Log in with password instead?'),
+                ],
+              ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(c, false),
@@ -442,7 +450,10 @@ Future<SshConnection?> establishConnection(
             reconnect = true;
           }
         } else {
-          snack(keyRejectedMessage);
+          snack(
+            '$keyRejectedMessage\n$keyRejectedHelp',
+            duration: const Duration(seconds: 15),
+          );
         }
       case ConnectResult.otherError:
         closeDialog();
