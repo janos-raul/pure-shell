@@ -18,6 +18,7 @@ import '../../core/storage/screenshot_settings.dart';
 import '../../core/storage/terminal_settings.dart';
 import '../../core/keys/key_service.dart';
 import '../../core/lock/app_lock_controller.dart';
+import '../about_screen.dart';
 import '../help/help_screen.dart';
 import '../keys/keys_screen.dart';
 import '../settings/settings_screen.dart';
@@ -78,6 +79,7 @@ class _HostListScreenState extends State<HostListScreen> {
     final Widget page = switch (item) {
       'keys' => KeysScreen(keyService: widget.keyService),
       'help' => const HelpScreen(),
+      'about' => const AboutScreen(),
       _ => SettingsScreen(
         lock: widget.lock,
         screenshots: widget.screenshots,
@@ -135,6 +137,7 @@ class _HostListScreenState extends State<HostListScreen> {
               PopupMenuItem(value: 'keys', child: Text('Keys')),
               PopupMenuItem(value: 'settings', child: Text('Settings')),
               PopupMenuItem(value: 'help', child: Text('Help')),
+              PopupMenuItem(value: 'about', child: Text('About')),
             ],
           ),
         ],

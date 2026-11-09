@@ -159,6 +159,22 @@ class MainActivity : FlutterFragmentActivity() {
             }
         }
 
+        // Version and build number of the installed app, for the About screen.
+        MethodChannel(messenger, "eu.pureshell.app/app_info")
+            .setMethodCallHandler { call, result ->
+                if (call.method == "version") {
+                    val info = packageManager.getPackageInfo(packageName, 0)
+                    result.success(
+                        mapOf(
+                            "name" to (info.versionName ?: ""),
+                            "build" to info.longVersionCode.toString(),
+                        )
+                    )
+                } else {
+                    result.notImplemented()
+                }
+            }
+
         // Copy from the terminal: on Android 13+ the clip is marked sensitive,
         // so the system's clipboard preview does not show it. Nothing is logged.
         MethodChannel(messenger, "eu.pureshell.app/clipboard")

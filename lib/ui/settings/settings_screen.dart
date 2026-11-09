@@ -10,6 +10,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/lock/app_lock_controller.dart';
+import '../about_screen.dart';
 import '../../core/lock/app_lock_settings.dart';
 import '../../core/ssh/session_keeper.dart';
 import '../../core/storage/screenshot_settings.dart';
@@ -260,6 +261,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: const Text('Terminal colors'),
                 subtitle: Text(_colors.label),
                 onTap: _chooseColors,
+              ),
+              const _Section('About'),
+              ListTile(
+                title: const Text('About PureShell'),
+                subtitle: const Text('Version, license and source code'),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(builder: (_) => const AboutScreen()),
+                ),
               ),
             ],
           );
