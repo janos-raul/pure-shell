@@ -46,6 +46,14 @@ key login with hardware-backed keys (per-use authentication) and an app lock.
 
 Requires Android 11 (API 30) or newer.
 
+## FAQ / troubleshooting
+
+**SwiftKey capitalizes the first letter in the command-line box** (`echo`
+becomes `Echo`). SwiftKey does this regardless of what the app asks for; the
+box requests no capitalization and no autocorrect, and Gboard respects that.
+Turn off "Auto-capitalization" in SwiftKey's Typing settings, or type directly
+in the terminal (Direct mode), which is not affected.
+
 ## Building
 
 Requirements: the Flutter SDK (stable channel) and the Android SDK.
