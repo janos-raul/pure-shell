@@ -94,7 +94,10 @@ class CommandLineBox extends StatelessWidget {
                 maxLines: 3,
                 keyboardType: TextInputType.multiline,
                 textInputAction: TextInputAction.send,
-                autocorrect: true,
+                // Suggestions and swipe stay; nothing is replaced behind the
+                // user's back (ls -> Is, cd -> CD would break commands).
+                autocorrect: false,
+                textCapitalization: TextCapitalization.none,
                 enableSuggestions: true,
                 enableIMEPersonalizedLearning: false,
                 smartDashesType: SmartDashesType.disabled,

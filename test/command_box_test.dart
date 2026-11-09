@@ -156,7 +156,8 @@ void main() {
       await openBox(t);
       final f = t.widget<TextField>(field);
       expect(f.enableIMEPersonalizedLearning, isFalse);
-      expect(f.autocorrect, isTrue);
+      expect(f.autocorrect, isFalse);
+      expect(f.textCapitalization, TextCapitalization.none);
       expect(f.enableSuggestions, isTrue);
       expect(f.minLines, 1);
       expect(f.maxLines, 3);
