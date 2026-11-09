@@ -19,8 +19,12 @@ class ExtraKeysRow extends StatelessWidget {
     required this.onKey,
     required this.onText,
     required this.onBox,
+    required this.onPaste,
     this.boxOpen = false,
   });
+
+  /// The Paste key: pastes the clipboard (into the box while it is open).
+  final VoidCallback onPaste;
 
   /// The command-line box button was tapped (open or close it).
   final VoidCallback onBox;
@@ -100,6 +104,7 @@ class ExtraKeysRow extends StatelessWidget {
           key('|', () => onText('|')),
           key('~', () => onText('~')),
           key('/', () => onText('/')),
+          key(Icons.content_paste, onPaste, tooltip: 'Paste'),
           key(Icons.edit_note, onBox, active: boxOpen, tooltip: 'Command line'),
         ],
       ),

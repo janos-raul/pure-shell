@@ -77,6 +77,7 @@ class PrivateTerminalView extends StatelessWidget {
     this.theme = TerminalThemes.defaultTheme,
     this.autofocus = true,
     this.hardwareKeyboardOnly = false,
+    this.controller,
   });
 
   final Terminal terminal;
@@ -84,6 +85,9 @@ class PrivateTerminalView extends StatelessWidget {
   final TerminalStyle textStyle;
   final TerminalTheme theme;
   final bool autofocus;
+
+  /// Selection state; the screen reads it for Copy.
+  final TerminalController? controller;
 
   /// Direct input: xterm opens no keyboard connection of its own (our native
   /// view owns the keyboard); hardware key events still reach the terminal.
@@ -97,6 +101,7 @@ class PrivateTerminalView extends StatelessWidget {
     return TerminalView(
       terminal,
       focusNode: focusNode,
+      controller: controller,
       autofocus: autofocus,
       hardwareKeyboardOnly: hardwareKeyboardOnly,
       keyboardType: keyboardType,

@@ -9,7 +9,13 @@
 
 package eu.pureshell.app
 
+import android.content.ClipData
+import android.content.ClipDescription
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
+import android.os.Build
+import android.os.PersistableBundle
 import android.os.Bundle
 import android.view.WindowManager
 import android.widget.FrameLayout
@@ -78,6 +84,26 @@ class MainActivity : FlutterFragmentActivity() {
                 else -> result.notImplemented()
             }
         }
+
+        // Copy from the terminal: on Android 13+ the clip is marked sensitive,
+        // so the system's clipboard preview does not show it. Nothing is logged.
+        MethodChannel(messenger, "eu.pureshell.app/clipboard")
+            .setMethodCallHandler { call, result ->
+                if (call.method == "copy") {
+                    val text = call.argument<String>("text") ?: ""
+                    val clip = ClipData.newPlainText("", text)
+                    if (Build.VERSION.SDK_INT >= 33) {
+                        clip.description.extras = PersistableBundle().apply {
+                            putBoolean(ClipDescription.EXTRA_IS_SENSITIVE, true)
+                        }
+                    }
+                    (getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager)
+                        .setPrimaryClip(clip)
+                    result.success(null)
+                } else {
+                    result.notImplemented()
+                }
+            }
 
         // Share a piece of text (the public key) through the system share
         // sheet. Public data only.

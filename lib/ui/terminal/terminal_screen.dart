@@ -25,6 +25,7 @@ import 'direct_input.dart';
 import 'extra_keys.dart';
 import 'pinch_zoom.dart';
 import 'pty_resize.dart';
+import 'terminal_clipboard.dart';
 
 /// Converts a single typed character to its Ctrl-modified control character
 /// (Ctrl+C -> 0x03, Ctrl+[ -> ESC, ...). Returns null if there is none.
@@ -65,6 +66,8 @@ class _TerminalScreenState extends State<TerminalScreen>
     with WidgetsBindingObserver {
   final _terminal = Terminal(maxLines: 10000);
   final _focus = FocusNode();
+  final _termController = TerminalController();
+  final _clipboard = TerminalClipboard();
   final _subscriptions = <StreamSubscription<dynamic>>[];
   var _ctrl = false;
   var _disconnected = false;
@@ -105,6 +108,10 @@ class _TerminalScreenState extends State<TerminalScreen>
       !(_lock?.hidden ?? false) &&
       !_disconnected &&
       _conn.session != null;
+
+  /// Not backgrounded and not under the lock cover: copy and paste are off
+  /// otherwise, like typed input.
+  bool get _visibleToUser => _resumed && !(_lock?.hidden ?? false);
 
   /// Same, and the native Direct-mode view is the one meant to be typing: not
   /// while the command-line box has the keyboard.
@@ -392,6 +399,116 @@ class _TerminalScreenState extends State<TerminalScreen>
     _focus.requestFocus();
   }
 
+  /// Paste from the clipboard (read now, because the user asked; never
+  /// before). With the box open it goes into the box, otherwise to the
+  /// session through the terminal's paste path: bracketed when the program
+  /// asked for it, so multi-line text does not run line by line.
+  Future<void> _paste() async {
+    if (!_sessionLive) return;
+    final raw = await _clipboard.readText();
+    // The app may have been covered or the session may have ended meanwhile.
+    if (raw == null || raw.isEmpty || !mounted || !_sessionLive) return;
+    final text = sanitizePaste(raw);
+    if (text.isEmpty) return;
+    if (_ctrl) setState(() => _ctrl = false); // a paste is not Ctrl+key
+    if (_boxOpen) {
+      insertAtCursor(_boxText, text.replaceAll('\r', '\n'));
+      _boxPrevLength = _boxText.text.length;
+      _boxFocus.requestFocus();
+      return;
+    }
+    if (text.contains('\r') && !_terminal.bracketedPasteMode) {
+      // This program did not ask for bracketed paste: each line would be
+      // entered as typed. Make the user say yes.
+      final lines = '\r'.allMatches(text).length + 1;
+      final ok = await showDialog<bool>(
+        context: context,
+        builder: (c) => AlertDialog(
+          title: Text('Paste $lines lines?'),
+          content: const Text(
+            'This program did not ask for bracketed paste, so every line '
+            'break acts as Enter and each line runs as it is entered.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(c, false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(c, true),
+              child: const Text('Paste'),
+            ),
+          ],
+        ),
+      );
+      if (ok != true || !mounted || !_sessionLive) return;
+    }
+    _terminal.paste(text);
+    if (!_boxOpen) _focus.requestFocus();
+  }
+
+  Future<void> _copySelection() async {
+    final range = _termController.selection;
+    if (range == null || !_visibleToUser) return;
+    final text = _terminal.buffer.getText(range);
+    if (text.isEmpty) return;
+    await _clipboard.copySensitive(text);
+  }
+
+  void _selectAll() {
+    if (!_visibleToUser) return;
+    final b = _terminal.buffer;
+    _termController.setSelection(
+      b.createAnchor(0, 0),
+      b.createAnchor(_terminal.viewWidth, b.height - 1),
+    );
+  }
+
+  /// Long press on the terminal: Paste always; Copy and Select all when
+  /// something is selected (the long press itself selects a word).
+  Future<void> _showTextMenu(Offset position) async {
+    final selected = _termController.selection != null;
+    final visible = _visibleToUser;
+    final choice = await showMenu<String>(
+      context: context,
+      position: RelativeRect.fromLTRB(
+        position.dx,
+        position.dy,
+        position.dx,
+        position.dy,
+      ),
+      items: [
+        PopupMenuItem(
+          value: 'paste',
+          enabled: visible && _sessionLive,
+          child: const Text('Paste'),
+        ),
+        if (selected) ...[
+          PopupMenuItem(
+            value: 'copy',
+            enabled: visible,
+            child: const Text('Copy'),
+          ),
+          PopupMenuItem(
+            value: 'all',
+            enabled: visible,
+            child: const Text('Select all'),
+          ),
+        ],
+      ],
+    );
+    // Each action checks again: the menu may have been open while the app
+    // was locked.
+    switch (choice) {
+      case 'paste':
+        await _paste();
+      case 'copy':
+        await _copySelection();
+      case 'all':
+        _selectAll();
+    }
+  }
+
   void _showBar() {
     _barTimer?.cancel();
     setState(() => _barVisible = true);
@@ -431,6 +548,7 @@ class _TerminalScreenState extends State<TerminalScreen>
     _focus.removeListener(_syncInput);
     _direct?.dispose();
     _boxText.dispose();
+    _termController.dispose();
     _boxFocus.dispose();
     _barTimer?.cancel();
     for (final s in _subscriptions) {
@@ -487,15 +605,20 @@ class _TerminalScreenState extends State<TerminalScreen>
                         widget.settings.saveFontSize(size);
                         _resizer.release();
                       },
-                      child: _TapToShowKeyboard(
-                        enabled: _inputMode == InputMode.direct,
-                        onTap: () => _direct?.attach(),
-                        child: PrivateTerminalView(
-                          _terminal,
-                          focusNode: _focus,
-                          hardwareKeyboardOnly: _inputMode == InputMode.direct,
-                          textStyle: TerminalStyle(fontSize: _fontSize),
-                          theme: terminalThemeFor(_colors),
+                      child: _LongPress(
+                        onLongPress: _showTextMenu,
+                        child: _TapToShowKeyboard(
+                          enabled: _inputMode == InputMode.direct,
+                          onTap: () => _direct?.attach(),
+                          child: PrivateTerminalView(
+                            _terminal,
+                            controller: _termController,
+                            focusNode: _focus,
+                            hardwareKeyboardOnly:
+                                _inputMode == InputMode.direct,
+                            textStyle: TerminalStyle(fontSize: _fontSize),
+                            theme: terminalThemeFor(_colors),
+                          ),
                         ),
                       ),
                     ),
@@ -597,6 +720,7 @@ class _TerminalScreenState extends State<TerminalScreen>
                 onText: _text,
                 boxOpen: _boxOpen,
                 onBox: _toggleBox,
+                onPaste: _paste,
               ),
               if (_boxOpen)
                 CommandLineBox(
@@ -654,6 +778,68 @@ class _TapToShowKeyboardState extends State<_TapToShowKeyboard> {
       onPointerCancel: (e) {
         _down.remove(e.pointer);
         if (_down.isEmpty) _single = true;
+      },
+      child: widget.child,
+    );
+  }
+}
+
+/// Reports a long press (one finger held still) without taking part in the
+/// gesture arena, so the terminal's own long-press word selection still runs
+/// first; the callback fires a little after it.
+class _LongPress extends StatefulWidget {
+  const _LongPress({required this.onLongPress, required this.child});
+
+  final void Function(Offset globalPosition) onLongPress;
+  final Widget child;
+
+  @override
+  State<_LongPress> createState() => _LongPressState();
+}
+
+class _LongPressState extends State<_LongPress> {
+  Timer? _timer;
+  int? _pointer;
+  Offset _start = Offset.zero;
+
+  void _cancel() {
+    _timer?.cancel();
+    _timer = null;
+    _pointer = null;
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Listener(
+      onPointerDown: (e) {
+        if (_pointer != null) {
+          _cancel(); // a second finger: pinch, not a long press
+          return;
+        }
+        _pointer = e.pointer;
+        _start = e.position;
+        _timer = Timer(const Duration(milliseconds: 650), () {
+          final at = _start;
+          _cancel();
+          widget.onLongPress(at);
+        });
+      },
+      onPointerMove: (e) {
+        if (e.pointer == _pointer && (e.position - _start).distance > 18) {
+          _cancel();
+        }
+      },
+      onPointerUp: (e) {
+        if (e.pointer == _pointer) _cancel();
+      },
+      onPointerCancel: (e) {
+        if (e.pointer == _pointer) _cancel();
       },
       child: widget.child,
     );
