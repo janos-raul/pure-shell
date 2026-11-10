@@ -282,6 +282,57 @@ final List<HelpTopic> helpTopics = [
       ),
     ],
   ),
+  HelpTopic(
+    'key-protection',
+    'StrongBox, TEE, software',
+    'Where a key lives, and what the label on it means',
+    [
+      const HelpText(
+        'Every key shows a label saying where its private part is kept. '
+        'Pure-Shell picks the best place your phone has, in this order, and '
+        'you do not have to choose.',
+      ),
+      const HelpHeading('StrongBox'),
+      const HelpText(
+        'A separate security chip with its own processor and memory, built '
+        'for keeping secrets. The strongest place. Only some phones have it, '
+        'mostly newer and higher-end models.',
+      ),
+      const HelpHeading('TEE'),
+      const HelpText(
+        'A Trusted Execution Environment: a protected area of the phone\'s '
+        'main processor that the Android system itself cannot look into. '
+        'Most phones have it. It is still hardware protection.',
+      ),
+      const HelpText(
+        'With StrongBox and TEE the private key is made inside the hardware '
+        'and never leaves it. Not even Pure-Shell can read it, it can only '
+        'ask the hardware to sign. A copied backup or a stolen app file '
+        'contains nothing usable. These keys are `$ecdsaP256Type` keys.',
+      ),
+      const HelpHeading('Software key'),
+      const HelpText(
+        'Used only when the phone has no secure hardware at all. The key '
+        'is made by the app (`$ed25519Type`) and kept encrypted, with a '
+        'protection key that needs your screen lock or fingerprint every '
+        'time. It is weaker: while you connect, the key exists in the '
+        "phone's memory for a moment. That is why this label is shown in "
+        'amber.',
+      ),
+      const HelpHeading('Which one do I have?'),
+      const HelpText(
+        'Open Keys: the label is on the right of each key. Either hardware '
+        'level is fine for daily use; StrongBox is simply the more '
+        'protected of the two. On a software key, think about using a '
+        'second key or a password as a spare.',
+      ),
+      const HelpText(
+        'In all cases using the key asks for your screen lock or '
+        'fingerprint, so someone who picks up an unlocked app still cannot '
+        'log in to your servers.',
+      ),
+    ],
+  ),
   const HelpTopic(
     'keys-lost',
     'Keys can be lost',

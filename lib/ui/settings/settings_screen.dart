@@ -15,6 +15,7 @@ import '../../core/lock/app_lock_settings.dart';
 import '../../core/ssh/session_keeper.dart';
 import '../../core/storage/screenshot_settings.dart';
 import '../../core/storage/terminal_settings.dart';
+import '../theme.dart';
 
 /// One choice in a [showChoiceDialog]: its name and a one-line explanation.
 class ChoiceOption<T> {
@@ -223,53 +224,63 @@ class _SettingsScreenState extends State<SettingsScreen> {
           return ListView(
             children: [
               const _Section('Security'),
-              ListTile(
-                title: const Text('App lock'),
-                subtitle: Text(
-                  !lock.enabled
-                      ? 'Off'
-                      : lock.secureLockScreen
-                      ? 'On'
-                      : 'On, but the phone has no screen lock',
+              _Box([
+                ListTile(
+                  title: const Text('App lock'),
+                  subtitle: Text(
+                    !lock.enabled
+                        ? 'Off'
+                        : lock.secureLockScreen
+                        ? 'On'
+                        : 'On, but the phone has no screen lock',
+                  ),
+                  onTap: _chooseAppLock,
                 ),
-                onTap: _chooseAppLock,
-              ),
-              ListTile(
-                enabled: lock.enabled,
-                title: const Text('Lock after'),
-                subtitle: Text(lock.timeout.label),
-                onTap: lock.enabled ? _chooseTimeout : null,
-              ),
-              ListTile(
-                title: const Text('Allow screenshots'),
-                subtitle: Text(widget.screenshots.allowed ? 'On' : 'Off'),
-                onTap: _chooseScreenshots,
-              ),
+                ListTile(
+                  enabled: lock.enabled,
+                  title: const Text('Lock after'),
+                  subtitle: Text(lock.timeout.label),
+                  onTap: lock.enabled ? _chooseTimeout : null,
+                ),
+                ListTile(
+                  title: const Text('Allow screenshots'),
+                  subtitle: Text(widget.screenshots.allowed ? 'On' : 'Off'),
+                  onTap: _chooseScreenshots,
+                ),
+              ]),
               const _Section('Connection'),
-              ListTile(
-                title: const Text('Keep sessions alive'),
-                subtitle: Text(_keepSessions ? 'On' : 'Off'),
-                onTap: _chooseKeepSessions,
-              ),
-              const _Section('Terminal'),
-              ListTile(
-                title: const Text('Input mode'),
-                subtitle: Text(_inputMode.label),
-                onTap: _chooseInputMode,
-              ),
-              ListTile(
-                title: const Text('Terminal colors'),
-                subtitle: Text(_colors.label),
-                onTap: _chooseColors,
-              ),
-              const _Section('About'),
-              ListTile(
-                title: const Text('About Pure-Shell'),
-                subtitle: const Text('Version, license and source code'),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(builder: (_) => const AboutScreen()),
+              _Box([
+                ListTile(
+                  title: const Text('Keep sessions alive'),
+                  subtitle: Text(_keepSessions ? 'On' : 'Off'),
+                  onTap: _chooseKeepSessions,
                 ),
-              ),
+              ]),
+              const _Section('Terminal'),
+              _Box([
+                ListTile(
+                  title: const Text('Input mode'),
+                  subtitle: Text(_inputMode.label),
+                  onTap: _chooseInputMode,
+                ),
+                ListTile(
+                  title: const Text('Terminal colors'),
+                  subtitle: Text(_colors.label),
+                  onTap: _chooseColors,
+                ),
+              ]),
+              const _Section('About'),
+              _Box([
+                ListTile(
+                  title: const Text('About Pure-Shell'),
+                  subtitle: const Text('Version, license and source code'),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const AboutScreen(),
+                    ),
+                  ),
+                ),
+              ]),
             ],
           );
         },
@@ -289,10 +300,33 @@ class _Section extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 28, 16, 4),
       child: Text(
         title,
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-          color: Theme.of(context).colorScheme.primary,
-          fontWeight: FontWeight.bold,
-        ),
+        style: Theme.of(context).textTheme.titleSmall
+            ?.copyWith(color: emphasisBlue, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+}
+
+/// The settings of one section in a square box with a thin outline; the rows
+/// are separated by a hairline.
+class _Box extends StatelessWidget {
+  const _Box(this.children);
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    final line = Theme.of(context).colorScheme.outline;
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+      decoration: BoxDecoration(border: Border.all(color: line)),
+      child: Column(
+        children: [
+          for (var i = 0; i < children.length; i++) ...[
+            if (i > 0) Divider(height: 1, thickness: 1, color: line),
+            children[i],
+          ],
+        ],
       ),
     );
   }

@@ -18,11 +18,28 @@ const _dimGreen = Color(0xFF1F9940);
 const _black = Color(0xFF000000);
 const _panel = Color(0xFF0A120C);
 
+/// Console look: body text is light grey like a shell (the same grey as the
+/// standard terminal scheme), green is the accent: titles, icons, buttons,
+/// the selected state.
+const _text = Color(0xFFCCCCCC);
+const _textDim = Color(0xFF8C8C8C);
+
 /// THE COLOR RULE: red (errors, destructive actions) is only ever used on the
 /// black background, as text, outline or icon. Never as a fill, and never on
 /// or inside a green fill. Warnings use amber the same way.
 const errorRed = Color(0xFFFF5555);
 const warningAmber = Color(0xFFFFB300);
+
+/// Amber accent for the key / password icons and the like (icon only, on
+/// black). The same amber as warnings.
+const accentAmber = warningAmber;
+
+/// Console blue for emphasis: bold labels and section headers (like the blue
+/// directories in a shell listing). Text only, on black.
+const emphasisBlue = Color(0xFF5FA8FF);
+
+/// Tone for the small icons in menus: softer than the bright green.
+const menuIconColor = Color(0xFF29CC52);
 
 /// A destructive text button: red text on black.
 ButtonStyle destructiveTextStyle() =>
@@ -52,8 +69,8 @@ ThemeData pureShellTheme() {
     secondary: _dimGreen,
     onSecondary: _black,
     surface: _black,
-    onSurface: _green,
-    onSurfaceVariant: Color(0xFF29CC52),
+    onSurface: _text,
+    onSurfaceVariant: _textDim,
     surfaceContainerHighest: _panel,
     surfaceContainerHigh: _panel,
     surfaceContainer: _panel,
@@ -116,10 +133,15 @@ ThemeData pureShellTheme() {
     ),
     dividerColor: const Color(0xFF14501F),
     // Proportional font for the UI; technical values use [monoStyle].
-    textTheme: ThemeData.dark().textTheme.apply(
-      bodyColor: _green,
-      displayColor: _green,
-    ),
+    iconTheme: const IconThemeData(color: _green),
+    textTheme: ThemeData.dark().textTheme
+        .apply(bodyColor: _text, displayColor: _text)
+        .copyWith(
+          headlineSmall: const TextStyle(color: _green),
+          titleLarge: const TextStyle(color: _green),
+          titleMedium: const TextStyle(color: emphasisBlue),
+          titleSmall: const TextStyle(color: emphasisBlue),
+        ),
   );
 }
 

@@ -95,6 +95,8 @@ void main() {
   });
 
   testWidgets('terminal colors and screenshots are stored', (t) async {
+    t.view.physicalSize = const Size(1080, 3000);
+    addTearDown(t.view.resetPhysicalSize);
     await pump(t);
     await t.tap(find.text('Terminal colors'));
     await t.pumpAndSettle();

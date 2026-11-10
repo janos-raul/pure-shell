@@ -153,11 +153,11 @@ class _HostListScreenState extends State<HostListScreen> {
           PopupMenuButton<String>(
             tooltip: 'Menu',
             onSelected: _openMenuItem,
-            itemBuilder: (_) => const [
-              PopupMenuItem(value: 'keys', child: Text('Keys')),
-              PopupMenuItem(value: 'settings', child: Text('Settings')),
-              PopupMenuItem(value: 'help', child: Text('Help')),
-              PopupMenuItem(value: 'about', child: Text('About')),
+            itemBuilder: (_) => [
+              _menuItem('keys', 'Keys', Icons.vpn_key_outlined),
+              _menuItem('settings', 'Settings', Icons.settings_outlined),
+              _menuItem('help', 'Help', Icons.help_outline),
+              _menuItem('about', 'About', Icons.info_outline),
             ],
           ),
         ],
@@ -192,6 +192,7 @@ class _HostListScreenState extends State<HostListScreen> {
                     // A matching pair, same size and weight.
                     child: Icon(
                       byKey ? Icons.vpn_key_outlined : Icons.lock_outline,
+                      color: accentAmber,
                       semanticLabel: byKey ? 'Key login' : 'Password login',
                     ),
                   ),
@@ -204,9 +205,14 @@ class _HostListScreenState extends State<HostListScreen> {
                   onTap: () => _connect(h),
                   trailing: PopupMenuButton<String>(
                     onSelected: (v) => v == 'edit' ? _edit(h) : _delete(h),
-                    itemBuilder: (_) => const [
-                      PopupMenuItem(value: 'edit', child: Text('Edit')),
-                      PopupMenuItem(value: 'delete', child: Text('Delete')),
+                    itemBuilder: (_) => [
+                      _menuItem('edit', 'Edit', Icons.edit_outlined),
+                      _menuItem(
+                        'delete',
+                        'Delete',
+                        Icons.delete_outline,
+                        destructive: true,
+                      ),
                     ],
                   ),
                 );
@@ -215,3 +221,20 @@ class _HostListScreenState extends State<HostListScreen> {
     );
   }
 }
+
+/// A menu entry with a small leading icon.
+PopupMenuItem<String> _menuItem(
+  String value,
+  String label,
+  IconData icon, {
+  bool destructive = false,
+}) => PopupMenuItem<String>(
+  value: value,
+  child: Row(
+    children: [
+      Icon(icon, size: 20, color: destructive ? errorRed : menuIconColor),
+      const SizedBox(width: 12),
+      Text(label, style: destructive ? const TextStyle(color: errorRed) : null),
+    ],
+  ),
+);

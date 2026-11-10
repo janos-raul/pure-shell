@@ -135,19 +135,19 @@ class _LockScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ColoredBox(
-      color: const Color(0xFF0F1115),
+      color: const Color(0xFF000000),
       child: Directionality(
         textDirection: TextDirection.ltr,
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.lock, size: 64, color: Color(0xFF4ADE80)),
+              const Icon(Icons.lock, size: 64, color: Color(0xFF33FF66)),
               const SizedBox(height: 16),
               if (locked) ...[
                 const Text(
                   'Pure-Shell is locked',
-                  style: TextStyle(color: Colors.white, fontSize: 20),
+                  style: TextStyle(color: Color(0xFFCCCCCC), fontSize: 20),
                 ),
                 const SizedBox(height: 24),
                 FilledButton(

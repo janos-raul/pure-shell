@@ -26,7 +26,10 @@ List<InlineSpan> helpSpans(String text) {
       spans.add(
         TextSpan(
           text: m.group(2),
-          style: const TextStyle(fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: emphasisBlue,
+          ),
         ),
       );
     }
@@ -48,7 +51,14 @@ class HelpScreen extends StatelessWidget {
         children: [
           for (final topic in helpTopics)
             ListTile(
-              title: Text(topic.title),
+              // Blue like a directory in a listing; the one warning topic
+              // (lost keys) in amber.
+              title: Text(
+                topic.title,
+                style: TextStyle(
+                  color: topic.id == 'keys-lost' ? warningAmber : emphasisBlue,
+                ),
+              ),
               subtitle: Text(topic.summary),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => Navigator.of(context).push(

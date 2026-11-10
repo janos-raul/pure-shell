@@ -79,6 +79,7 @@ void main() {
           'Copy and paste',
           'Keeping sessions alive',
           'Long-running jobs: tmux',
+          'StrongBox, TEE, software',
           'Keys can be lost',
         ],
       );
@@ -180,6 +181,8 @@ void main() {
 
   group('screens', () {
     testWidgets('the list shows every topic and opens it', (t) async {
+      t.view.physicalSize = const Size(720, 3000);
+      addTearDown(t.view.resetPhysicalSize);
       await t.pumpWidget(
         MaterialApp(theme: pureShellTheme(), home: const HelpScreen()),
       );
@@ -187,7 +190,8 @@ void main() {
         await t.scrollUntilVisible(find.text(topic.title), 80);
         expect(find.text(topic.title), findsOneWidget);
       }
-      await t.scrollUntilVisible(find.text('Adding a key to a server'), -80);
+      await t.drag(find.byType(ListView), const Offset(0, 5000));
+      await t.pumpAndSettle();
       await t.tap(find.text('Adding a key to a server'));
       await t.pumpAndSettle();
       expect(find.byType(HelpTopicScreen), findsOneWidget);

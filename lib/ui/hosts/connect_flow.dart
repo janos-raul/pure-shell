@@ -168,13 +168,19 @@ class ConnectDialog extends StatelessWidget {
             const SizedBox(height: 12),
             const Text(
               'Key type',
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: emphasisBlue,
+              ),
             ),
             Text(key.type, style: monoStyle),
             const SizedBox(height: 8),
             const Text(
               'SHA-256 fingerprint',
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: emphasisBlue,
+              ),
             ),
             SelectableText(key.fingerprint, style: monoStyle),
             const SizedBox(height: 12),
