@@ -27,10 +27,15 @@ Please keep the app installed and stay opted in for at least 14 days. Details:
 
 - **No cloud, no accounts, no analytics, no ads, no crash-reporting SDKs.**
   The app talks to the servers you configure and to nothing else. Its
-  permissions: `INTERNET` (to reach those servers), `POST_NOTIFICATIONS` and
-  `FOREGROUND_SERVICE` (to keep sessions alive in the background, with a
-  notification that shows only how many are active), and `USE_BIOMETRIC`
-  (the system fingerprint / screen-lock prompt, handled by Android).
+  permissions: `INTERNET` (to reach those servers), `POST_NOTIFICATIONS`,
+  `FOREGROUND_SERVICE` and `FOREGROUND_SERVICE_SPECIAL_USE` (to keep sessions
+  alive in the background, with a notification that shows only how many are
+  active), and `USE_BIOMETRIC` and `USE_FINGERPRINT` (the system fingerprint /
+  screen-lock prompt, handled by Android; the biometric library adds
+  `USE_FINGERPRINT`, its older name). AndroidX also defines one signature-level
+  permission that only this app can hold,
+  `eu.pureshell.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`. This is the
+  complete list in the built app's manifest.
 - **Nothing sensitive is ever logged:** no passwords, no keys, no terminal
   content.
 - **Security over convenience.** When in doubt, the app blocks and explains

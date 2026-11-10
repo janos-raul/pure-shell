@@ -239,9 +239,14 @@ void main() {
     for (final m in RegExp(
       r'uses-permission android:name="android\.permission\.([A-Z_]+)"',
     ).allMatches(manifest)) {
-      // FOREGROUND_SERVICE_SPECIAL_USE is the type of FOREGROUND_SERVICE.
-      final name = m.group(1)!.replaceFirst('_SPECIAL_USE', '');
-      expect(readme, contains(name), reason: m.group(1));
+      expect(readme, contains(m.group(1)!), reason: m.group(1));
+    }
+    // Added by libraries, so not in our own manifest, but in the merged one.
+    for (final name in [
+      'USE_FINGERPRINT',
+      'DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION',
+    ]) {
+      expect(readme, contains(name), reason: name);
     }
     expect(readme, contains('https://pure-shell.eu'));
     expect(readme, isNot(contains('only\n  permission')));
