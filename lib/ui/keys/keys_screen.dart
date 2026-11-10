@@ -231,6 +231,9 @@ class _NewKeyDialogState extends State<_NewKeyDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      // Scrolls when the keyboard leaves too little room, instead of
+      // overflowing.
+      scrollable: true,
       title: const Text('Create key'),
       content: Form(
         key: _form,

@@ -20,6 +20,7 @@ import 'package:pureshell/core/keys/keystore_api.dart';
 import 'package:pureshell/core/storage/secure_store.dart';
 import 'package:pureshell/ui/hosts/host_edit_screen.dart';
 import 'package:pureshell/ui/keys/keys_screen.dart';
+import 'package:pureshell/ui/theme.dart';
 
 import 'fake_keystore.dart';
 
@@ -271,5 +272,35 @@ void main() {
       expect(find.textContaining('Choose a key'), findsOneWidget);
       expect(await repo.list(), isEmpty);
     });
+  });
+
+  testWidgets('the Create key dialog fits above the keyboard on a phone', (
+    t,
+  ) async {
+    // 1080 x 1920 px at 2.625 (about 411 x 731 dp) with the keyboard up: the
+    // dialog used to overflow by a few pixels.
+    t.view.physicalSize = const Size(1080, 1920);
+    t.view.devicePixelRatio = 2.625;
+    t.view.viewInsets = const FakeViewPadding(bottom: 1100);
+    addTearDown(t.view.reset);
+    await t.pumpWidget(
+      MaterialApp(
+        theme: pureShellTheme(),
+        home: KeysScreen(keyService: service),
+      ),
+    );
+    await t.pumpAndSettle();
+    await t.tap(find.byType(FloatingActionButton));
+    await t.pumpAndSettle();
+    if (find.text('Keys can be lost').evaluate().isNotEmpty) {
+      await t.tap(find.text('I understand'));
+      await t.pumpAndSettle();
+    }
+    expect(find.text('Create key'), findsOneWidget);
+    expect(t.takeException(), isNull); // no RenderFlex overflow
+    // Everything is still reachable: the buttons can be scrolled into view.
+    await t.ensureVisible(find.text('Create'));
+    await t.pumpAndSettle();
+    expect(find.text('Create'), findsOneWidget);
   });
 }
