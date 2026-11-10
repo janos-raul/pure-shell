@@ -163,10 +163,39 @@ void main() {
 
   test('one contact address everywhere', () {
     for (final e in pages.entries) {
-      for (final m in RegExp(r'mailto:([^"]+)"').allMatches(e.value)) {
+      // The address only: a link may add ?subject=...
+      for (final m in RegExp(r'mailto:([^"?]+)[^"]*"').allMatches(e.value)) {
         expect(m.group(1), email, reason: e.key);
       }
     }
+  });
+
+  test('the beta section is on the landing page and well formed', () {
+    final html = pages['index.html']!;
+    final beta = html.substring(
+      html.indexOf('<section id="beta">'),
+      html.indexOf('</main>'),
+    );
+    expect(html, contains('<a href="#beta">'));
+    expect(html.indexOf('id="beta"'), greaterThan(html.indexOf('id="get"')));
+    expect(html.indexOf('id="beta"'), lessThan(html.indexOf('<footer')));
+    expect(
+      beta,
+      contains('href="https://groups.google.com/g/pure-shell-testers"'),
+    );
+    expect(
+      beta,
+      contains('href="https://play.google.com/apps/testing/eu.pureshell.app"'),
+    );
+    expect(
+      beta,
+      contains('mailto:$email?subject=Pure-Shell%20beta%20promo%20code'),
+    );
+    expect(RegExp('<li>').allMatches(beta.split('</ol>').first).length, 3);
+    expect(beta, contains('paid app (&euro;4.99)'));
+    // No promo codes or numbers of testers on the page.
+    expect(beta, isNot(matches(RegExp(r'\b[A-Z0-9]{10,}\b'))));
+    expect(text(beta), isNot(contains('12 testers')));
   });
 
   test('the sitemap lists every page, and robots points to it', () {

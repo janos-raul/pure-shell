@@ -109,6 +109,13 @@ h3 { font-size: 1.15rem; margin: 0 0 6px; color: var(--accent); }
 .checks li { padding-left: 1.6em; position: relative; margin: 6px 0; }
 .checks li::before { content: "\2713"; position: absolute; left: 0; color: var(--accent); font-weight: 700; }
 
+/* Beta steps */
+.steps { padding-left: 1.4em; margin: 0 0 20px; }
+.steps li { margin: 14px 0; padding-left: 0.3em; }
+.steps li::marker { color: var(--accent); font-weight: 700; }
+.steps .cta { margin-top: 10px; }
+.note { background: var(--panel); border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 8px; padding: 12px 16px; }
+
 /* Documents (privacy, terms) */
 .docpage { padding-top: 40px; padding-bottom: 24px; }
 .docpage h1 { font-size: clamp(2rem, 6vw, 2.6rem); margin: 0 0 8px; color: var(--accent); }

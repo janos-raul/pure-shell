@@ -5,6 +5,24 @@ It connects to your servers and gets out of the way.
 
 Website, privacy policy and terms: <https://pure-shell.eu>
 
+## Beta testing
+
+Pure-Shell is in a closed test on Google Play. Testers get the app free:
+
+1. Join the [Google Group](https://groups.google.com/g/pure-shell-testers),
+   signed in with the Google account you use on your phone.
+2. Open the
+   [Play opt-in link](https://play.google.com/apps/testing/eu.pureshell.app)
+   and tap "Become a tester".
+3. We'll usually email you a free promo code after you join; if not, email
+   us (the link is on <https://pure-shell.eu/#beta>). Redeem it in the Play
+   Store (profile icon > Payments & subscriptions > Redeem code) before
+   installing: the app is paid, so Play asks for payment otherwise.
+
+Please keep the app installed and stay opted in for at least 14 days. Details:
+<https://pure-shell.eu/#beta>. Developers: report bugs on the
+[GitHub Issues](https://github.com/janos-raul/pure-shell/issues) page.
+
 ## Principles
 
 - **No cloud, no accounts, no analytics, no ads, no crash-reporting SDKs.**
