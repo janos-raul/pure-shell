@@ -269,11 +269,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ]),
               const _Section('Terminal'),
               _Box([
-                ListTile(
-                  title: const Text('Input mode'),
-                  subtitle: Text(_inputMode.label),
-                  onTap: _chooseInputMode,
-                ),
+                // Soft-keyboard modes; the desktop always uses text input.
+                if (!windowsStub)
+                  ListTile(
+                    title: const Text('Input mode'),
+                    subtitle: Text(_inputMode.label),
+                    onTap: _chooseInputMode,
+                  ),
                 ListTile(
                   title: const Text('Terminal colors'),
                   subtitle: Text(_colors.label),

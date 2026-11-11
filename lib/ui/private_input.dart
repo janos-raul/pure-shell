@@ -78,7 +78,20 @@ class PrivateTerminalView extends StatelessWidget {
     this.autofocus = true,
     this.hardwareKeyboardOnly = false,
     this.controller,
+    this.shortcuts,
+    this.onKeyEvent,
+    this.onSecondaryTapDown,
   });
+
+  /// Replaces xterm's default shortcuts (null keeps them). The desktop build
+  /// passes an empty map so Ctrl+A, Ctrl+V etc. reach the shell.
+  final Map<ShortcutActivator, Intent>? shortcuts;
+
+  /// Sees every key event before xterm does.
+  final FocusOnKeyEventCallback? onKeyEvent;
+
+  /// Right-click (desktop context menu).
+  final void Function(TapDownDetails, CellOffset)? onSecondaryTapDown;
 
   final Terminal terminal;
   final FocusNode focusNode;
@@ -104,6 +117,9 @@ class PrivateTerminalView extends StatelessWidget {
       controller: controller,
       autofocus: autofocus,
       hardwareKeyboardOnly: hardwareKeyboardOnly,
+      shortcuts: shortcuts,
+      onKeyEvent: onKeyEvent,
+      onSecondaryTapDown: onSecondaryTapDown,
       keyboardType: keyboardType,
       backgroundOpacity: 1,
       textStyle: textStyle,

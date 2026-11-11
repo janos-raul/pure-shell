@@ -13,7 +13,10 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:xterm/xterm.dart';
 
+import 'package:flutter/services.dart';
+
 import '../../core/hosts/host.dart';
+import '../../core/platform_support.dart';
 import '../../core/lock/app_lock_controller.dart';
 import '../../core/ssh/session_keeper.dart';
 import '../../core/ssh/ssh_connection.dart';
@@ -22,6 +25,7 @@ import '../theme.dart';
 import '../lock/app_lock_gate.dart';
 import '../private_input.dart';
 import 'command_box.dart';
+import 'desktop_keys.dart';
 import 'direct_input.dart';
 import 'extra_keys.dart';
 import 'pinch_zoom.dart';
@@ -123,10 +127,11 @@ class _TerminalScreenState extends State<TerminalScreen>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _focus.addListener(_syncInput);
-    _direct = DirectInput(
-      terminal: _terminal,
-      accepting: () => _acceptingInput,
-    );
+    // Desktop: no native keyboard view; xterm's own text input client takes
+    // keys, IME composition and typed text (emoji panel, remote desktop).
+    _direct = windowsStub
+        ? null
+        : DirectInput(terminal: _terminal, accepting: () => _acceptingInput);
     widget.settings.loadInputMode().then((mode) {
       if (!mounted) return;
       setState(() => _inputMode = mode);
@@ -508,6 +513,33 @@ class _TerminalScreenState extends State<TerminalScreen>
     await _clipboard.copySensitive(text);
   }
 
+  /// Desktop shortcuts, before xterm (see [desktopKeyAction]). Anything not
+  /// listed there goes to the shell unchanged.
+  KeyEventResult _onDesktopKey(FocusNode node, KeyEvent event) {
+    if (event is KeyUpEvent) return KeyEventResult.ignored;
+    final keys = HardwareKeyboard.instance;
+    final action = desktopKeyAction(
+      event.logicalKey,
+      ctrl: keys.isControlPressed,
+      shift: keys.isShiftPressed,
+      alt: keys.isAltPressed,
+      character: event.character,
+    );
+    switch (action) {
+      case null:
+        return KeyEventResult.ignored;
+      case CopyAction():
+        unawaited(_copySelection());
+      case PasteAction():
+        unawaited(_paste());
+      case ZoomAction():
+        return KeyEventResult.ignored; // font zoom: not wired up yet
+      case TypeAction(:final text):
+        if (_sessionLive) _terminal.textInput(text);
+    }
+    return KeyEventResult.handled;
+  }
+
   void _selectAll() {
     if (!_visibleToUser) return;
     final b = _terminal.buffer;
@@ -662,14 +694,19 @@ class _TerminalScreenState extends State<TerminalScreen>
                       child: _LongPress(
                         onLongPress: _showTextMenu,
                         child: _TapToShowKeyboard(
-                          enabled: _inputMode == InputMode.direct,
+                          enabled:
+                              !windowsStub && _inputMode == InputMode.direct,
                           onTap: () => _direct?.attach(),
                           child: PrivateTerminalView(
                             _terminal,
                             controller: _termController,
                             focusNode: _focus,
                             hardwareKeyboardOnly:
-                                _inputMode == InputMode.direct,
+                                !windowsStub && _inputMode == InputMode.direct,
+                            // Desktop: no xterm shortcuts (they took Ctrl+A
+                            // and Ctrl+V from the shell); ours run first.
+                            shortcuts: windowsStub ? const {} : null,
+                            onKeyEvent: windowsStub ? _onDesktopKey : null,
                             textStyle: TerminalStyle(fontSize: _fontSize),
                             theme: terminalThemeFor(_colors),
                           ),
