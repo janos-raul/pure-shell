@@ -48,6 +48,30 @@ Ctrl+O, Ctrl+X), tmux prefix (Ctrl+B %, Ctrl+B d), htop, multi-line paste in bas
 minimum and large window sizes, injected (VK_PACKET) text, Roaming -> Local
 migration.
 
+## Lock and protection phase (done, Windows only)
+
+- App lock: locks on Windows session lock (Win+L, sleep) and on a Remote Desktop
+  disconnect, and when the window has been minimised longer than the timeout; never
+  on focus changes (alt-tab). Windows Hello unlocks it (UserConsentVerifier,
+  window-aware interop call), prompted only while the window is visible. Without
+  Hello the lock is unavailable and Settings says why. Key presses no longer reach
+  the server while locked.
+- Remote Desktop (decision): Hello user verification is not available over RDP, so
+  the lock does not apply there; a lock from the computer is lifted when connecting
+  over RDP. After a session lock or RDP disconnect, signing in at the computer
+  again locks the app.
+- Capture blocking: SetWindowDisplayAffinity(WDA_EXCLUDEFROMCAPTURE, fallback
+  WDA_MONITOR) for the "Allow screenshots" setting, blocked from window creation.
+- Clipboard: terminal copies carry ExcludeClipboardContentFromMonitorProcessing,
+  CanIncludeInClipboardHistory = 0 and CanUploadToCloudClipboard = 0.
+- The selection is cleared when a program switches to/from the alternate screen.
+
+Verified live (over Remote Desktop): capture blocking (window absent from screen
+capture, PrintWindow black), Hello unavailable over RDP (lock off, no prompt).
+Assumed, not tested live yet (needs the physical machine): PIN at start, Win+L,
+minimise past the timeout, alt-tab, Win+V history exclusion (clipboard history is
+off on the test machine), htop selection clear (widget-tested).
+
 ## Known problems
 
 - Not tested live: a real IME (none installed), the emoji panel, AltGr layouts,
