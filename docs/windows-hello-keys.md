@@ -34,6 +34,32 @@ API: `Windows.Security.Credentials.KeyCredentialManager` ("Passport" keys).
   check attestation before calling it hardware-backed.
 - Windows Hello itself can be a PIN only; the TPM rate-limits PIN guesses.
 
+## Result (2026-11-11, Windows 11 26300, Intel PTT TPM 2.0, Hello PIN only)
+
+End to end against OpenSSH 9.6 (WSL test sshd, 127.0.0.1:2222): **works.**
+
+- Create: Windows Hello PIN prompt ("Windows Security - Making sure it's you"),
+  centred over and owned by the app window (`RequestCreateForWindowAsync`).
+  Attestation succeeded, so the key is shown as "TPM + Hello".
+- Public key: `ssh-keygen -lf` reads the app's line as
+  `2048 SHA256:Bxje1f... (RSA)`, the same fingerprint the app shows.
+- Login: `Accepted publickey ... ssh2: RSA SHA256:Bxje1f...`. OpenSSH >= 8.8
+  refuses SHA-1 `ssh-rsa` signatures by default, so acceptance also confirms
+  `rsa-sha2-256`. Windows hashes the data itself (raw SSH session data in).
+- Hello on every use: a PIN prompt for creation, for the first login and again
+  for a second login about a minute later. No caching observed (not tested
+  over shorter intervals). Thanks to `shouldProbe`, the prompt only appears for
+  a key the server accepts.
+- Cancelling the prompt maps to `cancelled` (unit test); deleting the key
+  needs no prompt.
+- Fallback: when `IsSupportedAsync()` is false the app makes the labelled
+  software Ed25519 key (unit test; not tried live, Hello is set up here).
+
+Not tested live: a machine without TPM (expected: Hello key, attestation
+`notSupported`, badge "Hello (no TPM proof)"), biometrics, older Windows
+without the `*ForWindowAsync` methods (falls back to the plain calls; prompt
+may open behind the window).
+
 ## Implementation
 
 - Native: `windows/runner/hello_keystore.{h,cpp}`, C++/WinRT, channel
@@ -41,3 +67,10 @@ API: `Windows.Security.Credentials.KeyCredentialManager` ("Passport" keys).
   delete). WinRT calls run on a worker thread; replies return on the platform
   thread through a message-only window. Prompts are owned by the app window
   (`*ForWindowAsync`, falling back to the plain calls on older Windows).
+- Dart: `lib/core/keys/windows_keystore.dart` (KeystoreApi; Hello for signing
+  keys, `SoftwareKeystore` for the fallback's wrap key, own alias index),
+  `lib/core/keys/ssh_rsa_encoding.dart` (BCRYPT_RSAPUBLIC_BLOB -> `ssh-rsa`
+  blob, `rsa-sha2-256` signature blob), `KeyKind.helloRsa`,
+  `SshKey.authAlgorithm`, `KeystoreCapabilities.hardwareKeys`.
+- Tests: `test/windows_hello_keys_test.dart` checks the encoding against
+  dartssh2's own RSA verifier and the KeyService path with a faked channel.
