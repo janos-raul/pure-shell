@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "dpapi_channel.h"
 #include "hello_keystore.h"
 #include "win32_window.h"
 
@@ -32,6 +33,9 @@ class FlutterWindow : public Win32Window {
 
   // Windows Hello key credentials (spike).
   std::unique_ptr<HelloKeystore> hello_keystore_;
+
+  // DPAPI for the app's encrypted store.
+  std::unique_ptr<DpapiChannel> dpapi_;
 };
 
 #endif  // RUNNER_FLUTTER_WINDOW_H_

@@ -23,6 +23,7 @@ import 'core/ssh/session_keeper.dart';
 import 'core/storage/screenshot_settings.dart';
 import 'core/storage/secure_store.dart';
 import 'core/storage/terminal_settings.dart';
+import 'core/storage/windows_secure_store.dart';
 import 'ui/build_guard.dart';
 import 'ui/hosts/host_list_screen.dart';
 import 'ui/lock/app_lock_gate.dart';
@@ -40,7 +41,11 @@ Future<void> main() async {
     runApp(BuildErrorApp(message: problem));
     return;
   }
-  final store = FlutterSecureStore();
+  // Windows: our own DPAPI store in Local AppData (moves the first builds'
+  // Roaming data over once).
+  final SecureStore store = windowsStub
+      ? await WindowsSecureStore.open()
+      : FlutterSecureStore();
   // EXPERIMENTAL Windows build: Windows Hello keys with a software-key
   // fallback, no app lock (see platform_support.dart).
   final KeystoreApi keystore = windowsStub

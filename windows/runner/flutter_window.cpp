@@ -27,6 +27,8 @@ bool FlutterWindow::OnCreate() {
   RegisterPlugins(flutter_controller_->engine());
   hello_keystore_ = std::make_unique<HelloKeystore>(
       flutter_controller_->engine()->messenger(), GetHandle());
+  dpapi_ = std::make_unique<DpapiChannel>(
+      flutter_controller_->engine()->messenger());
   SetChildContent(flutter_controller_->view()->GetNativeWindow());
 
   flutter_controller_->engine()->SetNextFrameCallback([&]() {
@@ -43,6 +45,7 @@ bool FlutterWindow::OnCreate() {
 
 void FlutterWindow::OnDestroy() {
   hello_keystore_ = nullptr;
+  dpapi_ = nullptr;
   if (flutter_controller_) {
     flutter_controller_ = nullptr;
   }
