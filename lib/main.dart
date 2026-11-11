@@ -19,6 +19,7 @@ import 'core/keys/keystore_api.dart';
 import 'core/keys/windows_keystore.dart';
 import 'core/lock/app_lock_controller.dart';
 import 'core/lock/app_lock_settings.dart';
+import 'core/lock/window_events.dart';
 import 'core/ssh/session_keeper.dart';
 import 'core/storage/screenshot_settings.dart';
 import 'core/storage/secure_store.dart';
@@ -55,8 +56,10 @@ Future<void> main() async {
   final lock = AppLockController(
     keystore,
     AppLockSettings(store),
-    supported: !windowsStub,
+    desktop: windowsStub,
   );
+  // Desktop: lock on Windows session lock and long minimise, not on focus.
+  if (windowsStub) WindowEvents.listen(lock.handleWindowEvent);
   await lock.init();
   final screenshots = ScreenshotSettings(store);
   await screenshots.init();

@@ -7,6 +7,8 @@
 // Software Foundation, either version 3 of the License, or (at your option)
 // any later version. See the LICENSE file for details.
 
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 
 import '../keys/keystore_api.dart';
@@ -21,17 +23,28 @@ import 'app_lock_settings.dart';
 ///   transition never shows content, even before the lock applies.
 /// - Does nothing when the phone has no secure screen lock; instead one
 ///   notice is requested, once.
+///
+/// Desktop ([desktop], the Windows build) works differently, because a
+/// desktop window loses the focus all the time (alt-tab):
+///
+/// - Focus and app lifecycle changes are ignored ([handleLifecycle]).
+/// - Locked at once when Windows locks the session (Win+L, sleep), and when
+///   the window has been minimised for longer than the timeout
+///   ([handleWindowEvent]).
+/// - Possible only with Windows Hello (`canAuthenticate`); no notice, the
+///   setting explains it.
+/// - The unlock prompt is only started while the window can be seen
+///   ([canPromptNow]): not on the Windows lock screen, not while minimised.
 class AppLockController extends ChangeNotifier {
   AppLockController(
     this._keystore,
     this._settings, {
     DateTime Function()? now,
-    this.supported = true,
+    this.desktop = false,
   }) : _now = now ?? DateTime.now;
 
-  /// False on platforms with no lock prompt yet (the Windows build): never
-  /// locks, never asks for the no-screen-lock notice.
-  final bool supported;
+  /// Desktop rules (see the class comment).
+  final bool desktop;
 
   final KeystoreApi _keystore;
   final AppLockSettings _settings;
@@ -46,6 +59,12 @@ class AppLockController extends ChangeNotifier {
   var _noticePending = false;
   DateTime? _leftAt;
 
+  // Desktop window state.
+  var _sessionLocked = false;
+  var _minimized = false;
+  DateTime? _minimizedAt;
+  Timer? _minimizedTimer;
+
   bool get enabled => _enabled;
   LockTimeout get timeout => _timeout;
 
@@ -53,7 +72,11 @@ class AppLockController extends ChangeNotifier {
   bool get secureLockScreen => _secureLockScreen;
 
   /// Locking is on and possible.
-  bool get active => supported && _enabled && _secureLockScreen;
+  bool get active => _enabled && _secureLockScreen;
+
+  /// Whether the unlock prompt may be shown now (desktop: only while the
+  /// window is visible and Windows is not locked).
+  bool get canPromptNow => !desktop || (!_sessionLocked && !_minimized);
 
   bool get locked => _locked;
 
@@ -75,8 +98,10 @@ class AppLockController extends ChangeNotifier {
   }
 
   Future<void> _refreshCapabilities() async {
-    if (!supported) return;
-    _secureLockScreen = (await _keystore.capabilities()).secureLockScreen;
+    final caps = await _keystore.capabilities();
+    // Desktop: the lock needs Windows Hello to unlock.
+    _secureLockScreen = desktop ? caps.canAuthenticate : caps.secureLockScreen;
+    if (desktop) return; // no notice: the setting says why
     if (_enabled && !_secureLockScreen && !_noticePending) {
       if (!await _settings.loadNoticeShown()) _noticePending = true;
     }
@@ -102,8 +127,59 @@ class AppLockController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Feed with the app lifecycle.
+  /// Desktop window events from the runner (window_channels.cpp):
+  /// `sessionLock`, `sessionUnlock`, `minimized`, `restored`.
+  Future<void> handleWindowEvent(String event) async {
+    if (!desktop) return;
+    switch (event) {
+      case 'sessionLock':
+        _sessionLocked = true;
+        if (active) _locked = true;
+      case 'sessionUnlock':
+        _sessionLocked = false;
+        await _refreshCapabilities(); // Hello may have been set up meanwhile
+      case 'minimized':
+        _minimized = true;
+        _minimizedAt = _now();
+        _minimizedTimer?.cancel();
+        if (active) {
+          if (_timeout.duration == Duration.zero) {
+            _locked = true;
+          } else {
+            // Lock while still minimised, so the window never shows the
+            // terminal again once the timeout has passed.
+            _minimizedTimer = Timer(_timeout.duration, () {
+              if (_minimized && active) {
+                _locked = true;
+                notifyListeners();
+              }
+            });
+          }
+        }
+      case 'restored':
+        _minimized = false;
+        _minimizedTimer?.cancel();
+        final at = _minimizedAt;
+        _minimizedAt = null;
+        if (active &&
+            at != null &&
+            _now().difference(at) >= _timeout.duration) {
+          _locked = true;
+        }
+    }
+    notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _minimizedTimer?.cancel();
+    super.dispose();
+  }
+
+  /// Feed with the app lifecycle. Ignored on the desktop, where losing the
+  /// focus (alt-tab) is no reason to cover or lock.
   Future<void> handleLifecycle(AppLifecycleState state) async {
+    if (desktop) return;
     // A fingerprint / screen-lock prompt takes focus away from the app; that
     // is not the user leaving it.
     if (PromptTracker.active.value > 0) return;

@@ -29,6 +29,8 @@ bool FlutterWindow::OnCreate() {
       flutter_controller_->engine()->messenger(), GetHandle());
   dpapi_ = std::make_unique<DpapiChannel>(
       flutter_controller_->engine()->messenger());
+  window_channels_ = std::make_unique<WindowChannels>(
+      flutter_controller_->engine()->messenger(), GetHandle());
   SetChildContent(flutter_controller_->view()->GetNativeWindow());
 
   flutter_controller_->engine()->SetNextFrameCallback([&]() {
@@ -44,6 +46,7 @@ bool FlutterWindow::OnCreate() {
 }
 
 void FlutterWindow::OnDestroy() {
+  window_channels_ = nullptr;
   hello_keystore_ = nullptr;
   dpapi_ = nullptr;
   if (flutter_controller_) {
@@ -65,6 +68,8 @@ FlutterWindow::MessageHandler(HWND hwnd, UINT const message,
     info->ptMinTrackSize.y = MulDiv(480, dpi, 96);
     return 0;
   }
+
+  if (window_channels_) window_channels_->OnMessage(message, wparam, lparam);
 
   // Give Flutter, including plugins, an opportunity to handle window messages.
   if (flutter_controller_) {

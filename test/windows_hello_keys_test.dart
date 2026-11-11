@@ -178,7 +178,12 @@ void main() {
         isTrue,
       );
       // The private key never comes to Dart: only these calls exist.
-      expect(calls.toSet(), {'isSupported', 'create', 'sign'});
+      expect(calls.toSet(), {
+        'isSupported',
+        'consentAvailable',
+        'create',
+        'sign',
+      });
     });
 
     test('no TPM proof: labelled Hello, not TPM', () async {

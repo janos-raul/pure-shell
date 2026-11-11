@@ -533,6 +533,9 @@ class _TerminalScreenState extends State<TerminalScreen>
   /// listed there goes to the shell unchanged.
   KeyEventResult _onDesktopKey(FocusNode node, KeyEvent event) {
     if (event is KeyUpEvent) return KeyEventResult.ignored;
+    // Locked (the lock screen is over the terminal, which still has the
+    // focus) or ended: no key may reach the server.
+    if (!_sessionLive) return KeyEventResult.handled;
     final keys = HardwareKeyboard.instance;
     final action = desktopKeyAction(
       event.logicalKey,

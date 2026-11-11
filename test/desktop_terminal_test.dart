@@ -23,6 +23,12 @@ import 'package:pureshell/core/hosts/known_hosts.dart';
 import 'package:pureshell/core/ssh/ssh_connection.dart';
 import 'package:pureshell/core/storage/secure_store.dart';
 import 'package:pureshell/core/storage/terminal_settings.dart';
+import 'package:pureshell/core/lock/app_lock_controller.dart';
+import 'package:pureshell/core/lock/app_lock_settings.dart';
+import 'package:pureshell/ui/lock/app_lock_gate.dart';
+
+import 'fake_keystore.dart';
+
 import 'package:pureshell/ui/terminal/extra_keys.dart';
 import 'package:pureshell/ui/terminal/terminal_screen.dart';
 
@@ -72,12 +78,19 @@ class _Connection extends SshConnection {
 
 final windows = TargetPlatformVariant.only(TargetPlatform.windows);
 
+Widget _withLock(AppLockController? lock, Widget child) =>
+    lock == null ? child : AppLockScope(controller: lock, child: child);
+
 void main() {
   late MemorySecureStore store;
   late _Connection conn;
   String? clipboard;
 
-  Future<void> pumpScreen(WidgetTester t, {bool? showExtraKeys}) async {
+  Future<void> pumpScreen(
+    WidgetTester t, {
+    bool? showExtraKeys,
+    AppLockController? lock,
+  }) async {
     store = MemorySecureStore();
     if (showExtraKeys != null) {
       store.data[TerminalSettings.showExtraKeysKey] = '$showExtraKeys';
@@ -101,10 +114,13 @@ void main() {
     );
     await t.pumpWidget(
       MaterialApp(
-        home: TerminalScreen(
-          host: _host,
-          connection: conn,
-          settings: TerminalSettings(store),
+        home: _withLock(
+          lock,
+          TerminalScreen(
+            host: _host,
+            connection: conn,
+            settings: TerminalSettings(store),
+          ),
         ),
       ),
     );
@@ -285,5 +301,22 @@ void main() {
     await t.sendKeyEvent(LogicalKeyboardKey.keyW);
     await t.pumpAndSettle();
     expect(sent(), 'w');
+  }, variant: windows);
+
+  testWidgets('while locked no key or text reaches the server', (t) async {
+    final lock = AppLockController(
+      FakeKeystore(),
+      AppLockSettings(MemorySecureStore()),
+      desktop: true,
+    );
+    await lock.init();
+    expect(lock.locked, isTrue);
+    await pumpScreen(t, lock: lock);
+    await chord(t, [LogicalKeyboardKey.controlLeft], LogicalKeyboardKey.keyA);
+    await t.sendKeyEvent(LogicalKeyboardKey.keyW);
+    await t.sendKeyEvent(LogicalKeyboardKey.enter);
+    await t.pumpAndSettle();
+    expect(t.testTextInput.hasAnyClients, isFalse);
+    expect(sent(), isEmpty);
   }, variant: windows);
 }

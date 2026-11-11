@@ -9,6 +9,7 @@
 #include "dpapi_channel.h"
 #include "hello_keystore.h"
 #include "win32_window.h"
+#include "window_channels.h"
 
 // A window that does nothing but host a Flutter view.
 class FlutterWindow : public Win32Window {
@@ -36,6 +37,9 @@ class FlutterWindow : public Win32Window {
 
   // DPAPI for the app's encrypted store.
   std::unique_ptr<DpapiChannel> dpapi_;
+
+  // Session lock / minimise events, capture blocking, clipboard.
+  std::unique_ptr<WindowChannels> window_channels_;
 };
 
 #endif  // RUNNER_FLUTTER_WINDOW_H_

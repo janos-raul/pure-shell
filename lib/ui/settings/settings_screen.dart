@@ -93,7 +93,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
   }
 
-  static String _timeoutHelp(LockTimeout t) => switch (t) {
+  static String _timeoutHelp(LockTimeout t) =>
+      windowsStub ? _desktopTimeoutHelp(t) : _phoneTimeoutHelp(t);
+
+  /// Locking Windows (Win+L) always locks at once; this is for minimising.
+  static String _desktopTimeoutHelp(LockTimeout t) => switch (t) {
+    LockTimeout.immediately => 'Locks as soon as the window is minimised.',
+    LockTimeout.oneMinute =>
+      'Stays unlocked if you restore the window within a minute.',
+    LockTimeout.fiveMinutes =>
+      'Stays unlocked if you restore the window within 5 minutes.',
+    LockTimeout.fifteenMinutes =>
+      'Stays unlocked if you restore the window within 15 minutes.',
+  };
+
+  static String _phoneTimeoutHelp(LockTimeout t) => switch (t) {
     LockTimeout.immediately => 'Locks as soon as you leave the app.',
     LockTimeout.oneMinute => 'Stays unlocked if you are back within a minute.',
     LockTimeout.fiveMinutes =>
@@ -108,20 +122,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context,
       title: 'App lock',
       current: lock.enabled,
-      options: [
-        ChoiceOption(
-          true,
-          'On',
-          lock.secureLockScreen
-              ? 'Ask for your fingerprint or screen lock to open the app.'
-              : 'Needs a screen lock: set one in Android settings.',
-        ),
-        const ChoiceOption(
-          false,
-          'Off',
-          'Anyone who opens the phone can open the app.',
-        ),
-      ],
+      options: windowsStub
+          ? [
+              ChoiceOption(
+                true,
+                'On',
+                lock.secureLockScreen
+                    ? 'Locks when Windows locks and when the window stays '
+                          'minimised; Windows Hello unlocks it. Sessions keep '
+                          'running while it is locked.'
+                    : 'Needs Windows Hello: set up a PIN, fingerprint or face '
+                          'in Windows Settings, Accounts, Sign-in options.',
+              ),
+              const ChoiceOption(
+                false,
+                'Off',
+                'Anyone who uses this Windows account can open the app.',
+              ),
+            ]
+          : [
+              ChoiceOption(
+                true,
+                'On',
+                lock.secureLockScreen
+                    ? 'Ask for your fingerprint or screen lock to open the app.'
+                    : 'Needs a screen lock: set one in Android settings.',
+              ),
+              const ChoiceOption(
+                false,
+                'Off',
+                'Anyone who opens the phone can open the app.',
+              ),
+            ],
     );
     if (chosen != null) await lock.setEnabled(chosen);
   }
@@ -253,39 +285,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
           return ListView(
             children: [
               const _Section('Security'),
-              if (windowsStub)
-                const _Box([
-                  ListTile(
-                    enabled: false,
-                    title: Text('App lock'),
-                    subtitle: Text('Not available on Windows yet'),
+              _Box([
+                ListTile(
+                  title: const Text('App lock'),
+                  subtitle: Text(
+                    !lock.enabled
+                        ? 'Off'
+                        : lock.secureLockScreen
+                        ? 'On'
+                        : windowsStub
+                        ? 'Not available: Windows Hello is not set up'
+                        : 'On, but the phone has no screen lock',
                   ),
-                ])
-              else
-                _Box([
-                  ListTile(
-                    title: const Text('App lock'),
-                    subtitle: Text(
-                      !lock.enabled
-                          ? 'Off'
-                          : lock.secureLockScreen
-                          ? 'On'
-                          : 'On, but the phone has no screen lock',
-                    ),
-                    onTap: _chooseAppLock,
+                  onTap: _chooseAppLock,
+                ),
+                ListTile(
+                  enabled: lock.enabled,
+                  title: Text(
+                    windowsStub ? 'Lock when minimised for' : 'Lock after',
                   ),
-                  ListTile(
-                    enabled: lock.enabled,
-                    title: const Text('Lock after'),
-                    subtitle: Text(lock.timeout.label),
-                    onTap: lock.enabled ? _chooseTimeout : null,
-                  ),
+                  subtitle: Text(lock.timeout.label),
+                  onTap: lock.enabled ? _chooseTimeout : null,
+                ),
+                if (!windowsStub)
                   ListTile(
                     title: const Text('Allow screenshots'),
                     subtitle: Text(widget.screenshots.allowed ? 'On' : 'Off'),
                     onTap: _chooseScreenshots,
                   ),
-                ]),
+              ]),
               if (!windowsStub) const _Section('Connection'),
               if (!windowsStub)
                 _Box([

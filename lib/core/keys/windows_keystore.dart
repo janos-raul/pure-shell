@@ -66,18 +66,21 @@ class WindowsKeystore implements KeystoreApi {
 
   @override
   Future<KeystoreCapabilities> capabilities() async {
-    var hello = false;
-    try {
-      hello = await _call<bool>('isSupported') ?? false;
-    } on KeystoreException {
-      hello = false;
+    Future<bool> ask(String method) async {
+      try {
+        return await _call<bool>(method) ?? false;
+      } on KeystoreException {
+        return false;
+      }
     }
+
     // secureLockScreen: key creation is allowed either way (software keys
-    // without Hello). canAuthenticate: the app lock is not wired up yet.
+    // without Hello). canAuthenticate: Windows Hello user verification, for
+    // the app lock.
     return KeystoreCapabilities(
       secureLockScreen: true,
-      canAuthenticate: false,
-      hardwareKeys: hello,
+      canAuthenticate: await ask('consentAvailable'),
+      hardwareKeys: await ask('isSupported'),
     );
   }
 
@@ -155,11 +158,12 @@ class WindowsKeystore implements KeystoreApi {
   Future<Uint8List> unwrap(String alias, Uint8List iv, Uint8List data) =>
       _software.unwrap(alias, iv, data);
 
+  /// Windows Hello user verification over the app window (the app lock).
   @override
   Future<void> authenticate({
     String title = 'Unlock Pure-Shell',
     String? subtitle,
-  }) => throw const KeystoreException(KeystoreErrorKind.unavailable);
+  }) => _call<void>('authenticate', {'message': title}, true);
 
   @override
   Future<void> cancelPrompt() async {}

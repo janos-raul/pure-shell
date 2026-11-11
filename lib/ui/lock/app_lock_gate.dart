@@ -65,7 +65,9 @@ class _AppLockGateState extends State<AppLockGate> with WidgetsBindingObserver {
     } else if (!_c.hidden || !_autoPromptDone) {
       // Ask right away when the lock appears; if the user dismisses the
       // prompt they get the Unlock button instead of a nag loop.
-      if (!_autoPromptDone && !_c.unlocking) {
+      // (Desktop: only once the window can be seen again, not on the Windows
+      // lock screen or while minimised.)
+      if (!_autoPromptDone && !_c.unlocking && _c.canPromptNow) {
         _autoPromptDone = true;
         _c.unlock();
       }

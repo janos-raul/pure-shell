@@ -4,8 +4,10 @@
 
 #include "hello_keystore.h"
 
+#include <UserConsentVerifierInterop.h>
 #include <flutter/standard_method_codec.h>
 #include <winrt/Windows.Foundation.h>
+#include <winrt/Windows.Security.Credentials.UI.h>
 #include <winrt/Windows.Security.Credentials.h>
 #include <winrt/Windows.Security.Cryptography.Core.h>
 #include <winrt/Windows.Storage.Streams.h>
@@ -89,6 +91,36 @@ winrt::Windows::UI::WindowId WindowIdFor(HWND hwnd) {
   winrt::Windows::UI::WindowId id{reinterpret_cast<uint64_t>(hwnd)};
   if (fn) fn(hwnd, &id);
   return id;
+}
+
+using winrt::Windows::Security::Credentials::UI::UserConsentVerificationResult;
+using winrt::Windows::Security::Credentials::UI::UserConsentVerifier;
+using winrt::Windows::Security::Credentials::UI::
+    UserConsentVerifierAvailability;
+
+// Windows Hello user verification (no key involved): the desktop app lock.
+// The window-aware interop call puts the prompt over our window.
+std::string VerifyUser(HWND owner, const std::wstring& message) {
+  auto interop = winrt::get_activation_factory<UserConsentVerifier,
+                                               IUserConsentVerifierInterop>();
+  winrt::Windows::Foundation::IAsyncOperation<UserConsentVerificationResult>
+      op{nullptr};
+  winrt::hstring text{message};
+  winrt::check_hresult(interop->RequestVerificationForWindowAsync(
+      owner, reinterpret_cast<HSTRING>(winrt::get_abi(text)),
+      winrt::guid_of<decltype(op)>(), winrt::put_abi(op)));
+  switch (op.get()) {
+    case UserConsentVerificationResult::Verified:
+      return "";
+    case UserConsentVerificationResult::Canceled:
+      return "cancelled";
+    case UserConsentVerificationResult::RetriesExhausted:
+      return "lockout";
+    case UserConsentVerificationResult::DeviceBusy:
+      return "busy";
+    default:  // not present / not configured / disabled by policy
+      return "unavailable";
+  }
 }
 
 KeyCredential Open(const std::wstring& alias) {
@@ -199,9 +231,15 @@ void HelloKeystore::Handle(
   const EncodableValue* args = call.arguments();
   const std::string* alias_arg = StringArg(args, "alias");
   const std::wstring alias = alias_arg ? Wide(*alias_arg) : L"";
-  const bool prompts = method == "create" || method == "sign";
+  const bool prompts =
+      method == "create" || method == "sign" || method == "authenticate";
+  const bool keyless = method == "isSupported" ||
+                       method == "consentAvailable" || method == "authenticate";
+  const std::string* message_arg = StringArg(args, "message");
+  const std::wstring message =
+      message_arg ? Wide(*message_arg) : L"Unlock Pure-Shell";
 
-  if (method != "isSupported" && alias.empty()) {
+  if (!keyless && alias.empty()) {
     result->Error("failed", "alias missing");
     return;
   }
@@ -222,7 +260,7 @@ void HelloKeystore::Handle(
   }
 
   HWND owner = owner_;
-  RunAsync([this, method, alias, data, owner, prompts,
+  RunAsync([this, method, alias, data, owner, prompts, message,
             result]() -> std::function<void()> {
     auto done = [this, prompts](std::function<void()> f) {
       return [this, prompts, f] {
@@ -234,6 +272,16 @@ void HelloKeystore::Handle(
       if (method == "isSupported") {
         bool ok = KeyCredentialManager::IsSupportedAsync().get();
         return done([result, ok] { result->Success(EncodableValue(ok)); });
+      }
+      if (method == "consentAvailable") {
+        bool ok = UserConsentVerifier::CheckAvailabilityAsync().get() ==
+                  UserConsentVerifierAvailability::Available;
+        return done([result, ok] { result->Success(EncodableValue(ok)); });
+      }
+      if (method == "authenticate") {
+        const std::string code = VerifyUser(owner, message);
+        if (!code.empty()) throw Failure{code};
+        return done([result] { result->Success(); });
       }
       if (method == "exists") {
         auto r = KeyCredentialManager::OpenAsync(alias).get();
