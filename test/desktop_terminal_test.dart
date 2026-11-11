@@ -338,4 +338,28 @@ void main() {
     expect(t.testTextInput.hasAnyClients, isFalse);
     expect(sent(), isEmpty);
   }, variant: windows);
+
+  testWidgets('a selection is cleared when htop switches screens', (t) async {
+    await pumpScreen(t);
+    conn.fake!.out.add(utf8.encode('some text'));
+    await t.pumpAndSettle();
+    final term = find.byType(TerminalScreen);
+    await t.tapAt(t.getCenter(term), buttons: kSecondaryButton);
+    await t.pumpAndSettle();
+    await t.tap(find.text('Select all'));
+    await t.pumpAndSettle();
+    Future<bool> hasSelection() async {
+      await t.tapAt(t.getCenter(term), buttons: kSecondaryButton);
+      await t.pumpAndSettle();
+      final has = find.text('Clear selection').evaluate().isNotEmpty;
+      await t.sendKeyEvent(LogicalKeyboardKey.escape); // close the menu
+      await t.pumpAndSettle();
+      return has;
+    }
+
+    expect(await hasSelection(), isTrue);
+    conn.fake!.out.add(utf8.encode('\x1b[?1049h')); // enter alternate screen
+    await t.pumpAndSettle();
+    expect(await hasSelection(), isFalse);
+  }, variant: windows);
 }

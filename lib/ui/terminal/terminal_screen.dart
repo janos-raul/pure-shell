@@ -358,13 +358,13 @@ class _TerminalScreenState extends State<TerminalScreen>
           session.stdout
               .cast<List<int>>()
               .transform(const Utf8Decoder(allowMalformed: true))
-              .listen(_terminal.write),
+              .listen(_write),
         )
         ..add(
           session.stderr
               .cast<List<int>>()
               .transform(const Utf8Decoder(allowMalformed: true))
-              .listen(_terminal.write),
+              .listen(_write),
         );
       unawaited(session.done.then((_) => ended('The session ended.')));
       unawaited(
@@ -421,6 +421,21 @@ class _TerminalScreenState extends State<TerminalScreen>
       ),
     );
     if (ok == true) await keeper.requestNotifications();
+  }
+
+  var _wasAltBuffer = false;
+
+  /// Server output. Desktop: a selection is cleared when a full-screen
+  /// program (htop, less, vim) switches to the alternate screen or back, so
+  /// it never highlights text it no longer belongs to.
+  void _write(String data) {
+    _terminal.write(data);
+    if (!windowsStub) return;
+    final alt = _terminal.isUsingAltBuffer;
+    if (alt != _wasAltBuffer) {
+      _wasAltBuffer = alt;
+      _termController.clearSelection();
+    }
   }
 
   void _ended(String message) {
