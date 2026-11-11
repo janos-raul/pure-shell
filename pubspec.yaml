@@ -56,6 +56,7 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
   fake_async: ^1.3.3
+  msix: ^3.18.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -101,3 +102,25 @@ flutter:
 
 # App icon: generated from assets/icon/pure-shell-icon.svg's geometry with
 # tool/make-icons.py (vector drawables, no launcher-icon package).
+
+# Windows MSIX package (dart run msix:create, see tool/build-msix.ps1 and
+# docs/windows-build.md). The test certificate's path and password are passed
+# on the command line, never stored here.
+msix_config:
+  display_name: Pure-Shell
+  publisher_display_name: Janos-Raul
+  # TODO(store): PLACEHOLDERS for local test installs only. Replace
+  # identity_name and publisher with the values from Partner Center (Product
+  # identity) before any Store submission.
+  identity_name: PureShell.Test
+  publisher: CN=Pure-Shell Test
+  # The app version (pubspec "version") as 4 parts, the last one 0.
+  msix_version: 1.1.1.0
+  # Rendered from assets/icon/pure-shell-icon.svg by tool/make-icons.py.
+  logo_path: assets/icon/pure-shell-icon-512.png
+  # internetClient: SSH to the internet; privateNetworkClientServer: SSH to
+  # hosts on the local network.
+  capabilities: internetClient,privateNetworkClientServer
+  # The script trusts the certificate itself; installing it into the
+  # machine store would need admin rights.
+  install_certificate: false

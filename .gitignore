@@ -21,3 +21,7 @@ build/
 .vscode/
 *.log
 .DS_Store
+
+# Local MSIX test certificate: private key and password, never commit
+*.pfx
+windows/packaging/

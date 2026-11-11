@@ -93,3 +93,35 @@ off on the test machine), htop selection clear (widget-tested).
 Open design question: UserConsentVerifier is an app-level check, not bound to the
 key (unlike Android's per-use key authentication). A Hello-bound key is possible via
 KeyCredentialManager, but those keys are believed to be RSA-2048 only (to verify).
+
+## MSIX package (local test installs)
+
+Build: `pwsh tool/build-msix.ps1` -> `debug\msix\Pure-Shell.msix`, signed with a
+local TEST certificate. `pwsh tool/build-msix.ps1 -Store` builds the unsigned
+Store variant (`--store`; Partner Center signs it).
+
+`msix_config` in pubspec.yaml: `identity_name` (`PureShell.Test`) and `publisher`
+(`CN=Pure-Shell Test`) are PLACEHOLDERS and must be replaced with the Partner
+Center values before any Store submission. `msix_version` is the app version with
+a 4th part 0. Capabilities: `internetClient`, `privateNetworkClientServer` (SSH to
+LAN hosts); the Flutter runner is a full-trust desktop app (`runFullTrust`).
+
+The test certificate is created on the first build in `windows\packaging\`
+(gitignored, never commit): `test-cert.pfx` (private key), `test-cert.password`,
+`test-cert.cer` (public part). Its subject must equal `publisher`.
+
+Trust it once (elevated PowerShell), so Windows accepts the package:
+
+    Import-Certificate -FilePath windows\packaging\test-cert.cer `
+        -CertStoreLocation Cert:\LocalMachine\TrustedPeople
+
+Install / update / uninstall (normal PowerShell):
+
+    Add-AppxPackage debug\msix\Pure-Shell.msix
+    Get-AppxPackage PureShell.Test            # PackageFamilyName, install path
+    Remove-AppxPackage (Get-AppxPackage PureShell.Test).PackageFullName
+
+Remove the trust again (elevated):
+
+    Get-ChildItem Cert:\LocalMachine\TrustedPeople |
+        Where-Object Subject -eq 'CN=Pure-Shell Test' | Remove-Item
