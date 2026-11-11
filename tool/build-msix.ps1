@@ -28,6 +28,7 @@ if ($Store) {
     Write-Host '== Store variant (not signed locally)'
     dart run msix:create --store --output-path $out --output-name Pure-Shell-store
     if ($LASTEXITCODE -ne 0) { throw 'msix:create failed' }
+    Write-Host ''
     Get-Item (Join-Path $out 'Pure-Shell-store.msix') |
         ForEach-Object { '{0} ({1:N1} MB)' -f $_.FullName, ($_.Length / 1MB) }
     return
@@ -65,6 +66,15 @@ dart run msix:create --certificate-path $pfx --certificate-password $pw `
 if ($LASTEXITCODE -ne 0) { throw 'msix:create failed' }
 
 $msix = Get-Item (Join-Path $out 'Pure-Shell.msix')
+
+# A folder to copy to another PC: package, public certificate, installer.
+$bundle = Join-Path $out 'install'
+if (Test-Path $bundle) { Remove-Item -LiteralPath $bundle -Recurse -Force }
+New-Item -ItemType Directory $bundle | Out-Null
+Copy-Item $msix.FullName, $cer $bundle
+Copy-Item (Join-Path $PSScriptRoot 'msix-install.ps1') (Join-Path $bundle 'install.ps1')
+
 Write-Host ''
 Write-Host ('== {0} ({1:N1} MB)' -f $msix.FullName, ($msix.Length / 1MB))
-Write-Host "   trust once: $cer -> Local Machine > Trusted People (see docs)"
+Write-Host "   to install on any PC: copy $bundle, then run"
+Write-Host '   powershell -ExecutionPolicy Bypass -File install.ps1'

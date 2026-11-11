@@ -125,3 +125,19 @@ Remove the trust again (elevated):
 
     Get-ChildItem Cert:\LocalMachine\TrustedPeople |
         Where-Object Subject -eq 'CN=Pure-Shell Test' | Remove-Item
+Install on another PC: `tool/build-msix.ps1` also writes `debug\msix\install\`
+(Pure-Shell.msix, test-cert.cer, install.ps1). Copy that folder and run
+`powershell -ExecutionPolicy Bypass -File install.ps1` (asks for admin once to trust
+the certificate; reinstalls when the same version is installed, since Windows
+refuses a same-version update with different content). `install.ps1 -Uninstall`
+removes it.
+
+Packaged vs unpackaged (tested 2026-11-11, Windows 11 26300):
+- Storage: packaged desktop apps get AppData virtualisation. On a clean PC the
+  store lands in `%LOCALAPPDATA%\Packages\PureShell.Test_meab6r7t5qkq0\LocalCache\
+  Local\Pure-Shell\store.dat` and is removed on uninstall. If
+  `%LOCALAPPDATA%\Pure-Shell` already exists (a dev build ran), the package reads
+  and writes that real folder instead (shared with the dev build; survives
+  uninstall). Deletes reach the real Roaming folder, so the one-time Roaming
+  migration behaves as in the dev build.
+- Start menu entry "Pure-Shell" with the framed >_ logo; About shows the version.
