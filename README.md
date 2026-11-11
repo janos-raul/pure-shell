@@ -87,6 +87,8 @@ Pure-Shell will be on Google Play as a paid app: the signed, maintained build.
 The source code is free software: anyone may build it from source under the
 GPL (see Building).
 
+The only official Pure-Shell builds are on Google Play, published by Janos-Raul.
+
 ## FAQ / troubleshooting
 
 **SwiftKey capitalizes the first letter in the command-line box** (`echo`
@@ -114,3 +116,8 @@ Pure-Shell is free software, licensed under the GNU General Public License,
 version 3 or (at your option) any later version. See [LICENSE](LICENSE).
 
 Copyright (C) 2026 Janos-Raul
+
+## Trademark
+
+"Pure-Shell" and the Pure-Shell logo are not covered by the GPL. Forks and
+redistributed builds must use a different name and icon.
