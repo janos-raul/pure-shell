@@ -78,7 +78,7 @@ class _TerminalScreenState extends State<TerminalScreen>
   var _disconnected = false;
   String? _endMessage;
 
-  var _fontSize = TerminalSettings.defaultFontSize;
+  var _fontSize = TerminalSettings.initialFontSize;
   var _colors = TerminalColors.standard;
   var _inputMode = InputMode.direct;
 
@@ -532,12 +532,23 @@ class _TerminalScreenState extends State<TerminalScreen>
         unawaited(_copySelection());
       case PasteAction():
         unawaited(_paste());
-      case ZoomAction():
-        return KeyEventResult.ignored; // font zoom: not wired up yet
+      case ZoomAction(:final step):
+        _zoom(step);
       case TypeAction(:final text):
         if (_sessionLive) _terminal.textInput(text);
     }
     return KeyEventResult.handled;
+  }
+
+  /// Ctrl+= / Ctrl+- one point, Ctrl+0 back to the default. Saved like a
+  /// pinch; the PTY follows through the terminal's resize.
+  void _zoom(int step) {
+    final size = step == 0
+        ? TerminalSettings.initialFontSize
+        : TerminalSettings.clampFontSize(_fontSize + step);
+    if (size == _fontSize) return;
+    setState(() => _fontSize = size);
+    unawaited(widget.settings.saveFontSize(size));
   }
 
   void _selectAll() {

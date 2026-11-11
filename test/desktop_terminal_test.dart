@@ -200,4 +200,23 @@ void main() {
     await t.pumpAndSettle();
     expect(sent(), 'ls -l'); // BEL removed, single line: no warning
   }, variant: windows);
+
+  testWidgets(
+    'Ctrl+= / Ctrl+- / Ctrl+0 zoom, are saved, never reach the shell',
+    (t) async {
+      await pumpScreen(t);
+      final ctrl = [LogicalKeyboardKey.controlLeft];
+      String? saved() => store.data[TerminalSettings.fontSizeKey];
+      expect(TerminalSettings.initialFontSize, 14);
+      await chord(t, ctrl, LogicalKeyboardKey.equal);
+      expect(saved(), '15.0');
+      await chord(t, ctrl, LogicalKeyboardKey.minus);
+      await chord(t, ctrl, LogicalKeyboardKey.minus);
+      expect(saved(), '13.0');
+      await chord(t, ctrl, LogicalKeyboardKey.digit0);
+      expect(saved(), '14.0');
+      expect(sent(), isEmpty);
+    },
+    variant: windows,
+  );
 }

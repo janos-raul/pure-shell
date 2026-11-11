@@ -7,6 +7,7 @@
 // Software Foundation, either version 3 of the License, or (at your option)
 // any later version. See the LICENSE file for details.
 
+import '../platform_support.dart';
 import 'secure_store.dart';
 
 /// Terminal colour scheme.
@@ -51,6 +52,14 @@ class TerminalSettings {
 
   /// About 60+ columns in portrait on a Pixel 7-sized screen.
   static const defaultFontSize = 11.0;
+
+  /// Desktop monitors: about 120 columns in a 1280 px wide window.
+  static const desktopDefaultFontSize = 14.0;
+
+  /// The size used until the user zooms (and for Ctrl+0).
+  static double get initialFontSize =>
+      windowsStub ? desktopDefaultFontSize : defaultFontSize;
+
   static const minFontSize = 7.0;
   static const maxFontSize = 28.0;
 
@@ -62,7 +71,7 @@ class TerminalSettings {
   Future<double> loadFontSize() async {
     final raw = await _store.read(fontSizeKey);
     final value = raw == null ? null : double.tryParse(raw);
-    if (value == null || value.isNaN) return defaultFontSize;
+    if (value == null || value.isNaN) return initialFontSize;
     return clampFontSize(value);
   }
 
