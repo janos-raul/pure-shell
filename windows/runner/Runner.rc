@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "eu.pureshell" "\0"
-            VALUE "FileDescription", "pureshell" "\0"
+            VALUE "FileDescription", "Pure-Shell" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "pureshell" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 eu.pureshell. All rights reserved." "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 Janos-Raul. GPL-3.0-or-later." "\0"
             VALUE "OriginalFilename", "pureshell.exe" "\0"
-            VALUE "ProductName", "pureshell" "\0"
+            VALUE "ProductName", "Pure-Shell" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
