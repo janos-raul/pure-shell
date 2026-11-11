@@ -178,8 +178,7 @@ void main() {
     });
   });
 
-  test('locked at the console, reconnected over RDP: stays locked, says why; '
-      'back at the console it unlocks', () {
+  test('locked at the console, reconnected over RDP: the lock is lifted', () {
     fakeAsync((async) {
       final k = _SwitchableHello();
       final c = AppLockController(k, AppLockSettings(store), desktop: true);
@@ -188,13 +187,24 @@ void main() {
       expect(c.locked, isTrue);
       k.reason = 'remote'; // now connected over Remote Desktop
       event(c, async, 'sessionConnect');
+      expect(c.locked, isFalse);
       expect(c.unavailableReason, 'remote');
-      c.unlock();
+    });
+  });
+
+  test('RDP session ends, back at the computer: locked, Hello unlocks', () {
+    fakeAsync((async) {
+      final k = _SwitchableHello()..reason = 'remote';
+      final c = AppLockController(k, AppLockSettings(store), desktop: true);
+      c.init();
       async.flushMicrotasks();
-      expect(c.locked, isTrue, reason: 'no unlock without Windows Hello');
-      k.reason = null; // back at the computer
+      expect(c.locked, isFalse); // over RDP: no lock
+      event(c, async, 'sessionDisconnect');
+      expect(c.locked, isFalse); // Hello still unavailable here
+      k.reason = null; // signed in at the computer
       event(c, async, 'sessionConnect');
-      expect(c.unavailableReason, isNull);
+      expect(c.locked, isTrue);
+      expect(c.canPromptNow, isTrue);
       c.unlock();
       async.flushMicrotasks();
       expect(c.locked, isFalse);

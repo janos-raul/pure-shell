@@ -116,16 +116,11 @@ class _AppLockGateState extends State<AppLockGate> with WidgetsBindingObserver {
               locked: _c.locked,
               busy: _c.unlocking,
               onUnlock: _c.unlock,
-              hint: switch (_c.unavailableReason) {
-                null => null,
-                'remote' =>
-                  'Windows Hello cannot be used over Remote Desktop. Unlock '
-                      'Pure-Shell at the computer itself; your sessions keep '
-                      'running.',
-                _ =>
-                  'Windows Hello is not available right now. Your sessions '
-                      'keep running.',
-              },
+              // (Over Remote Desktop the lock is lifted, so no hint for it.)
+              hint: _c.unavailableReason == null
+                  ? null
+                  : 'Windows Hello is not available right now. Your sessions '
+                        'keep running.',
             ),
           ),
       ],

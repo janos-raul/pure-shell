@@ -62,6 +62,7 @@ class AppLockController extends ChangeNotifier {
   // Desktop window state.
   String? _unavailableReason;
   var _sessionLocked = false;
+  var _lockOnReturn = false;
   var _minimized = false;
   DateTime? _minimizedAt;
   Timer? _minimizedTimer;
@@ -145,12 +146,23 @@ class AppLockController extends ChangeNotifier {
       // A Remote Desktop disconnect often comes without a lock event.
       case 'sessionLock' || 'sessionDisconnect':
         _sessionLocked = true;
+        // Remembered even when Hello is not available right now (over
+        // Remote Desktop): back at the computer the app must lock.
+        _lockOnReturn = _enabled;
         if (active) _locked = true;
-      // Back at the screen, locally or over Remote Desktop, where Windows
-      // Hello may (not) be available: ask again.
+      // Back at the screen, locally or over Remote Desktop.
       case 'sessionUnlock' || 'sessionConnect':
         _sessionLocked = false;
         await _refreshCapabilities();
+        if (_unavailableReason == 'remote') {
+          // Remote Desktop: Windows already asked for the account's
+          // password and Windows Hello cannot be used there, so the app lock
+          // does not apply (the user's decision).
+          _locked = false;
+        } else if (_lockOnReturn && active) {
+          _locked = true;
+        }
+        _lockOnReturn = false;
       case 'minimized':
         _minimized = true;
         _minimizedAt = _now();
