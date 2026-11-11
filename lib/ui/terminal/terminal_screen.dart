@@ -26,6 +26,7 @@ import '../lock/app_lock_gate.dart';
 import '../private_input.dart';
 import 'command_box.dart';
 import 'desktop_keys.dart';
+import 'desktop_text_input.dart';
 import 'direct_input.dart';
 import 'extra_keys.dart';
 import 'pinch_zoom.dart';
@@ -73,6 +74,9 @@ class _TerminalScreenState extends State<TerminalScreen>
   final _focus = FocusNode();
   final _termController = TerminalController();
   final _termViewKey = GlobalKey<TerminalViewState>();
+
+  /// Desktop IME composition in progress (shown at the cursor).
+  String? _composing;
   final _clipboard = TerminalClipboard();
   final _subscriptions = <StreamSubscription<dynamic>>[];
   var _ctrl = false;
@@ -165,13 +169,9 @@ class _TerminalScreenState extends State<TerminalScreen>
     if (_boxOpen && (!_resumed || (_lock?.hidden ?? false) || _disconnected)) {
       _closeBox();
     }
+    // Desktop: DesktopTextInput follows the focus by itself.
     if (windowsStub) {
-      // Typed text, IME and the emoji panel come through xterm's text input
-      // connection, which autofocus alone does not open: open it whenever
-      // the terminal has the focus.
-      if (_focus.hasFocus && _sessionLive && !_boxOpen) {
-        _termViewKey.currentState?.requestKeyboard();
-      }
+      if (mounted) setState(() {}); // its "enabled" may have changed
       return;
     }
     final direct = _direct;
@@ -722,6 +722,45 @@ class _TerminalScreenState extends State<TerminalScreen>
     super.dispose();
   }
 
+  /// Desktop: IME, emoji panel and injected text (see [DesktopTextInput]).
+  Widget _desktopTextInput(Widget child) {
+    if (!windowsStub) return child;
+    return DesktopTextInput(
+      focusNode: _focus,
+      enabled: _acceptingInput,
+      viewKey: _termViewKey,
+      onText: (text) {
+        if (_sessionLive) _terminal.textInput(text);
+      },
+      onComposing: (text) {
+        if (mounted && text != _composing) setState(() => _composing = text);
+      },
+      child: child,
+    );
+  }
+
+  /// The IME composition in progress, drawn at the terminal cursor.
+  Widget _composingOverlay(String text) {
+    final rect = _termViewKey.currentState?.cursorRect ?? Rect.zero;
+    return Positioned(
+      left: rect.left,
+      top: rect.top,
+      child: IgnorePointer(
+        child: Container(
+          color: terminalThemeFor(_colors).background,
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: _fontSize,
+              color: terminalThemeFor(_colors).foreground,
+              decoration: TextDecoration.underline,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _disconnectButton() => IconButton(
     icon: const Icon(Icons.power_settings_new),
     tooltip: 'Disconnect',
@@ -774,26 +813,32 @@ class _TerminalScreenState extends State<TerminalScreen>
                           enabled:
                               !windowsStub && _inputMode == InputMode.direct,
                           onTap: () => _direct?.attach(),
-                          child: PrivateTerminalView(
-                            _terminal,
-                            viewKey: _termViewKey,
-                            controller: _termController,
-                            focusNode: _focus,
-                            hardwareKeyboardOnly:
-                                !windowsStub && _inputMode == InputMode.direct,
-                            // Desktop: no xterm shortcuts (they took Ctrl+A
-                            // and Ctrl+V from the shell); ours run first.
-                            shortcuts: windowsStub ? const {} : null,
-                            onKeyEvent: windowsStub ? _onDesktopKey : null,
-                            onSecondaryTapDown: windowsStub
-                                ? (d, _) => _showContextMenu(d.globalPosition)
-                                : null,
-                            textStyle: TerminalStyle(fontSize: _fontSize),
-                            theme: terminalThemeFor(_colors),
+                          child: _desktopTextInput(
+                            PrivateTerminalView(
+                              _terminal,
+                              viewKey: _termViewKey,
+                              controller: _termController,
+                              focusNode: _focus,
+                              // Desktop: keys through xterm's key listener,
+                              // text (IME, emoji, remote desktop) through
+                              // DesktopTextInput.
+                              hardwareKeyboardOnly:
+                                  windowsStub || _inputMode == InputMode.direct,
+                              // Desktop: no xterm shortcuts (they took Ctrl+A
+                              // and Ctrl+V from the shell); ours run first.
+                              shortcuts: windowsStub ? const {} : null,
+                              onKeyEvent: windowsStub ? _onDesktopKey : null,
+                              onSecondaryTapDown: windowsStub
+                                  ? (d, _) => _showContextMenu(d.globalPosition)
+                                  : null,
+                              textStyle: TerminalStyle(fontSize: _fontSize),
+                              theme: terminalThemeFor(_colors),
+                            ),
                           ),
                         ),
                       ),
                     ),
+                    if (_composing != null) _composingOverlay(_composing!),
                     if (landscape) ...[
                       Positioned(
                         left: 0,

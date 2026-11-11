@@ -254,4 +254,36 @@ void main() {
     },
     variant: windows,
   );
+
+  testWidgets('IME composition is shown, only the committed text is sent', (
+    t,
+  ) async {
+    await pumpScreen(t);
+    t.testTextInput.updateEditingValue(
+      const TextEditingValue(
+        text: 'にほ',
+        selection: TextSelection.collapsed(offset: 2),
+        composing: TextRange(start: 0, end: 2),
+      ),
+    );
+    await t.pump();
+    expect(find.text('にほ'), findsOneWidget);
+    expect(sent(), isEmpty);
+    t.testTextInput.updateEditingValue(
+      const TextEditingValue(
+        text: '日本',
+        selection: TextSelection.collapsed(offset: 2),
+      ),
+    );
+    await t.pumpAndSettle();
+    expect(find.text('にほ'), findsNothing);
+    expect(sent(), '日本');
+  }, variant: windows);
+
+  testWidgets('a typed letter key is sent once', (t) async {
+    await pumpScreen(t);
+    await t.sendKeyEvent(LogicalKeyboardKey.keyW);
+    await t.pumpAndSettle();
+    expect(sent(), 'w');
+  }, variant: windows);
 }
