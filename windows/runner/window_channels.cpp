@@ -46,6 +46,24 @@ WindowChannels::WindowChannels(flutter::BinaryMessenger* messenger,
     }
   });
 
+  app_info_ = std::make_unique<flutter::MethodChannel<EncodableValue>>(
+      messenger, "eu.pureshell.app/app_info", &codec);
+  app_info_->SetMethodCallHandler([](const auto& call, auto result) {
+    if (call.method_name() != "version") {
+      result->NotImplemented();
+      return;
+    }
+    // "1.1.1" and "10" for pubspec version 1.1.1+10, like Android.
+    const std::string name = std::to_string(FLUTTER_VERSION_MAJOR) + "." +
+                             std::to_string(FLUTTER_VERSION_MINOR) + "." +
+                             std::to_string(FLUTTER_VERSION_PATCH);
+    result->Success(EncodableValue(flutter::EncodableMap{
+        {EncodableValue("name"), EncodableValue(name)},
+        {EncodableValue("build"),
+         EncodableValue(std::to_string(FLUTTER_VERSION_BUILD))},
+    }));
+  });
+
   clipboard_ = std::make_unique<flutter::MethodChannel<EncodableValue>>(
       messenger, "eu.pureshell.app/clipboard", &codec);
   clipboard_->SetMethodCallHandler([this](const auto& call, auto result) {

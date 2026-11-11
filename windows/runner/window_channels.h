@@ -24,6 +24,8 @@
 //   "eu.pureshell.app/clipboard" copy {text}: copies terminal text marked so
 //     it stays out of clipboard history, cloud clipboard sync and clipboard
 //     monitors (the Android "sensitive clip").
+//   "eu.pureshell.app/app_info" version -> {name, build}: pubspec's version,
+//     compiled in by the Flutter tool (FLUTTER_VERSION_*), for About.
 class WindowChannels {
  public:
   WindowChannels(flutter::BinaryMessenger* messenger, HWND window);
@@ -43,6 +45,7 @@ class WindowChannels {
   std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> events_;
   std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> window_ch_;
   std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> clipboard_;
+  std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> app_info_;
 };
 
 #endif  // RUNNER_WINDOW_CHANNELS_H_
