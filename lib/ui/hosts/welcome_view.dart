@@ -9,6 +9,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../../core/platform_support.dart';
 import '../theme.dart';
 
 /// What the host list shows while there are no hosts: a short welcome with the
@@ -52,9 +53,12 @@ class WelcomeView extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Your hosts are saved on this phone only. Keys are made inside '
-              'the phone and can never leave it.',
+            Text(
+              windowsStub
+                  ? 'Your hosts are saved on this computer only. Keys are made '
+                        'by Windows Hello and can never leave this computer.'
+                  : 'Your hosts are saved on this phone only. Keys are made '
+                        'inside the phone and can never leave it.',
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),

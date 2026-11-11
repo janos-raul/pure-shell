@@ -9,6 +9,8 @@
 
 import '../../core/keys/ssh_ec_encoding.dart' show ecdsaP256Type;
 import '../../core/keys/ssh_ed25519_encoding.dart' show ed25519Type;
+import '../../core/keys/ssh_rsa_encoding.dart' show rsaKeyType;
+import '../../core/platform_support.dart';
 
 /// The in-app help: offline, short sections, plain language. Inline markup in
 /// the texts: `code` is shown in monospace, **bold** in bold.
@@ -56,7 +58,11 @@ class HelpTopic {
 const helpAddKey = 'add-key';
 const helpFirstConnect = 'first-connect';
 
-final List<HelpTopic> helpTopics = [
+/// The help for the platform the app runs on.
+List<HelpTopic> get helpTopics =>
+    windowsStub ? _windowsHelpTopics : _androidHelpTopics;
+
+final List<HelpTopic> _androidHelpTopics = [
   HelpTopic(
     helpAddKey,
     'Adding a key to a server',
@@ -353,6 +359,244 @@ final List<HelpTopic> helpTopics = [
   ),
 ];
 
+/// The Windows build's help: the same topics where nothing differs, Windows
+/// wording and behaviour where it does (keyboard, mouse, Windows Hello).
+final List<HelpTopic> _windowsHelpTopics = [
+  HelpTopic(
+    helpAddKey,
+    'Adding a key to a server',
+    'The authorized_keys line, and the from= restriction',
+    [
+      const HelpText(
+        'Pure-Shell makes your key with Windows Hello. The private part never '
+        'leaves Windows (the TPM, where this computer has one); the server '
+        'only needs the public part.',
+      ),
+      HelpSteps([
+        'Open Keys, click your key, then click Copy. This copies one line, '
+            'the `authorized_keys` line. It starts with `$rsaKeyType`, or with '
+            '`$ed25519Type` for a software key (when Windows Hello is not set '
+            'up).',
+        'On the server, log in as the user Pure-Shell will log in as. Add that '
+            'line as a new line at the end of `~/.ssh/authorized_keys`.',
+        'Make sure the permissions are strict, or the server ignores the file:',
+      ]),
+      const HelpCommand(
+        'mkdir -p ~/.ssh && chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys',
+      ),
+      const HelpText(
+        'Then edit the host in Pure-Shell, set Login to Key and choose the key.',
+      ),
+      const HelpText(
+        'Windows Hello keys sign with `rsa-sha2-256`. Any OpenSSH from the '
+        'last ten years accepts that; very old servers that only know SHA-1 '
+        '`ssh-rsa` signatures do not.',
+      ),
+      const HelpText(
+        'The fingerprint shown under the key (`SHA256:...`) is only a short '
+        'name to recognise the key, for example in `ssh-keygen -lf` or in the '
+        "server's log. The server needs the whole line, not the fingerprint.",
+      ),
+      const HelpHeading('Limiting where a key can be used'),
+      const HelpText(
+        'You can write `from=` in front of the key on its line to say where '
+        'it may log in from, for example:',
+      ),
+      HelpCommand('from="192.168.1.0/24" $rsaKeyType AAAA... pure-shell'),
+      const HelpText(
+        "On your home network the server sees this computer's address on the "
+        'local network (for example 192.168.1.23), so a local subnet like this '
+        'works there. From another network the server sees a different '
+        'address and rejects the key.',
+      ),
+      const HelpHeading('If the server rejects the key'),
+      const HelpText(
+        "Check that the line is in the right user's file and is one single "
+        'line (not broken in two), that any `from=` matches, that the '
+        "permissions are as above, and read the server's log for the exact "
+        'reason, for example `journalctl -u ssh` or `/var/log/auth.log`.',
+      ),
+    ],
+  ),
+  const HelpTopic(
+    helpFirstConnect,
+    'The first connection and host keys',
+    'The fingerprint prompt, and why a changed key blocks',
+    [
+      HelpText(
+        'The first time you connect to a server, it presents its host key. '
+        'Pure-Shell shows the key type and its fingerprint and asks whether to '
+        "trust it. Compare the fingerprint with the server's, using the "
+        'command shown in the prompt, for example:',
+      ),
+      HelpCommand('ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub'),
+      HelpText(
+        'If they match, click Trust. Pure-Shell remembers the key for that '
+        'host and port. Cancel stores nothing. The server only waits a limited '
+        'time for you to decide and then closes the connection; if that '
+        'happens, just connect again.',
+      ),
+      HelpHeading('When the key changes'),
+      HelpText(
+        'Every later connection must present the same key. If it differs, '
+        'Pure-Shell blocks the connection and shows both fingerprints. Nothing '
+        'is sent to the server: no password and no key signature. There is '
+        'only Back, and no "continue anyway" button, because that is the '
+        'button an attacker relies on.',
+      ),
+      HelpText(
+        "A changed key means either the server's keys were replaced (for "
+        'example it was reinstalled) or someone is intercepting the '
+        'connection. If you are sure the change is legitimate, check the new '
+        'fingerprint on the server itself or with its administrator. Then '
+        'open Edit host, click Remove trusted key, and connect again to go '
+        'through the first-connection prompt.',
+      ),
+    ],
+  ),
+  const HelpTopic(
+    'keyboard',
+    'Keyboard and shortcuts',
+    'Every Ctrl and Alt key goes to the server',
+    [
+      HelpText(
+        'Every key goes to the program on the server, including Ctrl and Alt '
+        'combinations: Ctrl+A and Ctrl+E in the shell, Ctrl+C to interrupt, '
+        'Ctrl+V, Alt+B and Alt+F, and the prefix keys of tmux and screen. '
+        'Pure-Shell itself only uses these:',
+      ),
+      HelpSteps([
+        '**Ctrl+Shift+C** copies the selection.',
+        '**Ctrl+Shift+V** (or **Shift+Insert**) pastes.',
+        '**Ctrl+=** and **Ctrl+-** make the text bigger and smaller, '
+            '**Ctrl+0** goes back to the normal size. The size is remembered.',
+      ]),
+      HelpText(
+        'Input methods for other languages and the emoji panel (Windows key + '
+        'period) type straight into the terminal.',
+      ),
+      HelpText(
+        'The row of extra keys (Esc, Tab, Ctrl, arrows, Paste and the command '
+        'box) is off on Windows; turn it on in Settings, under Terminal, Extra '
+        'keys row.',
+      ),
+    ],
+  ),
+  const HelpTopic(
+    'copy-paste',
+    'Copy and paste',
+    'Select with the mouse, right-click for the menu',
+    [
+      HelpText(
+        'Drag with the mouse to select text; the mouse wheel scrolls back '
+        'through the output. Right-click opens a menu: Copy (when something '
+        'is selected), Paste, Select all and Clear selection. The keyboard '
+        'shortcuts are Ctrl+Shift+C and Ctrl+Shift+V.',
+      ),
+      HelpText(
+        'Pasted text goes to the server as one paste. Programs that support '
+        'bracketed paste (most shells and editors) receive it as a block and '
+        'never run it line by line. If the running program did not ask for '
+        'that and the text has several lines, Pure-Shell asks first, because '
+        'each line would run as it is entered.',
+      ),
+      HelpText(
+        'Control characters are removed from pasted text (Escape included, '
+        'so pasted text cannot end the paste early), except tabs and line '
+        'breaks.',
+      ),
+      HelpText(
+        'Pure-Shell reads the clipboard only when you paste, never in the '
+        'background. Text you copy is a normal Windows copy, so it can show '
+        'up in the clipboard history (Windows key + V) if you use it. Nothing '
+        'pasted or copied is logged.',
+      ),
+    ],
+  ),
+  const HelpTopic(
+    'sessions',
+    'When a session ends',
+    'Closing the window, lost connections',
+    [
+      HelpText(
+        'A session lasts as long as Pure-Shell is open and the connection '
+        'holds. Closing the window ends your sessions. They also end when the '
+        'server closes the connection, when the network drops, or when the '
+        'computer goes to sleep. Pure-Shell pings idle sessions every 30 '
+        'seconds and treats a connection that stops answering as lost after '
+        'roughly a minute.',
+      ),
+    ],
+  ),
+  const HelpTopic(
+    'tmux',
+    'Long-running jobs: tmux',
+    'Keep a job running when the connection drops',
+    [
+      HelpText(
+        'A session lasts only as long as its connection. For a job that must '
+        'survive a dropped connection, start it inside tmux on the server:',
+      ),
+      HelpCommand('tmux new -s work'),
+      HelpText('If the connection is lost, connect again and reattach:'),
+      HelpCommand('tmux attach -t work'),
+      HelpText('To leave a job running on purpose, press Ctrl+B, then d.'),
+    ],
+  ),
+  HelpTopic(
+    'key-protection',
+    'TPM + Hello, Hello, software',
+    'Where a key lives, and what the label on it means',
+    [
+      const HelpText(
+        'Every key shows a label saying where its private part is kept. '
+        'Pure-Shell uses Windows Hello whenever it is set up; you do not have '
+        'to choose.',
+      ),
+      const HelpHeading('TPM + Hello'),
+      HelpText(
+        "The key is made inside this computer's TPM, a security chip built "
+        'for keeping secrets, and Windows proved that when the key was made. '
+        'The private key never leaves the TPM; not even Pure-Shell can read '
+        'it, it can only ask Windows to sign. Every use asks for your Windows '
+        'Hello PIN, fingerprint or face. These are `$rsaKeyType` keys.',
+      ),
+      const HelpHeading('Hello (no TPM proof)'),
+      const HelpText(
+        'A Windows Hello key on a computer where Windows could not prove that '
+        'it is in a TPM, usually because there is none. Every use still asks '
+        'for Windows Hello, but the key may be protected by software only. '
+        'That is why this label is amber.',
+      ),
+      const HelpHeading('Software key'),
+      HelpText(
+        'Used only when Windows Hello is not set up. The key is made by the '
+        'app (`$ed25519Type`) and kept encrypted for your Windows account. In '
+        'this experimental Windows build, using it asks for nothing. Set up '
+        'Windows Hello (Settings, Accounts, Sign-in options) and create a new '
+        'key to get a TPM key.',
+      ),
+    ],
+  ),
+  const HelpTopic(
+    'keys-lost',
+    'Keys can be lost',
+    'When your key is gone, and what to do about it',
+    [
+      HelpText(
+        'A Windows Hello key is tied to your Windows Hello PIN on this '
+        'computer. If Windows Hello is reset (for example after a forgotten '
+        'PIN), the key is permanently lost. Keys are not backed up, cannot be '
+        "exported and do not move to another computer; they are also gone if "
+        "Pure-Shell's data or your Windows user profile is deleted.",
+      ),
+      HelpText(
+        'Keep another way into your servers, such as a password or a second '
+        'key.',
+      ),
+    ],
+  ),
+];
 HelpTopic? helpTopicById(String id) {
   for (final t in helpTopics) {
     if (t.id == id) return t;

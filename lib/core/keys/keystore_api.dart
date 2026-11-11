@@ -10,6 +10,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
+import '../platform_support.dart';
 import 'ssh_key.dart' show KeyKind;
 
 /// Where a key actually lives, as reported by the Android Keystore.
@@ -76,7 +77,9 @@ class KeystoreException implements Exception {
     KeystoreErrorKind.cancelled => 'Cancelled.',
     KeystoreErrorKind.lockout => 'Too many failed attempts. Try again later.',
     KeystoreErrorKind.unavailable =>
-      'Fingerprint or screen lock is not available.',
+      windowsStub
+          ? 'Windows Hello is not available.'
+          : 'Fingerprint or screen lock is not available.',
     KeystoreErrorKind.noScreenLock => 'Set a screen lock to create keys.',
     KeystoreErrorKind.keyInvalid =>
       'This key is no longer usable. Delete it and create a new one.',

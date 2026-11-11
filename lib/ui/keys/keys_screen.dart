@@ -28,6 +28,14 @@ const keyLossNotice =
     'exported. Keep another way into your servers, such as a password or a '
     'second key.';
 
+/// The same notice for the Windows build.
+const windowsKeyLossNotice =
+    'Keys are destroyed if Windows Hello is reset (for example after a '
+    "forgotten PIN), if Pure-Shell's data or your Windows user profile is "
+    'deleted, and they do not move to another computer. They are not backed '
+    'up and cannot be recovered or exported. Keep another way into your '
+    'servers, such as a password or a second key.';
+
 class KeysScreen extends StatefulWidget {
   const KeysScreen({
     super.key,
@@ -92,7 +100,7 @@ class _KeysScreenState extends State<KeysScreen> {
         context: context,
         builder: (c) => AlertDialog(
           title: const Text('Keys can be lost'),
-          content: const Text(keyLossNotice),
+          content: Text(windowsStub ? windowsKeyLossNotice : keyLossNotice),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(c, false),
@@ -177,13 +185,17 @@ class _KeysScreenState extends State<KeysScreen> {
       body: keys == null
           ? const SizedBox.shrink()
           : keys.isEmpty
-          ? const Center(
+          ? Center(
               child: Padding(
-                padding: EdgeInsets.all(24),
+                padding: const EdgeInsets.all(24),
                 child: Text(
-                  'No keys yet. Tap + to create one. The private key is '
-                  'made in your phone\'s secure hardware where available '
-                  'and can never be exported.',
+                  windowsStub
+                      ? 'No keys yet. Click + to create one. The private key '
+                            'is made by Windows Hello, in the TPM where '
+                            'available, and can never be exported.'
+                      : 'No keys yet. Tap + to create one. The private key is '
+                            'made in your phone\'s secure hardware where '
+                            'available and can never be exported.',
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -254,9 +266,11 @@ class _NewKeyDialogState extends State<_NewKeyDialog> {
             PrivateTextFormField(
               controller: _name,
               autofocus: true,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Name',
-                helperText: 'Only shown on this phone',
+                helperText: windowsStub
+                    ? 'Only shown on this computer'
+                    : 'Only shown on this phone',
               ),
               validator: (v) =>
                   (v == null || v.trim().isEmpty) ? 'Required' : null,
