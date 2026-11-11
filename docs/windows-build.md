@@ -104,7 +104,13 @@ Store variant (`--store`; Partner Center signs it).
 (`CN=Pure-Shell Test`) are PLACEHOLDERS and must be replaced with the Partner
 Center values before any Store submission. The package version is not in
 pubspec: `tool/build-msix.ps1` derives it from `version` (1.1.1+10 -> 1.1.1.0), so
-bumping the app version is the only step. Capabilities: `internetClient`, `privateNetworkClientServer` (SSH to
+bumping the app version is the only step. The build number is dropped (the Store
+requires the 4th part to be 0), so every Windows release must raise at least the
+patch number: 1.1.1+11 would still be 1.1.1.0 and be rejected as the same version.
+`-Store` therefore stops with an error unless the version is higher than the last
+Store build, recorded in `windows/msix-store-version.txt` (commit it with the
+release; `-Rebuild` builds the recorded version again before it is uploaded).
+Test builds may repeat a version; `install.ps1` replaces the installed one. Capabilities: `internetClient`, `privateNetworkClientServer` (SSH to
 LAN hosts); the Flutter runner is a full-trust desktop app (`runFullTrust`).
 
 The test certificate is created on the first build in `windows\packaging\`

@@ -9,13 +9,22 @@
 #   pwsh tool/build-msix.ps1 -Store   unsigned Store variant (Partner Center
 #                                     signs it); needs the real identity_name
 #                                     and publisher in pubspec.yaml first
+#   pwsh tool/build-msix.ps1 -Store -Rebuild
+#                                     the Store package again at the version
+#                                     already recorded (not yet uploaded)
+#
+# Versions: the package version is pubspec's x.y.z with a 4th part 0 (the
+# Store requires 0 there); the build number (+10) is dropped, so a Windows
+# release must raise at least the patch number. -Store stops with an error
+# unless the version is higher than the last Store build, recorded in
+# windows/msix-store-version.txt (commit it with the release).
 #
 # The test certificate is created on first use in windows\packaging\
 # (gitignored): test-cert.pfx (private key), test-cert.cer (public part, to
 # trust), test-cert.password. Never commit them. Its subject must equal
 # msix_config.publisher in pubspec.yaml. How to trust it and install the
 # package: docs/windows-build.md.
-param([switch]$Store)
+param([switch]$Store, [switch]$Rebuild)
 
 $ErrorActionPreference = 'Stop'
 $root = Resolve-Path (Join-Path $PSScriptRoot '..')
@@ -31,11 +40,33 @@ if (-not $m) { throw 'no "version: x.y.z" in pubspec.yaml' }
 $g = $m.Matches[0].Groups
 $version = "$($g[1].Value).$($g[2].Value).$($g[3].Value).0"
 Write-Host "== package version $version (from pubspec)"
+if (-not $Store) {
+    $installed = Get-AppxPackage PureShell.Test -ErrorAction SilentlyContinue
+    if ($installed -and [version]$installed.Version -ge [version]$version) {
+        Write-Host ("   note: $($installed.Version) is installed here; install.ps1 " +
+            'replaces it (a plain update needs a higher x.y.z)')
+    }
+}
 
 if ($Store) {
+    # Windows and the Store reject a package that is not newer than the one
+    # before it, and only x.y.z can carry that (the 4th part must be 0).
+    $record = Join-Path $root 'windows\msix-store-version.txt'
+    $last = if (Test-Path $record) { (Get-Content $record -Raw).Trim() } else { $null }
+    if ($last) {
+        $cmp = ([version]$version).CompareTo([version]$last)
+        if ($cmp -lt 0 -or ($cmp -eq 0 -and -not $Rebuild)) {
+            throw ("package version $version is not higher than the last Store " +
+                "build $last ($record). Raise at least the patch number in " +
+                "pubspec.yaml (a higher +build alone is not enough), or use " +
+                "-Rebuild to build $last again before it is uploaded.")
+        }
+    }
     Write-Host '== Store variant (not signed locally)'
     dart run msix:create --store --version $version --output-path $out --output-name Pure-Shell-store
     if ($LASTEXITCODE -ne 0) { throw 'msix:create failed' }
+    Set-Content -Path $record -Value $version -NoNewline
+    Write-Host "   recorded $version in windows\msix-store-version.txt (commit it)"
     Write-Host ''
     Get-Item (Join-Path $out 'Pure-Shell-store.msix') |
         ForEach-Object { '{0} ({1:N1} MB)' -f $_.FullName, ($_.Length / 1MB) }
