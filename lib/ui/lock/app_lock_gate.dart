@@ -116,6 +116,16 @@ class _AppLockGateState extends State<AppLockGate> with WidgetsBindingObserver {
               locked: _c.locked,
               busy: _c.unlocking,
               onUnlock: _c.unlock,
+              hint: switch (_c.unavailableReason) {
+                null => null,
+                'remote' =>
+                  'Windows Hello cannot be used over Remote Desktop. Unlock '
+                      'Pure-Shell at the computer itself; your sessions keep '
+                      'running.',
+                _ =>
+                  'Windows Hello is not available right now. Your sessions '
+                      'keep running.',
+              },
             ),
           ),
       ],
@@ -128,11 +138,15 @@ class _LockScreen extends StatelessWidget {
     required this.locked,
     required this.busy,
     required this.onUnlock,
+    this.hint,
   });
 
   final bool locked;
   final bool busy;
   final VoidCallback onUnlock;
+
+  /// Why unlocking cannot work right now (desktop), shown under the title.
+  final String? hint;
 
   @override
   Widget build(BuildContext context) {
@@ -151,6 +165,18 @@ class _LockScreen extends StatelessWidget {
                   'Pure-Shell is locked',
                   style: TextStyle(color: Color(0xFFCCCCCC), fontSize: 20),
                 ),
+                if (hint != null)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 420),
+                      child: Text(
+                        hint!,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: Color(0xFFFFB000)),
+                      ),
+                    ),
+                  ),
                 const SizedBox(height: 24),
                 FilledButton(
                   onPressed: busy ? null : onUnlock,

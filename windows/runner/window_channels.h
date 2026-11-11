@@ -15,7 +15,8 @@
 
 // Window-level platform channels for the main window:
 //   "eu.pureshell.app/window_events" (native -> Dart): sessionLock,
-//     sessionUnlock, minimized, restored. The desktop app lock is driven by
+//     sessionUnlock, sessionDisconnect, sessionConnect (Remote Desktop or
+//     console), minimized, restored. The desktop app lock is driven by
 //     these instead of focus changes.
 //   "eu.pureshell.app/window" setSecure {secure}: screen-capture blocking
 //     (SetWindowDisplayAffinity), the "Allow screenshots" setting. Blocked

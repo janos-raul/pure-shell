@@ -234,7 +234,7 @@ void HelloKeystore::Handle(
   const bool prompts =
       method == "create" || method == "sign" || method == "authenticate";
   const bool keyless = method == "isSupported" ||
-                       method == "consentAvailable" || method == "authenticate";
+                       method == "consentStatus" || method == "authenticate";
   const std::string* message_arg = StringArg(args, "message");
   const std::wstring message =
       message_arg ? Wide(*message_arg) : L"Unlock Pure-Shell";
@@ -273,10 +273,27 @@ void HelloKeystore::Handle(
         bool ok = KeyCredentialManager::IsSupportedAsync().get();
         return done([result, ok] { result->Success(EncodableValue(ok)); });
       }
-      if (method == "consentAvailable") {
-        bool ok = UserConsentVerifier::CheckAvailabilityAsync().get() ==
-                  UserConsentVerifierAvailability::Available;
-        return done([result, ok] { result->Success(EncodableValue(ok)); });
+      if (method == "consentStatus") {
+        // available | remote | notConfigured | notPresent | disabledByPolicy
+        // | busy. Over Remote Desktop, Windows Hello user verification is
+        // not available; say so instead of "not set up".
+        const auto a = UserConsentVerifier::CheckAvailabilityAsync().get();
+        std::string status;
+        if (a == UserConsentVerifierAvailability::Available) {
+          status = "available";
+        } else if (GetSystemMetrics(SM_REMOTESESSION)) {
+          status = "remote";
+        } else if (a == UserConsentVerifierAvailability::NotConfiguredForUser) {
+          status = "notConfigured";
+        } else if (a == UserConsentVerifierAvailability::DisabledByPolicy) {
+          status = "disabledByPolicy";
+        } else if (a == UserConsentVerifierAvailability::DeviceBusy) {
+          status = "busy";
+        } else {
+          status = "notPresent";
+        }
+        return done(
+            [result, status] { result->Success(EncodableValue(status)); });
       }
       if (method == "authenticate") {
         const std::string code = VerifyUser(owner, message);

@@ -98,7 +98,12 @@ class KeystoreCapabilities {
     required this.canAuthenticate,
     this.sdkInt = 0,
     this.hardwareKeys = true,
+    this.authUnavailableReason,
   });
+
+  /// Windows: why [canAuthenticate] is false (`remote` for a Remote Desktop
+  /// session, `notConfigured`, ...). Null on Android and when available.
+  final String? authUnavailableReason;
 
   /// [KeystoreApi.generateKey] can be tried. Always true on Android (where
   /// the Keystore itself reports SOFTWARE when there is no secure hardware);

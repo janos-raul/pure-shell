@@ -131,6 +131,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ? 'Locks when Windows locks and when the window stays '
                           'minimised; Windows Hello unlocks it. Sessions keep '
                           'running while it is locked.'
+                    : lock.unavailableReason == 'remote'
+                    ? 'Windows Hello cannot be used over Remote Desktop, so '
+                          'the lock only works at the computer itself.'
                     : 'Needs Windows Hello: set up a PIN, fingerprint or face '
                           'in Windows Settings, Accounts, Sign-in options.',
               ),
@@ -297,6 +300,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ? 'Off'
                         : lock.secureLockScreen
                         ? 'On'
+                        : lock.unavailableReason == 'remote'
+                        ? 'Not available in a Remote Desktop session'
                         : windowsStub
                         ? 'Not available: Windows Hello is not set up'
                         : 'On, but the phone has no screen lock',

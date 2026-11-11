@@ -10,6 +10,7 @@
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pureshell/core/keys/keystore_api.dart';
 import 'package:pureshell/core/lock/app_lock_controller.dart';
 import 'package:pureshell/core/lock/app_lock_settings.dart';
 import 'package:pureshell/core/storage/secure_store.dart';
@@ -155,4 +156,67 @@ void main() {
       expect(c.canPromptNow, isTrue);
     });
   });
+
+  test('Remote Desktop: no Hello, so no lock, and the reason is known', () {
+    fakeAsync((async) {
+      final k = _SwitchableHello()..reason = 'remote';
+      final c = AppLockController(k, AppLockSettings(store), desktop: true);
+      c.init();
+      async.flushMicrotasks();
+      expect(c.active, isFalse);
+      expect(c.locked, isFalse);
+      expect(c.unavailableReason, 'remote');
+    });
+  });
+
+  test('a Remote Desktop disconnect locks like a session lock', () {
+    fakeAsync((async) {
+      final c = started(async);
+      event(c, async, 'sessionDisconnect');
+      expect(c.locked, isTrue);
+      expect(c.canPromptNow, isFalse);
+    });
+  });
+
+  test('locked at the console, reconnected over RDP: stays locked, says why; '
+      'back at the console it unlocks', () {
+    fakeAsync((async) {
+      final k = _SwitchableHello();
+      final c = AppLockController(k, AppLockSettings(store), desktop: true);
+      c.init();
+      async.flushMicrotasks();
+      expect(c.locked, isTrue);
+      k.reason = 'remote'; // now connected over Remote Desktop
+      event(c, async, 'sessionConnect');
+      expect(c.unavailableReason, 'remote');
+      c.unlock();
+      async.flushMicrotasks();
+      expect(c.locked, isTrue, reason: 'no unlock without Windows Hello');
+      k.reason = null; // back at the computer
+      event(c, async, 'sessionConnect');
+      expect(c.unavailableReason, isNull);
+      c.unlock();
+      async.flushMicrotasks();
+      expect(c.locked, isFalse);
+    });
+  });
+}
+
+/// Windows Hello that can be taken away (Remote Desktop) and given back.
+class _SwitchableHello extends FakeKeystore {
+  String? reason;
+
+  @override
+  Future<KeystoreCapabilities> capabilities() async => KeystoreCapabilities(
+    secureLockScreen: true,
+    canAuthenticate: reason == null,
+    authUnavailableReason: reason,
+  );
+
+  @override
+  Future<void> authenticate({String title = '', String? subtitle}) async {
+    if (reason != null) {
+      throw const KeystoreException(KeystoreErrorKind.unavailable);
+    }
+  }
 }

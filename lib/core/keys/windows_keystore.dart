@@ -74,12 +74,20 @@ class WindowsKeystore implements KeystoreApi {
       }
     }
 
+    String status;
+    try {
+      status = await _call<String>('consentStatus') ?? 'notPresent';
+    } on KeystoreException {
+      status = 'notPresent';
+    }
+
     // secureLockScreen: key creation is allowed either way (software keys
     // without Hello). canAuthenticate: Windows Hello user verification, for
-    // the app lock.
+    // the app lock (not available over Remote Desktop: "remote").
     return KeystoreCapabilities(
       secureLockScreen: true,
-      canAuthenticate: await ask('consentAvailable'),
+      canAuthenticate: status == 'available',
+      authUnavailableReason: status == 'available' ? null : status,
       hardwareKeys: await ask('isSupported'),
     );
   }

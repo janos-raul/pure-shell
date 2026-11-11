@@ -60,6 +60,7 @@ class AppLockController extends ChangeNotifier {
   DateTime? _leftAt;
 
   // Desktop window state.
+  String? _unavailableReason;
   var _sessionLocked = false;
   var _minimized = false;
   DateTime? _minimizedAt;
@@ -73,6 +74,10 @@ class AppLockController extends ChangeNotifier {
 
   /// Locking is on and possible.
   bool get active => _enabled && _secureLockScreen;
+
+  /// Desktop: why Windows Hello cannot verify the user now (`remote` over
+  /// Remote Desktop, `notConfigured`, ...), or null when it can.
+  String? get unavailableReason => _unavailableReason;
 
   /// Whether the unlock prompt may be shown now (desktop: only while the
   /// window is visible and Windows is not locked).
@@ -101,7 +106,12 @@ class AppLockController extends ChangeNotifier {
     final caps = await _keystore.capabilities();
     // Desktop: the lock needs Windows Hello to unlock.
     _secureLockScreen = desktop ? caps.canAuthenticate : caps.secureLockScreen;
-    if (desktop) return; // no notice: the setting says why
+    if (desktop) {
+      _unavailableReason = caps.canAuthenticate
+          ? null
+          : (caps.authUnavailableReason ?? 'notPresent');
+      return; // no notice: the setting and the lock screen say why
+    }
     if (_enabled && !_secureLockScreen && !_noticePending) {
       if (!await _settings.loadNoticeShown()) _noticePending = true;
     }
@@ -132,12 +142,15 @@ class AppLockController extends ChangeNotifier {
   Future<void> handleWindowEvent(String event) async {
     if (!desktop) return;
     switch (event) {
-      case 'sessionLock':
+      // A Remote Desktop disconnect often comes without a lock event.
+      case 'sessionLock' || 'sessionDisconnect':
         _sessionLocked = true;
         if (active) _locked = true;
-      case 'sessionUnlock':
+      // Back at the screen, locally or over Remote Desktop, where Windows
+      // Hello may (not) be available: ask again.
+      case 'sessionUnlock' || 'sessionConnect':
         _sessionLocked = false;
-        await _refreshCapabilities(); // Hello may have been set up meanwhile
+        await _refreshCapabilities();
       case 'minimized':
         _minimized = true;
         _minimizedAt = _now();
@@ -211,6 +224,9 @@ class AppLockController extends ChangeNotifier {
     _unlocking = true;
     notifyListeners();
     try {
+      // Desktop: Hello may have come back (at the console after Remote
+      // Desktop) or gone; the lock screen shows why it cannot unlock.
+      if (desktop) await _refreshCapabilities();
       await _keystore.authenticate();
       _locked = false;
       _covered = false;

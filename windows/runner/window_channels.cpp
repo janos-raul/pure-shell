@@ -134,6 +134,14 @@ void WindowChannels::OnMessage(UINT message, WPARAM wparam, LPARAM lparam) {
     case WM_WTSSESSION_CHANGE:
       if (wparam == WTS_SESSION_LOCK) Send("sessionLock");
       if (wparam == WTS_SESSION_UNLOCK) Send("sessionUnlock");
+      // Remote Desktop: closing the connection disconnects the session
+      // (often without a lock event); treat it like a lock.
+      if (wparam == WTS_REMOTE_DISCONNECT || wparam == WTS_CONSOLE_DISCONNECT) {
+        Send("sessionDisconnect");
+      }
+      if (wparam == WTS_REMOTE_CONNECT || wparam == WTS_CONSOLE_CONNECT) {
+        Send("sessionConnect");
+      }
       break;
     case WM_SIZE:
       if (wparam == SIZE_MINIMIZED && !minimized_) {
