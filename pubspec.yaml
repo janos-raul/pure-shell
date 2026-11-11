@@ -114,8 +114,8 @@ msix_config:
   # identity) before any Store submission.
   identity_name: PureShell.Test
   publisher: CN=Pure-Shell Test
-  # The app version (pubspec "version") as 4 parts, the last one 0.
-  msix_version: 1.1.1.0
+  # No msix_version: tool/build-msix.ps1 derives it from "version" above
+  # (1.1.1+10 -> 1.1.1.0), so it can never fall behind.
   # Rendered from assets/icon/pure-shell-icon.svg by tool/make-icons.py.
   logo_path: assets/icon/pure-shell-icon-512.png
   # internetClient: SSH to the internet; privateNetworkClientServer: SSH to

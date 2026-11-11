@@ -102,8 +102,9 @@ Store variant (`--store`; Partner Center signs it).
 
 `msix_config` in pubspec.yaml: `identity_name` (`PureShell.Test`) and `publisher`
 (`CN=Pure-Shell Test`) are PLACEHOLDERS and must be replaced with the Partner
-Center values before any Store submission. `msix_version` is the app version with
-a 4th part 0. Capabilities: `internetClient`, `privateNetworkClientServer` (SSH to
+Center values before any Store submission. The package version is not in
+pubspec: `tool/build-msix.ps1` derives it from `version` (1.1.1+10 -> 1.1.1.0), so
+bumping the app version is the only step. Capabilities: `internetClient`, `privateNetworkClientServer` (SSH to
 LAN hosts); the Flutter runner is a full-trust desktop app (`runFullTrust`).
 
 The test certificate is created on the first build in `windows\packaging\`
@@ -133,13 +134,14 @@ refuses a same-version update with different content). `install.ps1 -Uninstall`
 removes it.
 
 Packaged vs unpackaged (tested 2026-11-11, Windows 11 26300):
-- Storage: packaged desktop apps get AppData virtualisation. On a clean PC the
-  store lands in `%LOCALAPPDATA%\Packages\PureShell.Test_meab6r7t5qkq0\LocalCache\
-  Local\Pure-Shell\store.dat` and is removed on uninstall. If
-  `%LOCALAPPDATA%\Pure-Shell` already exists (a dev build ran), the package reads
-  and writes that real folder instead (shared with the dev build; survives
-  uninstall). Deletes reach the real Roaming folder, so the one-time Roaming
-  migration behaves as in the dev build.
+- Storage: packaged, the store lives in the package's own folder,
+  `%LOCALAPPDATA%\Packages\PureShell.Test_meab6r7t5qkq0\LocalState\store.dat`
+  (the runner reports it), so uninstalling removes everything and a dev build's
+  `%LOCALAPPDATA%\Pure-Shell` is never read or written. Why it is explicit: with
+  plain `%LOCALAPPDATA%` paths, Windows' AppData virtualisation redirected the
+  store to `LocalCache\Local\Pure-Shell` on a clean PC but used the real, shared
+  folder when a dev build had run first. Earlier packages' redirected store is
+  moved into LocalState once; the Roaming migration does not run packaged.
 - Start menu entry "Pure-Shell" with the framed >_ logo; About shows the version.
 Tested on a second PC (clean install from `debug\msix\install`, local session, by
 the user, 2026-11-11): Windows Hello key created in the package with TPM

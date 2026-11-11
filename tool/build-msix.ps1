@@ -24,9 +24,17 @@ Set-Location $root
 $out = Join-Path $root 'debug\msix'
 New-Item -ItemType Directory -Force $out | Out-Null
 
+# The package version comes from pubspec's "version" (1.1.1+10 -> 1.1.1.0),
+# never from a second, hand-kept number.
+$m = Select-String -Path pubspec.yaml -Pattern '^version:\s*(\d+)\.(\d+)\.(\d+)'
+if (-not $m) { throw 'no "version: x.y.z" in pubspec.yaml' }
+$g = $m.Matches[0].Groups
+$version = "$($g[1].Value).$($g[2].Value).$($g[3].Value).0"
+Write-Host "== package version $version (from pubspec)"
+
 if ($Store) {
     Write-Host '== Store variant (not signed locally)'
-    dart run msix:create --store --output-path $out --output-name Pure-Shell-store
+    dart run msix:create --store --version $version --output-path $out --output-name Pure-Shell-store
     if ($LASTEXITCODE -ne 0) { throw 'msix:create failed' }
     Write-Host ''
     Get-Item (Join-Path $out 'Pure-Shell-store.msix') |
@@ -61,7 +69,7 @@ if (-not (Test-Path $pfx)) {
 $pw = Get-Content -Path $pwFile -Raw
 
 Write-Host '== building and signing the MSIX (test certificate)'
-dart run msix:create --certificate-path $pfx --certificate-password $pw `
+dart run msix:create --version $version --certificate-path $pfx --certificate-password $pw `
     --output-path $out --output-name Pure-Shell
 if ($LASTEXITCODE -ne 0) { throw 'msix:create failed' }
 
