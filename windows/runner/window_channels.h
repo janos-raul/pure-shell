@@ -11,6 +11,7 @@
 #include <windows.h>
 
 #include <memory>
+#include <string>
 
 // Window-level platform channels for the main window:
 //   "eu.pureshell.app/window_events" (native -> Dart): sessionLock,
@@ -19,6 +20,9 @@
 //   "eu.pureshell.app/window" setSecure {secure}: screen-capture blocking
 //     (SetWindowDisplayAffinity), the "Allow screenshots" setting. Blocked
 //     from the moment the window exists, like FLAG_SECURE on Android.
+//   "eu.pureshell.app/clipboard" copy {text}: copies terminal text marked so
+//     it stays out of clipboard history, cloud clipboard sync and clipboard
+//     monitors (the Android "sensitive clip").
 class WindowChannels {
  public:
   WindowChannels(flutter::BinaryMessenger* messenger, HWND window);
@@ -30,12 +34,14 @@ class WindowChannels {
  private:
   void Send(const char* event);
   bool SetCaptureBlocked(bool blocked);
+  bool CopySensitive(const std::string& utf8);
 
   HWND window_;
   bool minimized_ = false;
   bool session_registered_ = false;
   std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> events_;
   std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> window_ch_;
+  std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> clipboard_;
 };
 
 #endif  // RUNNER_WINDOW_CHANNELS_H_

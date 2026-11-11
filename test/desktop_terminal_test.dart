@@ -30,6 +30,7 @@ import 'package:pureshell/ui/lock/app_lock_gate.dart';
 import 'fake_keystore.dart';
 
 import 'package:pureshell/ui/terminal/extra_keys.dart';
+import 'package:pureshell/ui/terminal/terminal_clipboard.dart';
 import 'package:pureshell/ui/terminal/terminal_screen.dart';
 
 const _host = Host(id: '1', label: 'Test', hostname: 'h', username: 'u');
@@ -85,6 +86,7 @@ void main() {
   late MemorySecureStore store;
   late _Connection conn;
   String? clipboard;
+  final sensitiveCopies = <String>[];
 
   Future<void> pumpScreen(
     WidgetTester t, {
@@ -105,6 +107,21 @@ void main() {
         }
         return null;
       },
+    );
+    sensitiveCopies.clear();
+    // The runner's clipboard channel (window_channels.cpp).
+    t.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      const MethodChannel(TerminalClipboard.channelName),
+      (call) async {
+        sensitiveCopies.add((call.arguments as Map)['text'] as String);
+        return null;
+      },
+    );
+    addTearDown(
+      () => t.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        const MethodChannel(TerminalClipboard.channelName),
+        null,
+      ),
     );
     addTearDown(
       () => t.binding.defaultBinaryMessenger.setMockMethodCallHandler(
@@ -204,7 +221,9 @@ void main() {
     expect(find.text('Clear selection'), findsOneWidget);
     await t.tap(find.text('Copy'));
     await t.pumpAndSettle();
-    expect(clipboard, contains('hello world'));
+    // Copied through the sensitive path, not the plain system clipboard.
+    expect(sensitiveCopies.single, contains('hello world'));
+    expect(clipboard, isNull);
     expect(sent(), isEmpty);
   }, variant: windows);
 

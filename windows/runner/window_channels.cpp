@@ -45,6 +45,72 @@ WindowChannels::WindowChannels(flutter::BinaryMessenger* messenger,
       result->Error("failed", std::to_string(GetLastError()));
     }
   });
+
+  clipboard_ = std::make_unique<flutter::MethodChannel<EncodableValue>>(
+      messenger, "eu.pureshell.app/clipboard", &codec);
+  clipboard_->SetMethodCallHandler([this](const auto& call, auto result) {
+    const auto* args = std::get_if<flutter::EncodableMap>(call.arguments());
+    const std::string* text = nullptr;
+    if (args) {
+      auto it = args->find(EncodableValue("text"));
+      if (it != args->end()) text = std::get_if<std::string>(&it->second);
+    }
+    if (call.method_name() != "copy" || !text) {
+      result->NotImplemented();
+      return;
+    }
+    if (CopySensitive(*text)) {
+      result->Success();
+    } else {
+      result->Error("failed");  // never the text
+    }
+  });
+}
+
+namespace {
+
+// Puts a DWORD under a registered clipboard format (clipboard must be open).
+void SetDwordFormat(const wchar_t* name, DWORD value) {
+  const UINT format = RegisterClipboardFormatW(name);
+  HGLOBAL mem = GlobalAlloc(GMEM_MOVEABLE, sizeof(DWORD));
+  if (!format || !mem) return;
+  *static_cast<DWORD*>(GlobalLock(mem)) = value;
+  GlobalUnlock(mem);
+  if (!SetClipboardData(format, mem)) GlobalFree(mem);
+}
+
+}  // namespace
+
+bool WindowChannels::CopySensitive(const std::string& utf8) {
+  const int n = MultiByteToWideChar(CP_UTF8, 0, utf8.data(),
+                                    static_cast<int>(utf8.size()), nullptr, 0);
+  HGLOBAL text = GlobalAlloc(GMEM_MOVEABLE, (n + 1) * sizeof(wchar_t));
+  if (!text) return false;
+  auto* dst = static_cast<wchar_t*>(GlobalLock(text));
+  MultiByteToWideChar(CP_UTF8, 0, utf8.data(), static_cast<int>(utf8.size()),
+                      dst, n);
+  dst[n] = L'\0';
+  GlobalUnlock(text);
+
+  // Another program may hold the clipboard for a moment.
+  bool open = false;
+  for (int i = 0; i < 10 && !(open = OpenClipboard(window_) != 0); ++i) {
+    Sleep(10);
+  }
+  if (!open) {
+    GlobalFree(text);
+    return false;
+  }
+  EmptyClipboard();
+  const bool ok = SetClipboardData(CF_UNICODETEXT, text) != nullptr;
+  if (!ok) GlobalFree(text);
+  // Documented clipboard formats: their presence keeps the clip out of
+  // clipboard monitors and history (Win+V) and out of cloud clipboard sync.
+  SetDwordFormat(L"ExcludeClipboardContentFromMonitorProcessing", 0);
+  SetDwordFormat(L"CanIncludeInClipboardHistory", 0);
+  SetDwordFormat(L"CanUploadToCloudClipboard", 0);
+  CloseClipboard();
+  return ok;
 }
 
 bool WindowChannels::SetCaptureBlocked(bool blocked) {
