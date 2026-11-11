@@ -15,6 +15,7 @@ import 'key_repository.dart';
 import 'keystore_api.dart';
 import 'ssh_ec_encoding.dart';
 import 'ssh_ed25519_encoding.dart';
+import 'ssh_rsa_encoding.dart';
 import 'ssh_key.dart';
 
 /// Debug/test switch for emulators: keep an EC key even when the Keystore
@@ -109,14 +110,14 @@ class KeyService {
       comment: comment.trim(),
     );
 
-    if (!softwareOnly) {
+    if (!softwareOnly && caps.hardwareKeys) {
       final generated = await _keystore.generateKey(base.signAlias);
       if (generated.level != SecurityLevel.software ||
           keepSoftwareKeystoreKeys) {
         final key = SshKey(
           id: id,
           name: base.name,
-          kind: KeyKind.hardwareEcdsa,
+          kind: generated.kind,
           level: generated.level,
           publicKey: generated.publicPoint,
           createdAt: base.createdAt,
@@ -174,13 +175,17 @@ class KeyService {
     String? subtitle,
   }) async {
     if (!key.isSoftware) {
-      final der = await _keystore.sign(
+      final sig = await _keystore.sign(
         key.signAlias,
         data,
         title: title,
         subtitle: subtitle,
       );
-      return sshSignatureFromDer(der);
+      // Android: DER ECDSA. Windows Hello: raw RSASSA-PKCS1-v1_5/SHA-256
+      // (Windows hashes the data itself).
+      return key.kind == KeyKind.helloRsa
+          ? rsaSha256SignatureBlob(sig)
+          : sshSignatureFromDer(sig);
     }
     final w = key.wrapped!;
     // The platform channel hands back a read-only view; keep our own copy so

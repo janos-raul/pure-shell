@@ -13,6 +13,7 @@ import 'dart:typed_data';
 import 'keystore_api.dart';
 import 'ssh_ec_encoding.dart' as ec;
 import 'ssh_ed25519_encoding.dart';
+import 'ssh_rsa_encoding.dart';
 
 enum KeyKind {
   /// EC P-256 key inside the Android Keystore. Never leaves it.
@@ -21,6 +22,11 @@ enum KeyKind {
   /// Ed25519 key made in Dart for phones without secure hardware; its seed is
   /// stored encrypted with a Keystore AES key that needs the user for every use.
   softwareEd25519,
+
+  /// Windows Hello key credential: RSA-2048 held by Windows (TPM when
+  /// present), Windows Hello for every use. [SshKey.publicKey] holds the SSH
+  /// `ssh-rsa` blob. Signs with rsa-sha2-256.
+  helloRsa,
 }
 
 class WrappedSeed {
@@ -80,19 +86,38 @@ class SshKey {
   /// The Keystore alias that holds this key's secret.
   String get keystoreAlias => isSoftware ? wrapAlias : signAlias;
 
-  String get sshType => isSoftware ? ed25519Type : ec.ecdsaP256Type;
+  /// The key type, as in the authorized_keys line.
+  String get sshType => switch (kind) {
+    KeyKind.softwareEd25519 => ed25519Type,
+    KeyKind.hardwareEcdsa => ec.ecdsaP256Type,
+    KeyKind.helloRsa => rsaKeyType,
+  };
 
-  Uint8List get publicKeyBlob => isSoftware
-      ? ed25519PublicKeyBlob(publicKey)
-      : ec.ecdsaP256PublicKeyBlob(publicKey);
+  /// The publickey userauth / signature algorithm (differs from [sshType]
+  /// only for RSA: never SHA-1 "ssh-rsa").
+  String get authAlgorithm =>
+      kind == KeyKind.helloRsa ? rsaSha256Algorithm : sshType;
 
-  String get authorizedKeysLine => isSoftware
-      ? ed25519AuthorizedKeysLine(publicKey, comment: comment)
-      : ec.authorizedKeysLine(publicKey, comment: comment);
+  Uint8List get publicKeyBlob => switch (kind) {
+    KeyKind.softwareEd25519 => ed25519PublicKeyBlob(publicKey),
+    KeyKind.hardwareEcdsa => ec.ecdsaP256PublicKeyBlob(publicKey),
+    KeyKind.helloRsa => publicKey,
+  };
 
-  String get fingerprint => isSoftware
-      ? ed25519Fingerprint(publicKey)
-      : ec.publicKeyFingerprint(publicKey);
+  String get authorizedKeysLine => switch (kind) {
+    KeyKind.softwareEd25519 => ed25519AuthorizedKeysLine(
+      publicKey,
+      comment: comment,
+    ),
+    KeyKind.hardwareEcdsa => ec.authorizedKeysLine(publicKey, comment: comment),
+    KeyKind.helloRsa => rsaAuthorizedKeysLine(publicKey, comment: comment),
+  };
+
+  String get fingerprint => switch (kind) {
+    KeyKind.softwareEd25519 => ed25519Fingerprint(publicKey),
+    KeyKind.hardwareEcdsa => ec.publicKeyFingerprint(publicKey),
+    KeyKind.helloRsa => rsaFingerprint(publicKey),
+  };
 
   SshKey copyWith({String? name, String? comment}) => SshKey(
     id: id,

@@ -26,7 +26,11 @@ class SecurityBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final shown = level ?? sshKey.level;
-    final software = sshKey.isSoftware || shown == SecurityLevel.software;
+    // Amber also for a Hello key whose TPM backing is not proven.
+    final software =
+        sshKey.isSoftware ||
+        shown == SecurityLevel.software ||
+        shown == SecurityLevel.hello;
     final label = sshKey.isSoftware ? 'Software key' : shown.label;
     // Outlined chip on black: green for hardware-backed keys, amber for
     // software keys. Never a fill.

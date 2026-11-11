@@ -16,7 +16,7 @@ import 'core/hosts/known_hosts.dart';
 import 'core/keys/key_repository.dart';
 import 'core/keys/key_service.dart';
 import 'core/keys/keystore_api.dart';
-import 'core/keys/software_keystore.dart';
+import 'core/keys/windows_keystore.dart';
 import 'core/lock/app_lock_controller.dart';
 import 'core/lock/app_lock_settings.dart';
 import 'core/ssh/session_keeper.dart';
@@ -41,10 +41,10 @@ Future<void> main() async {
     return;
   }
   final store = FlutterSecureStore();
-  // EXPERIMENTAL Windows build: software-key stub, no app lock (see
-  // platform_support.dart).
+  // EXPERIMENTAL Windows build: Windows Hello keys with a software-key
+  // fallback, no app lock (see platform_support.dart).
   final KeystoreApi keystore = windowsStub
-      ? SoftwareKeystore(store)
+      ? WindowsKeystore(store)
       : PlatformKeystore();
   // Decide whether the app starts locked before the first frame.
   final lock = AppLockController(
@@ -69,7 +69,7 @@ Future<void> main() async {
       keyService: KeyService(
         keystore,
         KeyRepository(store),
-        softwareOnly: forceSoftwareKeys || windowsStub,
+        softwareOnly: forceSoftwareKeys,
       ),
       lock: lock,
       screenshots: screenshots,

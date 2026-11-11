@@ -132,10 +132,11 @@ class _KeysScreenState extends State<KeysScreen> {
             title: const Text('Software key'),
             content: Text(
               windowsStub
-                  ? 'EXPERIMENTAL Windows build: this is a software key. Its '
-                        'wrapping key is protected by Windows Credential '
-                        'Manager (your Windows account), not by a TPM, and '
-                        'using it asks for no confirmation.'
+                  ? 'Windows Hello is not set up, so this is a software key. '
+                        'EXPERIMENTAL: its wrapping key is protected by Windows '
+                        'Credential Manager (your Windows account), not by a '
+                        'TPM, and using it asks for no confirmation. Set up '
+                        'Windows Hello and create a new key for a TPM key.'
                   : 'This phone reports no secure hardware for keys, so this '
                         'key is a software key: it is protected by the Keystore '
                         'and your fingerprint or screen lock, but not by secure '

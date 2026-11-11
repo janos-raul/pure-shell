@@ -385,7 +385,7 @@ Future<SshConnection?> establishConnection(
         ? await conn.connect(password!)
         : await conn.connectWithKey(
             KeyAuth(
-              type: signKey.sshType,
+              type: signKey.authAlgorithm,
               publicKeyBlob: signKey.publicKeyBlob,
               sign: (data) => keyService.sign(
                 signKey,

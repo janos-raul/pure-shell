@@ -10,15 +10,26 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
+import 'ssh_key.dart' show KeyKind;
+
 /// Where a key actually lives, as reported by the Android Keystore.
 enum SecurityLevel {
   strongBox,
   tee,
-  software;
+  software,
+
+  /// Windows Hello key whose TPM backing was proven by attestation.
+  tpm,
+
+  /// Windows Hello key without proof of TPM backing (no TPM, or attestation
+  /// unavailable): Hello still gates every use, but the key may be software.
+  hello;
 
   static SecurityLevel parse(String? name) => switch (name) {
     'STRONGBOX' => SecurityLevel.strongBox,
     'TEE' => SecurityLevel.tee,
+    'TPM' => SecurityLevel.tpm,
+    'HELLO' => SecurityLevel.hello,
     _ => SecurityLevel.software,
   };
 
@@ -26,6 +37,8 @@ enum SecurityLevel {
     SecurityLevel.strongBox => 'StrongBox',
     SecurityLevel.tee => 'TEE',
     SecurityLevel.software => 'Software',
+    SecurityLevel.tpm => 'TPM + Hello',
+    SecurityLevel.hello => 'Hello (no TPM proof)',
   };
 }
 
@@ -81,7 +94,13 @@ class KeystoreCapabilities {
     required this.secureLockScreen,
     required this.canAuthenticate,
     this.sdkInt = 0,
+    this.hardwareKeys = true,
   });
+
+  /// [KeystoreApi.generateKey] can be tried. Always true on Android (where
+  /// the Keystore itself reports SOFTWARE when there is no secure hardware);
+  /// on Windows false when Windows Hello is not set up.
+  final bool hardwareKeys;
 
   /// The phone has a PIN, pattern, password or biometric lock.
   final bool secureLockScreen;
@@ -96,12 +115,19 @@ class KeystoreCapabilities {
 }
 
 class GeneratedKey {
-  const GeneratedKey({required this.level, required this.publicPoint});
+  const GeneratedKey({
+    required this.level,
+    required this.publicPoint,
+    this.kind = KeyKind.hardwareEcdsa,
+  });
 
   final SecurityLevel level;
 
-  /// Uncompressed P-256 point: 0x04 || X || Y (65 bytes).
+  /// Android: uncompressed P-256 point, 0x04 || X || Y (65 bytes).
+  /// Windows Hello: the SSH `ssh-rsa` public key blob.
   final Uint8List publicPoint;
+
+  final KeyKind kind;
 }
 
 /// The Keystore as the rest of the app sees it. There is deliberately no
