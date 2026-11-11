@@ -594,6 +594,53 @@ class _TerminalScreenState extends State<TerminalScreen>
     }
   }
 
+  /// Right-click on the desktop: Copy (only with a selection), Paste, Select
+  /// all, Clear selection. Paste takes the same cleaned path as everywhere.
+  Future<void> _showContextMenu(Offset position) async {
+    final selected = _termController.selection != null;
+    final visible = _visibleToUser;
+    final choice = await showMenu<String>(
+      context: context,
+      position: RelativeRect.fromLTRB(
+        position.dx,
+        position.dy,
+        position.dx,
+        position.dy,
+      ),
+      items: [
+        if (selected)
+          PopupMenuItem(
+            value: 'copy',
+            enabled: visible,
+            child: const _MenuEntry('Copy', 'Ctrl+Shift+C'),
+          ),
+        PopupMenuItem(
+          value: 'paste',
+          enabled: visible && _sessionLive,
+          child: const _MenuEntry('Paste', 'Ctrl+Shift+V'),
+        ),
+        PopupMenuItem(
+          value: 'all',
+          enabled: visible,
+          child: const Text('Select all'),
+        ),
+        if (selected)
+          const PopupMenuItem(value: 'clear', child: Text('Clear selection')),
+      ],
+    );
+    switch (choice) {
+      case 'copy':
+        await _copySelection();
+      case 'paste':
+        await _paste();
+      case 'all':
+        _selectAll();
+      case 'clear':
+        _termController.clearSelection();
+    }
+    if (mounted) _focus.requestFocus();
+  }
+
   void _showBar() {
     _barTimer?.cancel();
     setState(() => _barVisible = true);
@@ -707,6 +754,9 @@ class _TerminalScreenState extends State<TerminalScreen>
                             // and Ctrl+V from the shell); ours run first.
                             shortcuts: windowsStub ? const {} : null,
                             onKeyEvent: windowsStub ? _onDesktopKey : null,
+                            onSecondaryTapDown: windowsStub
+                                ? (d, _) => _showContextMenu(d.globalPosition)
+                                : null,
                             textStyle: TerminalStyle(fontSize: _fontSize),
                             theme: terminalThemeFor(_colors),
                           ),
@@ -830,6 +880,26 @@ class _TerminalScreenState extends State<TerminalScreen>
       ),
     );
   }
+}
+
+/// A context menu entry with its shortcut on the right.
+class _MenuEntry extends StatelessWidget {
+  const _MenuEntry(this.label, this.shortcut);
+
+  final String label;
+  final String shortcut;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      Expanded(child: Text(label)),
+      const SizedBox(width: 24),
+      Text(
+        shortcut,
+        style: TextStyle(color: Theme.of(context).hintColor, fontSize: 12),
+      ),
+    ],
+  );
 }
 
 /// In Direct input xterm opens no keyboard connection, so a tap on the

@@ -11,8 +11,10 @@
 // overridden to Windows).
 
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:dartssh2/dartssh2.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -27,6 +29,7 @@ const _host = Host(id: '1', label: 'Test', hostname: 'h', username: 'u');
 
 class _FakeSession implements SSHSession {
   final stdinData = StreamController<Uint8List>();
+  final out = StreamController<Uint8List>();
   final sent = <int>[];
   _FakeSession() {
     stdinData.stream.listen(sent.addAll);
@@ -35,7 +38,7 @@ class _FakeSession implements SSHSession {
   @override
   StreamSink<Uint8List> get stdin => stdinData.sink;
   @override
-  Stream<Uint8List> get stdout => const Stream.empty();
+  Stream<Uint8List> get stdout => out.stream;
   @override
   Stream<Uint8List> get stderr => const Stream.empty();
   @override
@@ -157,5 +160,44 @@ void main() {
     // Nothing selected: nothing copied, and nothing went to the shell.
     expect(clipboard, isNull);
     expect(sent(), isEmpty);
+  }, variant: windows);
+
+  testWidgets('right-click menu: Copy only with a selection, then copies', (
+    t,
+  ) async {
+    await pumpScreen(t);
+    conn.fake!.out.add(utf8.encode('hello world'));
+    await t.pumpAndSettle();
+    final term = find.byType(TerminalScreen);
+
+    await t.tapAt(t.getCenter(term), buttons: kSecondaryButton);
+    await t.pumpAndSettle();
+    expect(find.text('Paste'), findsOneWidget);
+    expect(find.text('Select all'), findsOneWidget);
+    expect(find.text('Copy'), findsNothing);
+    expect(find.text('Clear selection'), findsNothing);
+
+    await t.tap(find.text('Select all'));
+    await t.pumpAndSettle();
+    await t.tapAt(t.getCenter(term), buttons: kSecondaryButton);
+    await t.pumpAndSettle();
+    expect(find.text('Clear selection'), findsOneWidget);
+    await t.tap(find.text('Copy'));
+    await t.pumpAndSettle();
+    expect(clipboard, contains('hello world'));
+    expect(sent(), isEmpty);
+  }, variant: windows);
+
+  testWidgets('right-click Paste uses the cleaned paste path', (t) async {
+    await pumpScreen(t);
+    clipboard = 'ls\x07 -l';
+    await t.tapAt(
+      t.getCenter(find.byType(TerminalScreen)),
+      buttons: kSecondaryButton,
+    );
+    await t.pumpAndSettle();
+    await t.tap(find.text('Paste'));
+    await t.pumpAndSettle();
+    expect(sent(), 'ls -l'); // BEL removed, single line: no warning
   }, variant: windows);
 }

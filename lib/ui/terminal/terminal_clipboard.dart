@@ -9,6 +9,8 @@
 
 import 'package:flutter/services.dart';
 
+import '../../core/platform_support.dart';
+
 /// The system clipboard, for the terminal.
 ///
 /// Reading happens only when the user taps Paste (never on open, never in the
@@ -25,6 +27,12 @@ class TerminalClipboard {
   final MethodChannel _channel;
 
   Future<void> copySensitive(String text) async {
+    if (windowsStub) {
+      // No sensitive-clip flag on Windows (clipboard history exclusion is
+      // not done yet): a normal copy.
+      await Clipboard.setData(ClipboardData(text: text));
+      return;
+    }
     try {
       await _channel.invokeMethod<void>('copy', {'text': text});
     } on MissingPluginException {
