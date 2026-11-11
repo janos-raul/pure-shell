@@ -17,6 +17,7 @@ import '../../core/keys/key_service.dart';
 import '../../core/keys/keystore_api.dart';
 import '../../core/keys/ssh_key.dart';
 import '../../core/platform_support.dart';
+import 'keys_screen.dart' show helloKeyNotice;
 import '../private_input.dart';
 import '../help/help_content.dart';
 import '../help/help_screen.dart';
@@ -139,6 +140,11 @@ class _KeyDetailScreenState extends State<KeyDetailScreen> {
               Text(_key.sshType),
             ],
           ),
+          if (_key.kind == KeyKind.helloRsa)
+            const Padding(
+              padding: EdgeInsets.only(top: 8),
+              child: Text(helloKeyNotice),
+            ),
           if (_key.isSoftware)
             Padding(
               padding: const EdgeInsets.only(top: 8),

@@ -29,6 +29,11 @@ const keyLossNotice =
     'second key.';
 
 /// The same notice for the Windows build.
+const helloKeyNotice =
+    'This key is tied to your Windows Hello PIN. If Windows Hello is reset, '
+    'the key is permanently lost. Keep a second key or another way into your '
+    'servers.';
+
 const windowsKeyLossNotice =
     'Keys are destroyed if Windows Hello is reset (for example after a '
     "forgotten PIN), if Pure-Shell's data or your Windows user profile is "
@@ -141,10 +146,10 @@ class _KeysScreenState extends State<KeysScreen> {
             content: Text(
               windowsStub
                   ? 'Windows Hello is not set up, so this is a software key. '
-                        'EXPERIMENTAL: its wrapping key is protected by Windows '
-                        'Credential Manager (your Windows account), not by a '
-                        'TPM, and using it asks for no confirmation. Set up '
-                        'Windows Hello and create a new key for a TPM key.'
+                        'EXPERIMENTAL: it is kept encrypted for your Windows '
+                        'account (Windows data protection), not by a TPM, and '
+                        'using it asks for no confirmation. Set up Windows '
+                        'Hello and create a new key for a TPM key.'
                   : 'This phone reports no secure hardware for keys, so this '
                         'key is a software key: it is protected by the Keystore '
                         'and your fingerprint or screen lock, but not by secure '
@@ -154,6 +159,20 @@ class _KeysScreenState extends State<KeysScreen> {
               FilledButton(
                 onPressed: () => Navigator.pop(c),
                 child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      } else if (key.kind == KeyKind.helloRsa && mounted) {
+        await showDialog<void>(
+          context: context,
+          builder: (c) => AlertDialog(
+            title: const Text('Windows Hello key'),
+            content: const Text(helloKeyNotice),
+            actions: [
+              FilledButton(
+                onPressed: () => Navigator.pop(c),
+                child: const Text('I understand'),
               ),
             ],
           ),

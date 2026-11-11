@@ -11,6 +11,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pointycastle/export.dart';
@@ -22,6 +23,10 @@ import 'package:pureshell/core/keys/ssh_key.dart';
 import 'package:pureshell/core/keys/ssh_rsa_encoding.dart';
 import 'package:pureshell/core/keys/windows_keystore.dart';
 import 'package:pureshell/core/storage/secure_store.dart';
+import 'package:pureshell/ui/keys/key_detail_screen.dart';
+import 'package:pureshell/ui/keys/keys_screen.dart';
+
+import 'fake_keystore.dart';
 
 // ignore: implementation_imports
 import 'package:dartssh2/src/hostkey/hostkey_rsa.dart';
@@ -215,5 +220,29 @@ void main() {
         ),
       );
     });
+  });
+
+  testWidgets('a Hello key shows the Windows Hello reset warning', (t) async {
+    final store = MemorySecureStore();
+    final key = SshKey(
+      id: 'k1',
+      name: 'hello',
+      kind: KeyKind.helloRsa,
+      level: SecurityLevel.tpm,
+      publicKey: rsaPublicKeyBlobFromBcrypt(bcryptBlob(pair.publicKey)),
+      createdAt: DateTime.utc(2026, 11, 11),
+    );
+    await t.pumpWidget(
+      MaterialApp(
+        home: KeyDetailScreen(
+          keyService: KeyService(FakeKeystore(), KeyRepository(store)),
+          sshKey: key,
+        ),
+      ),
+    );
+    await t.pumpAndSettle();
+    expect(find.text(helloKeyNotice), findsOneWidget);
+    expect(find.text('TPM + Hello'), findsOneWidget);
+    expect(helloKeyNotice, contains('permanently lost'));
   });
 }

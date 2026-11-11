@@ -22,9 +22,8 @@ import 'keystore_api.dart';
 ///   with `softwareOnly: true` (the same Ed25519 "software key" path phones
 ///   without secure hardware use).
 /// - The AES-256-GCM wrap key for that path is random bytes kept in the
-///   [SecureStore] (flutter_secure_storage on Windows: AES-GCM files under
-///   Roaming %APPDATA%, their key in Windows Credential Manager, i.e. tied to
-///   the Windows user account). It is NOT in a TPM and NOT bound to user
+///   [SecureStore] (on Windows: WindowsSecureStore, DPAPI for the Windows
+///   user, in Local AppData). It is NOT in a TPM and NOT bound to user
 ///   presence.
 /// - No prompts: wrap/unwrap/authenticate never ask the user. Any process
 ///   running as the same Windows user can read the wrapped seed.
