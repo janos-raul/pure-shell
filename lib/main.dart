@@ -10,11 +10,13 @@
 import 'package:flutter/foundation.dart' show kReleaseMode;
 import 'package:flutter/material.dart';
 
+import 'core/platform_support.dart';
 import 'core/hosts/host_repository.dart';
 import 'core/hosts/known_hosts.dart';
 import 'core/keys/key_repository.dart';
 import 'core/keys/key_service.dart';
 import 'core/keys/keystore_api.dart';
+import 'core/keys/software_keystore.dart';
 import 'core/lock/app_lock_controller.dart';
 import 'core/lock/app_lock_settings.dart';
 import 'core/ssh/session_keeper.dart';
@@ -39,9 +41,17 @@ Future<void> main() async {
     return;
   }
   final store = FlutterSecureStore();
-  final keystore = PlatformKeystore();
+  // EXPERIMENTAL Windows build: software-key stub, no app lock (see
+  // platform_support.dart).
+  final KeystoreApi keystore = windowsStub
+      ? SoftwareKeystore(store)
+      : PlatformKeystore();
   // Decide whether the app starts locked before the first frame.
-  final lock = AppLockController(keystore, AppLockSettings(store));
+  final lock = AppLockController(
+    keystore,
+    AppLockSettings(store),
+    supported: !windowsStub,
+  );
   await lock.init();
   final screenshots = ScreenshotSettings(store);
   await screenshots.init();
@@ -56,7 +66,11 @@ Future<void> main() async {
       hosts: hosts,
       knownHosts: knownHosts,
       settings: terminalSettings,
-      keyService: KeyService(keystore, KeyRepository(store)),
+      keyService: KeyService(
+        keystore,
+        KeyRepository(store),
+        softwareOnly: forceSoftwareKeys || windowsStub,
+      ),
       lock: lock,
       screenshots: screenshots,
     ),

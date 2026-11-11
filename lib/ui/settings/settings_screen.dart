@@ -10,6 +10,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/lock/app_lock_controller.dart';
+import '../../core/platform_support.dart';
 import '../about_screen.dart';
 import '../../core/lock/app_lock_settings.dart';
 import '../../core/ssh/session_keeper.dart';
@@ -224,38 +225,48 @@ class _SettingsScreenState extends State<SettingsScreen> {
           return ListView(
             children: [
               const _Section('Security'),
-              _Box([
-                ListTile(
-                  title: const Text('App lock'),
-                  subtitle: Text(
-                    !lock.enabled
-                        ? 'Off'
-                        : lock.secureLockScreen
-                        ? 'On'
-                        : 'On, but the phone has no screen lock',
+              if (windowsStub)
+                const _Box([
+                  ListTile(
+                    enabled: false,
+                    title: Text('App lock'),
+                    subtitle: Text('Not available on Windows yet'),
                   ),
-                  onTap: _chooseAppLock,
-                ),
-                ListTile(
-                  enabled: lock.enabled,
-                  title: const Text('Lock after'),
-                  subtitle: Text(lock.timeout.label),
-                  onTap: lock.enabled ? _chooseTimeout : null,
-                ),
-                ListTile(
-                  title: const Text('Allow screenshots'),
-                  subtitle: Text(widget.screenshots.allowed ? 'On' : 'Off'),
-                  onTap: _chooseScreenshots,
-                ),
-              ]),
-              const _Section('Connection'),
-              _Box([
-                ListTile(
-                  title: const Text('Keep sessions alive'),
-                  subtitle: Text(_keepSessions ? 'On' : 'Off'),
-                  onTap: _chooseKeepSessions,
-                ),
-              ]),
+                ])
+              else
+                _Box([
+                  ListTile(
+                    title: const Text('App lock'),
+                    subtitle: Text(
+                      !lock.enabled
+                          ? 'Off'
+                          : lock.secureLockScreen
+                          ? 'On'
+                          : 'On, but the phone has no screen lock',
+                    ),
+                    onTap: _chooseAppLock,
+                  ),
+                  ListTile(
+                    enabled: lock.enabled,
+                    title: const Text('Lock after'),
+                    subtitle: Text(lock.timeout.label),
+                    onTap: lock.enabled ? _chooseTimeout : null,
+                  ),
+                  ListTile(
+                    title: const Text('Allow screenshots'),
+                    subtitle: Text(widget.screenshots.allowed ? 'On' : 'Off'),
+                    onTap: _chooseScreenshots,
+                  ),
+                ]),
+              if (!windowsStub) const _Section('Connection'),
+              if (!windowsStub)
+                _Box([
+                  ListTile(
+                    title: const Text('Keep sessions alive'),
+                    subtitle: Text(_keepSessions ? 'On' : 'Off'),
+                    onTap: _chooseKeepSessions,
+                  ),
+                ]),
               const _Section('Terminal'),
               _Box([
                 ListTile(

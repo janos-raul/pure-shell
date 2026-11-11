@@ -22,8 +22,16 @@ import 'app_lock_settings.dart';
 /// - Does nothing when the phone has no secure screen lock; instead one
 ///   notice is requested, once.
 class AppLockController extends ChangeNotifier {
-  AppLockController(this._keystore, this._settings, {DateTime Function()? now})
-    : _now = now ?? DateTime.now;
+  AppLockController(
+    this._keystore,
+    this._settings, {
+    DateTime Function()? now,
+    this.supported = true,
+  }) : _now = now ?? DateTime.now;
+
+  /// False on platforms with no lock prompt yet (the Windows build): never
+  /// locks, never asks for the no-screen-lock notice.
+  final bool supported;
 
   final KeystoreApi _keystore;
   final AppLockSettings _settings;
@@ -45,7 +53,7 @@ class AppLockController extends ChangeNotifier {
   bool get secureLockScreen => _secureLockScreen;
 
   /// Locking is on and possible.
-  bool get active => _enabled && _secureLockScreen;
+  bool get active => supported && _enabled && _secureLockScreen;
 
   bool get locked => _locked;
 
@@ -67,6 +75,7 @@ class AppLockController extends ChangeNotifier {
   }
 
   Future<void> _refreshCapabilities() async {
+    if (!supported) return;
     _secureLockScreen = (await _keystore.capabilities()).secureLockScreen;
     if (_enabled && !_secureLockScreen && !_noticePending) {
       if (!await _settings.loadNoticeShown()) _noticePending = true;

@@ -16,6 +16,7 @@ import 'package:flutter/services.dart';
 import '../../core/keys/key_service.dart';
 import '../../core/keys/keystore_api.dart';
 import '../../core/keys/ssh_key.dart';
+import '../../core/platform_support.dart';
 import '../private_input.dart';
 import '../help/help_content.dart';
 import '../help/help_screen.dart';
@@ -139,11 +140,14 @@ class _KeyDetailScreenState extends State<KeyDetailScreen> {
             ],
           ),
           if (_key.isSoftware)
-            const Padding(
-              padding: EdgeInsets.only(top: 8),
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
               child: Text(
-                'This phone reports no secure hardware for keys, so this is a '
-                'software key.',
+                windowsStub
+                    ? 'EXPERIMENTAL Windows build: software key, not in a TPM, '
+                          'no confirmation on use.'
+                    : 'This phone reports no secure hardware for keys, so this '
+                          'is a software key.',
               ),
             ),
           const SizedBox(height: 16),

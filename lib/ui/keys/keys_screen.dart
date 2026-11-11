@@ -15,6 +15,7 @@ import '../../core/keys/key_service.dart';
 import '../../core/keys/keystore_api.dart';
 import '../../core/keys/ssh_ec_encoding.dart';
 import '../../core/keys/ssh_key.dart';
+import '../../core/platform_support.dart';
 import '../private_input.dart';
 import 'key_detail_screen.dart';
 import 'key_widgets.dart';
@@ -129,10 +130,16 @@ class _KeysScreenState extends State<KeysScreen> {
           context: context,
           builder: (c) => AlertDialog(
             title: const Text('Software key'),
-            content: const Text(
-              'This phone reports no secure hardware for keys, so this key is '
-              'a software key: it is protected by the Keystore and your '
-              'fingerprint or screen lock, but not by secure hardware.',
+            content: Text(
+              windowsStub
+                  ? 'EXPERIMENTAL Windows build: this is a software key. Its '
+                        'wrapping key is protected by Windows Credential '
+                        'Manager (your Windows account), not by a TPM, and '
+                        'using it asks for no confirmation.'
+                  : 'This phone reports no secure hardware for keys, so this '
+                        'key is a software key: it is protected by the Keystore '
+                        'and your fingerprint or screen lock, but not by secure '
+                        'hardware.',
             ),
             actions: [
               FilledButton(
