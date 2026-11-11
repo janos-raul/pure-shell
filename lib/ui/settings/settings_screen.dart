@@ -74,10 +74,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
   var _inputMode = InputMode.direct;
   var _colors = TerminalColors.standard;
   var _keepSessions = true;
+  var _showExtraKeys = false;
 
   @override
   void initState() {
     super.initState();
+    widget.terminal.loadShowExtraKeys().then((v) {
+      if (mounted) setState(() => _showExtraKeys = v);
+    });
     widget.terminal.loadKeepSessions().then((v) {
       if (mounted) setState(() => _keepSessions = v);
     });
@@ -199,6 +203,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await widget.terminal.saveInputMode(chosen);
   }
 
+  Future<void> _chooseExtraKeys() async {
+    final chosen = await showChoiceDialog<bool>(
+      context,
+      title: 'Extra keys row',
+      current: _showExtraKeys,
+      options: const [
+        ChoiceOption(
+          false,
+          'Off',
+          'Use the keyboard: Esc, Tab, Ctrl and the arrows are all there.',
+        ),
+        ChoiceOption(
+          true,
+          'On',
+          'Shows Esc, Tab, Ctrl, arrows, Paste and the command box under the '
+              'terminal.',
+        ),
+      ],
+    );
+    if (chosen == null) return;
+    setState(() => _showExtraKeys = chosen);
+    await widget.terminal.saveShowExtraKeys(chosen);
+  }
+
   Future<void> _chooseColors() async {
     final chosen = await showChoiceDialog<TerminalColors>(
       context,
@@ -275,6 +303,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     title: const Text('Input mode'),
                     subtitle: Text(_inputMode.label),
                     onTap: _chooseInputMode,
+                  ),
+                if (windowsStub)
+                  ListTile(
+                    title: const Text('Extra keys row'),
+                    subtitle: Text(_showExtraKeys ? 'On' : 'Off'),
+                    onTap: _chooseExtraKeys,
                   ),
                 ListTile(
                   title: const Text('Terminal colors'),

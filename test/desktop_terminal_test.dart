@@ -23,6 +23,7 @@ import 'package:pureshell/core/hosts/known_hosts.dart';
 import 'package:pureshell/core/ssh/ssh_connection.dart';
 import 'package:pureshell/core/storage/secure_store.dart';
 import 'package:pureshell/core/storage/terminal_settings.dart';
+import 'package:pureshell/ui/terminal/extra_keys.dart';
 import 'package:pureshell/ui/terminal/terminal_screen.dart';
 
 const _host = Host(id: '1', label: 'Test', hostname: 'h', username: 'u');
@@ -76,8 +77,11 @@ void main() {
   late _Connection conn;
   String? clipboard;
 
-  Future<void> pumpScreen(WidgetTester t) async {
+  Future<void> pumpScreen(WidgetTester t, {bool? showExtraKeys}) async {
     store = MemorySecureStore();
+    if (showExtraKeys != null) {
+      store.data[TerminalSettings.showExtraKeysKey] = '$showExtraKeys';
+    }
     conn = _Connection(store);
     t.binding.defaultBinaryMessenger.setMockMethodCallHandler(
       SystemChannels.platform,
@@ -219,4 +223,17 @@ void main() {
     },
     variant: windows,
   );
+
+  testWidgets('wide window: top bar with Disconnect, no extra keys row', (
+    t,
+  ) async {
+    await pumpScreen(t); // the test surface (800 x 600) is landscape
+    expect(find.byTooltip('Disconnect'), findsOneWidget);
+    expect(find.byType(ExtraKeysRow), findsNothing);
+  }, variant: windows);
+
+  testWidgets('extra keys row when turned on', (t) async {
+    await pumpScreen(t, showExtraKeys: true);
+    expect(find.byType(ExtraKeysRow), findsOneWidget);
+  }, variant: windows);
 }

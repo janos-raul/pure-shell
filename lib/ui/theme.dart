@@ -10,6 +10,7 @@
 import 'package:flutter/material.dart';
 import 'package:xterm/xterm.dart';
 
+import '../core/platform_support.dart';
 import '../core/storage/terminal_settings.dart';
 
 /// Phosphor green on black.
@@ -89,9 +90,13 @@ ThemeData pureShellTheme() {
     colorScheme: scheme,
     scaffoldBackgroundColor: _black,
     canvasColor: _black,
-    dialogTheme: const DialogThemeData(
+    dialogTheme: DialogThemeData(
+      // Desktop windows can be very wide: dialogs keep a readable width.
+      constraints: windowsStub
+          ? const BoxConstraints(minWidth: 280, maxWidth: 520)
+          : null,
       backgroundColor: _panel,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         side: BorderSide(color: _dimGreen),
         borderRadius: BorderRadius.all(Radius.circular(4)),
       ),

@@ -47,6 +47,7 @@ class TerminalSettings {
   static const fontSizeKey = 'terminal.fontSize';
   static const colorsKey = 'terminal.colors';
   static const inputModeKey = 'terminal.inputMode';
+  static const showExtraKeysKey = 'terminal.extraKeys';
   static const keepSessionsKey = 'connection.keepSessions';
   static const notificationAskedKey = 'connection.notificationAsked';
 
@@ -99,6 +100,19 @@ class TerminalSettings {
 
   Future<void> saveInputMode(InputMode mode) =>
       _store.write(inputModeKey, mode.name);
+
+  /// The row of extra keys under the terminal (Esc, Tab, Ctrl, arrows...).
+  /// Shown on phones; off by default on the desktop, where the physical
+  /// keyboard has them.
+  Future<bool> loadShowExtraKeys() async =>
+      switch (await _store.read(showExtraKeysKey)) {
+        'true' => true,
+        'false' => false,
+        _ => !windowsStub,
+      };
+
+  Future<void> saveShowExtraKeys(bool show) =>
+      _store.write(showExtraKeysKey, show.toString());
 
   /// Keep connected sessions alive in the background (foreground service with
   /// a notification). On by default.

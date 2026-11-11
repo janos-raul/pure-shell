@@ -54,6 +54,15 @@ LRESULT
 FlutterWindow::MessageHandler(HWND hwnd, UINT const message,
                               WPARAM const wparam,
                               LPARAM const lparam) noexcept {
+  // Smallest window the layout is made for (640 x 480 logical pixels).
+  if (message == WM_GETMINMAXINFO) {
+    const UINT dpi = GetDpiForWindow(hwnd);
+    auto* info = reinterpret_cast<MINMAXINFO*>(lparam);
+    info->ptMinTrackSize.x = MulDiv(640, dpi, 96);
+    info->ptMinTrackSize.y = MulDiv(480, dpi, 96);
+    return 0;
+  }
+
   // Give Flutter, including plugins, an opportunity to handle window messages.
   if (flutter_controller_) {
     std::optional<LRESULT> result =

@@ -82,6 +82,9 @@ class _TerminalScreenState extends State<TerminalScreen>
   var _colors = TerminalColors.standard;
   var _inputMode = InputMode.direct;
 
+  /// Starts as the platform default (shown on phones) until the setting loads.
+  var _showExtraKeys = !windowsStub;
+
   /// Direct input: the native keyboard view. Null in composing mode.
   DirectInput? _direct;
   var _resumed = true;
@@ -144,6 +147,9 @@ class _TerminalScreenState extends State<TerminalScreen>
     });
     widget.settings.loadFontSize().then((size) {
       if (mounted) setState(() => _fontSize = size);
+    });
+    widget.settings.loadShowExtraKeys().then((show) {
+      if (mounted) setState(() => _showExtraKeys = show);
     });
     // Open the shell after the first layout so the PTY starts with the real
     // terminal size.
@@ -714,7 +720,10 @@ class _TerminalScreenState extends State<TerminalScreen>
 
   @override
   Widget build(BuildContext context) {
+    // Phones in landscape hide the app bar for the keyboard's sake. A desktop
+    // window keeps it, so Disconnect is always one click away.
     final landscape =
+        !windowsStub &&
         MediaQuery.orientationOf(context) == Orientation.landscape;
     return PopScope(
       canPop: false,
@@ -862,20 +871,21 @@ class _TerminalScreenState extends State<TerminalScreen>
                   ],
                 ),
               ),
-              ExtraKeysRow(
-                ctrlActive: _ctrl,
-                onCtrl: () {
-                  setState(() => _ctrl = !_ctrl);
-                  _focus.requestFocus();
-                },
-                onKey: _key,
-                onText: _text,
-                // Nothing to send to once the session is over.
-                enabled: !_disconnected,
-                boxOpen: _boxOpen,
-                onBox: _toggleBox,
-                onPaste: _paste,
-              ),
+              if (_showExtraKeys || _boxOpen)
+                ExtraKeysRow(
+                  ctrlActive: _ctrl,
+                  onCtrl: () {
+                    setState(() => _ctrl = !_ctrl);
+                    _focus.requestFocus();
+                  },
+                  onKey: _key,
+                  onText: _text,
+                  // Nothing to send to once the session is over.
+                  enabled: !_disconnected,
+                  boxOpen: _boxOpen,
+                  onBox: _toggleBox,
+                  onPaste: _paste,
+                ),
               if (_boxOpen)
                 CommandLineBox(
                   controller: _boxText,
