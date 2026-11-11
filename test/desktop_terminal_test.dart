@@ -111,7 +111,7 @@ void main() {
     await t.pumpAndSettle();
   }
 
-  String sent() => String.fromCharCodes(conn.fake!.sent);
+  String sent() => utf8.decode(conn.fake!.sent);
 
   Future<void> chord(
     WidgetTester t,
@@ -236,4 +236,22 @@ void main() {
     await pumpScreen(t, showExtraKeys: true);
     expect(find.byType(ExtraKeysRow), findsOneWidget);
   }, variant: windows);
+
+  testWidgets(
+    'typed text (IME, emoji panel, remote desktop) reaches the shell',
+    (t) async {
+      await pumpScreen(t);
+      // The text input connection is open as soon as the terminal has focus.
+      expect(t.testTextInput.hasAnyClients, isTrue);
+      t.testTextInput.updateEditingValue(
+        const TextEditingValue(
+          text: 'ls 😀',
+          selection: TextSelection.collapsed(offset: 5),
+        ),
+      );
+      await t.pumpAndSettle();
+      expect(sent(), 'ls 😀');
+    },
+    variant: windows,
+  );
 }

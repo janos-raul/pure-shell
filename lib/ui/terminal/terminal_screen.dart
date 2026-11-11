@@ -72,6 +72,7 @@ class _TerminalScreenState extends State<TerminalScreen>
   final _terminal = Terminal(maxLines: 10000);
   final _focus = FocusNode();
   final _termController = TerminalController();
+  final _termViewKey = GlobalKey<TerminalViewState>();
   final _clipboard = TerminalClipboard();
   final _subscriptions = <StreamSubscription<dynamic>>[];
   var _ctrl = false;
@@ -163,6 +164,15 @@ class _TerminalScreenState extends State<TerminalScreen>
     // Covered, backgrounded or ended: the box and its text go away first.
     if (_boxOpen && (!_resumed || (_lock?.hidden ?? false) || _disconnected)) {
       _closeBox();
+    }
+    if (windowsStub) {
+      // Typed text, IME and the emoji panel come through xterm's text input
+      // connection, which autofocus alone does not open: open it whenever
+      // the terminal has the focus.
+      if (_focus.hasFocus && _sessionLive && !_boxOpen) {
+        _termViewKey.currentState?.requestKeyboard();
+      }
+      return;
     }
     final direct = _direct;
     if (direct == null) return;
@@ -766,6 +776,7 @@ class _TerminalScreenState extends State<TerminalScreen>
                           onTap: () => _direct?.attach(),
                           child: PrivateTerminalView(
                             _terminal,
+                            viewKey: _termViewKey,
                             controller: _termController,
                             focusNode: _focus,
                             hardwareKeyboardOnly:

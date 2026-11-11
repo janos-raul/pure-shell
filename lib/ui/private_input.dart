@@ -81,7 +81,11 @@ class PrivateTerminalView extends StatelessWidget {
     this.shortcuts,
     this.onKeyEvent,
     this.onSecondaryTapDown,
+    this.viewKey,
   });
+
+  /// Key of the inner TerminalView, to open its text input connection.
+  final GlobalKey<TerminalViewState>? viewKey;
 
   /// Replaces xterm's default shortcuts (null keeps them). The desktop build
   /// passes an empty map so Ctrl+A, Ctrl+V etc. reach the shell.
@@ -113,6 +117,7 @@ class PrivateTerminalView extends StatelessWidget {
   Widget build(BuildContext context) {
     return TerminalView(
       terminal,
+      key: viewKey,
       focusNode: focusNode,
       controller: controller,
       autofocus: autofocus,
