@@ -177,13 +177,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context,
       title: 'Allow screenshots',
       current: widget.screenshots.allowed,
-      options: const [
+      options: [
         ChoiceOption(
           false,
           'Off',
-          'Blocks screenshots, screen recording and the recent-apps preview.',
+          windowsStub
+              ? 'Leaves this window out of screenshots, screen recording and '
+                    'screen sharing.'
+              : 'Blocks screenshots, screen recording and the recent-apps '
+                    'preview.',
         ),
-        ChoiceOption(
+        const ChoiceOption(
           true,
           'On',
           'Allows them; they can capture hostnames, usernames and output.',
@@ -307,12 +311,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   subtitle: Text(lock.timeout.label),
                   onTap: lock.enabled ? _chooseTimeout : null,
                 ),
-                if (!windowsStub)
-                  ListTile(
-                    title: const Text('Allow screenshots'),
-                    subtitle: Text(widget.screenshots.allowed ? 'On' : 'Off'),
-                    onTap: _chooseScreenshots,
-                  ),
+                ListTile(
+                  title: const Text('Allow screenshots'),
+                  subtitle: Text(widget.screenshots.allowed ? 'On' : 'Off'),
+                  onTap: _chooseScreenshots,
+                ),
               ]),
               if (!windowsStub) const _Section('Connection'),
               if (!windowsStub)
