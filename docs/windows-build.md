@@ -141,3 +141,8 @@ Packaged vs unpackaged (tested 2026-11-11, Windows 11 26300):
   uninstall). Deletes reach the real Roaming folder, so the one-time Roaming
   migration behaves as in the dev build.
 - Start menu entry "Pure-Shell" with the framed >_ logo; About shows the version.
+Tested on a second PC (clean install from `debug\msix\install`, local session, by
+the user, 2026-11-11): Windows Hello key created in the package with TPM
+attestation ("TPM + Hello"), SSH login to a LAN server with it (PIN on every
+login), and the remaining checks (app lock, capture blocking, clipboard history,
+key deletion) reported fine.
