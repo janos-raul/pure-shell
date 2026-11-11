@@ -26,6 +26,8 @@
 //     monitors (the Android "sensitive clip").
 //   "eu.pureshell.app/app_info" version -> {name, build}: pubspec's version,
 //     compiled in by the Flutter tool (FLUTTER_VERSION_*), for About.
+//     storageDir -> the package's LocalState folder when running as an MSIX
+//     package, null otherwise.
 class WindowChannels {
  public:
   WindowChannels(flutter::BinaryMessenger* messenger, HWND window);

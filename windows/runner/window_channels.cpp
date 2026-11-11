@@ -5,6 +5,9 @@
 #include "window_channels.h"
 
 #include <flutter/standard_method_codec.h>
+#include <appmodel.h>
+#include <winrt/Windows.Foundation.h>
+#include <winrt/Windows.Storage.h>
 #include <wtsapi32.h>
 
 #include <string>
@@ -49,6 +52,25 @@ WindowChannels::WindowChannels(flutter::BinaryMessenger* messenger,
   app_info_ = std::make_unique<flutter::MethodChannel<EncodableValue>>(
       messenger, "eu.pureshell.app/app_info", &codec);
   app_info_->SetMethodCallHandler([](const auto& call, auto result) {
+    if (call.method_name() == "storageDir") {
+      // Packaged (MSIX): the package's own LocalState folder, removed on
+      // uninstall and never shared with a dev build. Unpackaged: null.
+      UINT32 length = 0;
+      if (GetCurrentPackageFullName(&length, nullptr) ==
+          APPMODEL_ERROR_NO_PACKAGE) {
+        result->Success();
+        return;
+      }
+      try {
+        const auto path = winrt::Windows::Storage::ApplicationData::Current()
+                              .LocalFolder()
+                              .Path();
+        result->Success(EncodableValue(winrt::to_string(path)));
+      } catch (const winrt::hresult_error&) {
+        result->Error("failed", "no package folder");
+      }
+      return;
+    }
     if (call.method_name() != "version") {
       result->NotImplemented();
       return;

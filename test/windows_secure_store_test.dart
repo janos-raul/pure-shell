@@ -90,4 +90,28 @@ void main() {
     expect(f.existsSync(), isTrue);
     expect(await s.read('anything'), isNull);
   });
+
+  test('packaged: own folder; the redirected copy moves in, nothing else', () {
+    // (open() uses the real DPAPI channel for migration; here the same steps
+    // with the fake: the package-private redirected store moves into
+    // LocalState, a dev build's real store is never looked at.)
+    return () async {
+      final pkgRoot = '${tmp.path}/Packages/PureShell';
+      final redirected = File(
+        '$pkgRoot/LocalCache/Local/Pure-Shell/${WindowsSecureStore.fileName}',
+      );
+      await redirected.create(recursive: true);
+      await redirected.writeAsBytes(
+        await dpapi.protect(utf8.encode(jsonEncode({'hosts': '[pool]'}))),
+      );
+      final s = WindowsSecureStore(
+        Directory('$pkgRoot/LocalState'),
+        dpapi: dpapi,
+      );
+      await s.migrateFrom(redirected);
+      expect(await s.read('hosts'), '[pool]');
+      expect(redirected.existsSync(), isFalse);
+      expect(s.file.existsSync(), isTrue);
+    }();
+  });
 }

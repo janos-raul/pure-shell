@@ -54,9 +54,32 @@ class WindowsSecureStore implements SecureStore {
 
   File get file => File('${directory.path}${Platform.pathSeparator}$fileName');
 
-  /// The store the app uses, after moving any data the Roaming store of the
-  /// first Windows builds still has.
-  static Future<WindowsSecureStore> open() async {
+  /// The store the app uses.
+  ///
+  /// Packaged (MSIX): the package's own LocalState folder, so uninstalling
+  /// removes everything and a dev build's data never mixes in; nothing is
+  /// migrated. Unpackaged: `%LOCALAPPDATA%\Pure-Shell`, after moving any
+  /// data the Roaming store of the first Windows builds still has.
+  static Future<WindowsSecureStore> open({
+    Future<String?> Function()? packageDir,
+  }) async {
+    final packaged = await (packageDir ?? _packageStorageDir)();
+    if (packaged != null) {
+      final store = WindowsSecureStore(Directory(packaged));
+      // Earlier packages wrote %LOCALAPPDATA%\Pure-Shell, which Windows
+      // redirects to <package>\LocalCache\Local\Pure-Shell on a clean PC.
+      // Only the package itself writes there (never a dev build): move it
+      // once. The real %LOCALAPPDATA%\Pure-Shell is never read.
+      final sep = Platform.pathSeparator;
+      await store.migrateFrom(
+        File(
+          '${Directory(packaged).parent.path}${sep}LocalCache${sep}Local'
+          '${sep}Pure-Shell$sep$fileName',
+        ),
+      );
+      return store;
+    }
+
     final env = Platform.environment;
     final store = WindowsSecureStore(
       Directory('${env['LOCALAPPDATA']}\\Pure-Shell'),
@@ -71,6 +94,11 @@ class WindowsSecureStore implements SecureStore {
     }
     return store;
   }
+
+  /// The runner's answer (window_channels.cpp): LocalState when packaged.
+  static Future<String?> _packageStorageDir() =>
+      const MethodChannel('eu.pureshell.app/app_info')
+          .invokeMethod<String>('storageDir');
 
   /// Runs [op] after every earlier operation (reads see earlier writes,
   /// writes never interleave).
