@@ -27,14 +27,14 @@
 
   <main class="doc docpage">
     <h1>Privacy Policy</h1>
-    <p class="date">Last updated: November 9, 2026</p>
+    <p class="date">Last updated: November 12, 2026</p>
 
-    <p>Pure-Shell is an SSH client for Android. It is designed so that your data stays with you: it does not collect, store, or transmit any personal data to the developer.</p>
+    <p>Pure-Shell is an SSH client for Android and Windows. It is designed so that your data stays with you: it does not collect, store, or transmit any personal data to the developer.</p>
 
     <h2>1. No Data Collection</h2>
-    <p>Pure-Shell does not collect, share, or process any personal information about you. The app does not use:</p>
+    <p>Pure-Shell does not collect, share, or process any personal information about you, on Android or on Windows. The app does not use:</p>
     <ul>
-      <li>Analytics or tracking technologies</li>
+      <li>Analytics, telemetry or tracking technologies</li>
       <li>Advertising SDKs</li>
       <li>Accounts or sign-in</li>
       <li>Crash reporting</li>
@@ -47,38 +47,40 @@
 
     <h2>3. What Is Stored on Your Device</h2>
     <ul>
-      <li><strong>Hosts:</strong> the label, hostname, port and username you enter, and which login method each uses. They are kept in the device's encrypted storage, only on your phone.</li>
+      <li><strong>Hosts:</strong> the label, hostname, port and username you enter, and which login method each uses. On Android they are kept in the device's encrypted storage, only on your phone. On Windows they are kept in the app's local storage on your computer, encrypted with the Windows Data Protection API (DPAPI) for your Windows user.</li>
       <li><strong>Passwords:</strong> never saved. Pure-Shell asks for a password every time it is needed and does not store it anywhere.</li>
-      <li><strong>SSH keys:</strong> generated and kept in the Android Keystore, in the phone's secure hardware (StrongBox or TEE) where the phone has it. They can't be exported and never leave the device. A phone without secure hardware gets a clearly labelled software key, which is encrypted by a Keystore key.</li>
+      <li><strong>SSH keys:</strong> generated and kept in the Android Keystore, in the phone's secure hardware (StrongBox or TEE) where the phone has it. They can't be exported and never leave the device. A phone without secure hardware gets a clearly labelled software key, which is encrypted by a Keystore key. On Windows, keys are Windows Hello keys, created in the computer's TPM where it has one. They can't be exported, and each use needs Windows Hello. If Windows Hello is not available, the app offers a software Ed25519 key instead, which is stored only on your computer, encrypted with DPAPI for your Windows user.</li>
       <li><strong>Trusted host keys:</strong> the fingerprint of each server's key you chose to trust, so that a changed key can be detected.</li>
       <li><strong>Settings:</strong> your choices, such as font size, colours, input mode and app lock.</li>
     </ul>
     <p>Terminal content is shown on screen and kept in memory while a session is open. It is not saved, and nothing you type or see in a session is logged. Android's backup and data extraction are switched off for the app, so none of this is copied to a cloud backup.</p>
-    <p>Because everything is on your device, uninstalling Pure-Shell or clearing its data removes all of it, including your keys.</p>
+    <p>On Windows, the app's data stays in its local storage on your computer. It is not placed in a roaming profile and is not synced to any cloud.</p>
+    <p>Because everything is on your device, uninstalling Pure-Shell or clearing its data removes all of it, including your keys. On Windows, resetting Windows Hello also makes its keys unusable.</p>
 
-    <h2>4. Fingerprint and Screen Lock</h2>
-    <p>The app asks Android to confirm it is you, with your fingerprint or screen lock, to unlock the app and to use a key. This is handled entirely by Android. Pure-Shell never receives your fingerprint or any biometric data, only the answer yes or no.</p>
+    <h2>4. Fingerprint, Screen Lock and Windows Hello</h2>
+    <p>The app asks Android to confirm it is you, with your fingerprint or screen lock, to unlock the app and to use a key. On Windows it asks Windows Hello (face, fingerprint or PIN) instead. This is handled entirely by the operating system. Pure-Shell never receives your fingerprint, face, PIN or any biometric data, only the answer yes or no.</p>
 
     <h2>5. Notifications and Background Service</h2>
+    <p>This section applies to Android; the Windows app has no background service and uses no notifications.</p>
     <p>Android cuts off the network of an app that is in the background, which would end your SSH sessions. While you are connected, Pure-Shell therefore runs a small background service with a notification. It uses the notification permission, and nothing else, for that. The notification shows only how many sessions are active (for example "2 active sessions"): never hostnames, usernames or terminal content. You can turn this off in Settings, and you can deny the notification permission; the app still works.</p>
 
     <h2>6. Keyboard and Clipboard</h2>
-    <p>Pure-Shell asks your keyboard not to learn from or store what you type in it. This is a request: a third-party keyboard may ignore it. The app reads the clipboard only when you tap Paste, never in the background. Text you copy from the terminal is marked as sensitive on Android 13 and later, so the system's clipboard preview does not show it.</p>
+    <p>Pure-Shell asks your keyboard not to learn from or store what you type in it. This is a request: a third-party keyboard may ignore it. The app reads the clipboard only when you tap Paste, never in the background. Text you copy from the terminal is marked as sensitive on Android 13 and later, so the system's clipboard preview does not show it. On Windows, copied terminal text is marked so that it is kept out of Windows clipboard history and the cloud clipboard.</p>
 
     <h2>7. Screenshots</h2>
-    <p>By default Pure-Shell blocks screenshots, screen recording and the recent-apps preview, so what is on screen stays private. You can allow screenshots in Settings.</p>
+    <p>By default Pure-Shell blocks screenshots, screen recording and the recent-apps preview (on Windows, screen capture of the app window), so what is on screen stays private. You can allow screenshots in Settings.</p>
 
     <h2>8. The Servers You Connect To</h2>
-    <p>Pure-Shell connects only to servers you choose. What those servers do with your connection is up to them and you; the developer has no access to it. SSH encrypts the traffic between your phone and the server.</p>
+    <p>Pure-Shell connects only to servers you choose. What those servers do with your connection is up to them and you; the developer has no access to it. SSH encrypts the traffic between your device and the server.</p>
 
-    <h2>9. Google Play</h2>
-    <p>If you buy Pure-Shell on Google Play, the purchase, billing and refunds are handled by Google under Google's own policies. Pure-Shell itself receives nothing about your purchase or your Google account.</p>
+    <h2>9. Google Play and Microsoft Store</h2>
+    <p>If you buy Pure-Shell on Google Play or the Microsoft Store, the purchase, billing and refunds are handled by Google or Microsoft under their own policies. Pure-Shell itself receives nothing about your purchase or your Google or Microsoft account.</p>
 
     <h2>10. Children's Privacy</h2>
     <p>Pure-Shell does not collect any data from users of any age, including children.</p>
 
     <h2>11. Changes to This Policy</h2>
-    <p>If this privacy policy is updated, the new version will be posted on this page, and significant changes will be noted in the app's Google Play release notes.</p>
+    <p>If this privacy policy is updated, the new version will be posted on this page, and significant changes will be noted in the app's store release notes.</p>
 
     <h2>12. Contact</h2>
     <p>If you have questions about this privacy policy, you can contact the developer:</p>
