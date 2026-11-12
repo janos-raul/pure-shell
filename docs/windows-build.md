@@ -100,9 +100,14 @@ Build: `pwsh tool/build-msix.ps1` -> `debug\msix\Pure-Shell.msix`, signed with a
 local TEST certificate. `pwsh tool/build-msix.ps1 -Store` builds the unsigned
 Store variant (`--store`; Partner Center signs it).
 
-`msix_config` in pubspec.yaml: `identity_name` (`PureShell.Test`) and `publisher`
-(`CN=Pure-Shell Test`) are PLACEHOLDERS and must be replaced with the Partner
-Center values before any Store submission. The package version is not in
+`msix_config` in pubspec.yaml holds the Microsoft Store identity from Partner
+Center (`identity_name` `27222ultra-soft.pure-shell`, `publisher`
+`CN=0E7EAECD-...`). Test builds override it on the msix:create command line with
+`PureShell.Test` / `CN=Pure-Shell Test`, so they can be signed with the local
+test certificate. There is deliberately no `store: true` in `msix_config`:
+msix 3.18.0 computes store = `--store` given OR `store: true` in pubspec, so a
+test build could not switch it off; `-Store` passes `--store` instead. Always
+build through the script. The package version is not in
 pubspec: `tool/build-msix.ps1` derives it from `version` (1.1.1+10 -> 1.1.1.0), so
 bumping the app version is the only step. The build number is dropped (the Store
 requires the 4th part to be 0), so every Windows release must raise at least the
@@ -115,7 +120,8 @@ LAN hosts); the Flutter runner is a full-trust desktop app (`runFullTrust`).
 
 The test certificate is created on the first build in `windows\packaging\`
 (gitignored, never commit): `test-cert.pfx` (private key), `test-cert.password`,
-`test-cert.cer` (public part). Its subject must equal `publisher`.
+`test-cert.cer` (public part). Its subject is the test publisher
+`CN=Pure-Shell Test` that the script passes to msix:create.
 
 Trust it once (elevated PowerShell), so Windows accepts the package:
 

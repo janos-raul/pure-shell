@@ -4,11 +4,12 @@
 #
 # Builds the Windows MSIX package into debug\msix (gitignored).
 #
-#   pwsh tool/build-msix.ps1          signed with the local TEST certificate,
-#                                     for installing on this machine
+#   pwsh tool/build-msix.ps1          signed with the local TEST certificate
+#                                     under the TEST identity (PureShell.Test,
+#                                     CN=Pure-Shell Test), for local installs
 #   pwsh tool/build-msix.ps1 -Store   unsigned Store variant (Partner Center
-#                                     signs it); needs the real identity_name
-#                                     and publisher in pubspec.yaml first
+#                                     signs it), with the Store identity from
+#                                     msix_config in pubspec.yaml
 #   pwsh tool/build-msix.ps1 -Store -Rebuild
 #                                     the Store package again at the version
 #                                     already recorded (not yet uploaded)
@@ -21,8 +22,8 @@
 #
 # The test certificate is created on first use in windows\packaging\
 # (gitignored): test-cert.pfx (private key), test-cert.cer (public part, to
-# trust), test-cert.password. Never commit them. Its subject must equal
-# msix_config.publisher in pubspec.yaml. How to trust it and install the
+# trust), test-cert.password. Never commit them. Its subject is the test
+# publisher below, which overrides the Store one. How to trust it and install the
 # package: docs/windows-build.md.
 param([switch]$Store, [switch]$Rebuild)
 
@@ -73,8 +74,10 @@ if ($Store) {
     return
 }
 
-$publisher = (Select-String -Path pubspec.yaml -Pattern '^\s+publisher:\s*(.+)$').
-    Matches[0].Groups[1].Value.Trim()
+# Test builds override the Store identity from pubspec.yaml; msix_config has
+# no "store: true" because msix:create cannot turn that off from here.
+$identity = 'PureShell.Test'
+$publisher = 'CN=Pure-Shell Test'
 $certDir = Join-Path $root 'windows\packaging'
 $pfx = Join-Path $certDir 'test-cert.pfx'
 $cer = Join-Path $certDir 'test-cert.cer'
@@ -100,8 +103,8 @@ if (-not (Test-Path $pfx)) {
 $pw = Get-Content -Path $pwFile -Raw
 
 Write-Host '== building and signing the MSIX (test certificate)'
-dart run msix:create --version $version --certificate-path $pfx --certificate-password $pw `
-    --output-path $out --output-name Pure-Shell
+dart run msix:create --version $version --identity-name $identity --publisher $publisher `
+    --certificate-path $pfx --certificate-password $pw --output-path $out --output-name Pure-Shell
 if ($LASTEXITCODE -ne 0) { throw 'msix:create failed' }
 
 $msix = Get-Item (Join-Path $out 'Pure-Shell.msix')

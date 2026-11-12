@@ -103,16 +103,18 @@ flutter:
 # App icon: generated from assets/icon/pure-shell-icon.svg's geometry with
 # tool/make-icons.py (vector drawables, no launcher-icon package).
 
-# Windows MSIX package (dart run msix:create, see tool/build-msix.ps1 and
-# docs/windows-build.md). The test certificate's path and password are passed
-# on the command line, never stored here.
+# Windows MSIX package. Build it via tool/build-msix.ps1, not a bare
+# "dart run msix:create": use -Store for Store packages; without -Store the
+# script builds a signed local test package. That is why there is no
+# "store: true" here (msix:create cannot switch it off on the command line).
+# The test identity and certificate are passed on the command line, never
+# stored here. Details: docs/windows-build.md.
 msix_config:
   display_name: Pure-Shell
   publisher_display_name: Janos-Raul
   # Microsoft Store identity, from Partner Center (Product identity).
   identity_name: 27222ultra-soft.pure-shell
   publisher: CN=0E7EAECD-324C-46CB-B6D0-965F23ABDD35
-  store: true
   # No msix_version: tool/build-msix.ps1 derives it from "version" above
   # (1.1.1+10 -> 1.1.1.0), and so does the msix plugin when run directly;
   # the 4th part is always 0, as the Store requires.
