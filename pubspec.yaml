@@ -109,13 +109,13 @@ flutter:
 msix_config:
   display_name: Pure-Shell
   publisher_display_name: Janos-Raul
-  # TODO(store): PLACEHOLDERS for local test installs only. Replace
-  # identity_name and publisher with the values from Partner Center (Product
-  # identity) before any Store submission.
-  identity_name: PureShell.Test
-  publisher: CN=Pure-Shell Test
+  # Microsoft Store identity, from Partner Center (Product identity).
+  identity_name: 27222ultra-soft.pure-shell
+  publisher: CN=0E7EAECD-324C-46CB-B6D0-965F23ABDD35
+  store: true
   # No msix_version: tool/build-msix.ps1 derives it from "version" above
-  # (1.1.1+10 -> 1.1.1.0), so it can never fall behind.
+  # (1.1.1+10 -> 1.1.1.0), and so does the msix plugin when run directly;
+  # the 4th part is always 0, as the Store requires.
   # Rendered from assets/icon/pure-shell-icon.svg by tool/make-icons.py.
   logo_path: assets/icon/pure-shell-icon-512.png
   # internetClient: SSH to the internet; privateNetworkClientServer: SSH to

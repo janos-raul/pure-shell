@@ -1,0 +1,23 @@
+# This repo is also used from WSL: keep source files LF in the working tree
+# on every platform, whatever core.autocrlf says.
+* text=auto eol=lf
+
+# Windows-only scripts that cmd.exe needs with CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary files: never touch.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.ttf binary
+*.otf binary
+*.jar binary
+*.keystore binary
+*.jks binary
+*.pfx binary
+*.cer binary
+*.msix binary
