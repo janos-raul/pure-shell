@@ -1,6 +1,7 @@
 # Pure-Shell
 
-Pure-Shell is an open-source SSH client for Android, built with Flutter.
+Pure-Shell is an open-source SSH client for Android and Windows, built with
+Flutter.
 It connects to your servers and gets out of the way.
 
 Website, privacy policy and terms: <https://pure-shell.eu>
@@ -22,6 +23,27 @@ Pure-Shell is in a closed test on Google Play. Testers get the app free:
 Please keep the app installed and stay opted in for at least 14 days. Details:
 <https://pure-shell.eu/#beta>. Developers: report bugs on the
 [GitHub Issues](https://github.com/janos-raul/pure-shell/issues) page.
+
+## Platforms
+
+| Platform | Where | Requirements |
+| --- | --- | --- |
+| Android | Google Play | Android 11 (API 30) or newer |
+| Windows | Microsoft Store (MSIX package) | Windows 10 or 11 |
+
+**Keys on Android:** SSH keys are ECDSA P-256 keys generated inside the
+phone's Keystore, in StrongBox (a dedicated secure chip) when the phone has
+one, otherwise in the TEE. The private key never leaves the hardware, and each
+use needs your fingerprint or screen lock.
+
+**Keys on Windows:** SSH keys are RSA keys held by Windows Hello. When the
+computer has a TPM, the key is created in it, and the app checks this with
+attestation. Each use asks for Windows Hello. Without Windows Hello the app
+falls back to software keys. If Windows Hello is reset, its keys are lost.
+
+On both platforms keys are not backed up and cannot be exported; see
+[Keys can be lost](#keys-can-be-lost). Windows details:
+[docs/windows-build.md](docs/windows-build.md).
 
 ## Principles
 
@@ -61,7 +83,8 @@ Please keep the app installed and stay opted in for at least 14 days. Details:
 
 ## Keys can be lost
 
-Keys live in the phone's Keystore and are not backed up or exportable. They are
+Keys live in the phone's Keystore (on Windows, in Windows Hello) and are not
+backed up or exportable. They are
 destroyed if you uninstall Pure-Shell, clear its data, or reinstall it signed
 with a different key (for example a build from another source). Keep another
 way into your servers, such as a password or a second key. The app tells you
@@ -79,15 +102,15 @@ this once, before you create your first key.
 - Sessions stay alive in the background, with SSH keep-alive pings.
 - An app lock, and an offline in-app Help.
 
-Requires Android 11 (API 30) or newer.
-
 ## Getting the app
 
-Pure-Shell will be on Google Play as a paid app: the signed, maintained build.
+Pure-Shell will be a paid app on Google Play and the Microsoft Store: the
+signed, maintained builds.
 The source code is free software: anyone may build it from source under the
 GPL (see Building).
 
-The only official Pure-Shell builds are on Google Play, published by Janos-Raul.
+The only official Pure-Shell builds are on Google Play and the Microsoft Store,
+published by Janos-Raul.
 
 ## FAQ / troubleshooting
 
@@ -106,9 +129,27 @@ flutter pub get
 flutter analyze
 flutter test
 flutter build apk --debug      # or: flutter run
+flutter build appbundle        # Play Store bundle (needs your own signing key)
 ```
 
 The application ID is `eu.pureshell.app`.
+
+### Windows (MSIX)
+
+Requirements: the Flutter SDK with Windows desktop support, Visual Studio with
+the "Desktop development with C++" workload, and PowerShell 7.
+
+```powershell
+flutter pub get
+flutter test
+pwsh tool/build-windows.ps1        # release build
+pwsh tool/build-msix.ps1           # MSIX signed with a local test certificate
+pwsh tool/build-msix.ps1 -Store    # unsigned MSIX for Microsoft Store upload
+```
+
+Always build the package through `tool/build-msix.ps1`, not a bare
+`dart run msix:create`. Test certificate, install steps and packaging notes:
+[docs/windows-build.md](docs/windows-build.md).
 
 ## License
 
