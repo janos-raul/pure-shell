@@ -49,6 +49,8 @@ void main() {
       'web_assets/favicon.png',
       'web_assets/apple-touch-icon.png',
       'web_assets/og_image.png',
+      'web_assets/ms-store-badge-dark.svg',
+      'web_assets/ms-store-badge-light.svg',
     ]) {
       expect(File('$site/$f').existsSync(), isTrue, reason: f);
     }
@@ -257,7 +259,10 @@ void main() {
 
     test('name, one-line description, key features, store and source', () {
       expect(t, contains('Pure-Shell'));
-      expect(t, contains('A private, open-source SSH client for Android.'));
+      expect(
+        t,
+        contains('A private, open-source SSH client for Android and Windows.'),
+      );
       for (final feature in [
         'Hardware-backed keys',
         'Strict host keys',
@@ -267,6 +272,16 @@ void main() {
         expect(t, contains(feature));
       }
       expect(t, contains('Google Play: coming soon'));
+      // Microsoft's official Store badge, served from this site.
+      expect(
+        pages['index.html'],
+        contains('href="https://apps.microsoft.com/detail/9N54CSB6MTNT"'),
+      );
+      expect(
+        pages['index.html'],
+        contains('web_assets/ms-store-badge-dark.svg'),
+      );
+      expect(t, contains('Windows Hello'));
       expect(
         pages['index.html'],
         contains('href="https://github.com/janos-raul/pure-shell"'),
@@ -290,13 +305,15 @@ void main() {
     test('says what the app promises', () {
       for (final phrase in [
         'does not collect, share, or process any personal information',
-        'Analytics or tracking technologies',
+        'Analytics, telemetry or tracking technologies',
         'Advertising SDKs',
         'Accounts or sign-in',
         'Crash reporting',
         'Nothing is sent to the developer',
         'only on your phone',
         'Android Keystore',
+        'Windows Hello keys',
+        'DPAPI',
         'servers you add yourself',
         'only how many sessions are active',
         'uninstalling Pure-Shell or clearing its data removes all of it',

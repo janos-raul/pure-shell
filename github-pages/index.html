@@ -3,16 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Pure-Shell | A private, open-source SSH client for Android</title>
-  <meta name="description" content="Pure-Shell is a private, open-source SSH client for Android with hardware-backed keys, strict host key checking and no tracking.">
+  <title>Pure-Shell | A private, open-source SSH client for Android and Windows</title>
+  <meta name="description" content="Pure-Shell is a private, open-source SSH client for Android and Windows with hardware-backed keys, strict host key checking and no tracking.">
   <meta name="color-scheme" content="dark light">
-  <meta property="og:title" content="Pure-Shell | A private, open-source SSH client for Android">
+  <meta property="og:title" content="Pure-Shell | A private, open-source SSH client for Android and Windows">
   <meta property="og:description" content="Hardware-backed keys, strict host key checking, no tracking. Open source under the GPL.">
   <meta property="og:image" content="https://pure-shell.eu/web_assets/og_image.png">
   <meta property="og:url" content="https://pure-shell.eu/">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Pure-Shell | A private, open-source SSH client for Android">
+  <meta name="twitter:title" content="Pure-Shell | A private, open-source SSH client for Android and Windows">
   <meta name="twitter:description" content="Hardware-backed keys, strict host key checking, no tracking. Open source under the GPL.">
   <meta name="twitter:image" content="https://pure-shell.eu/web_assets/og_image.png">
   <link rel="icon" type="image/png" href="web_assets/favicon.png">
@@ -42,9 +42,15 @@
     <div class="wrap">
       <div>
         <h1>Pure-Shell</h1>
-        <p class="lead">A private, open-source SSH client for Android.</p>
+        <p class="lead">A private, open-source SSH client for Android and Windows.</p>
         <p>It connects to your servers and gets out of the way. No accounts, no analytics, no ads.</p>
         <div class="cta">
+          <a class="store-badge" href="https://apps.microsoft.com/detail/9N54CSB6MTNT">
+            <picture>
+              <source srcset="web_assets/ms-store-badge-light.svg" media="(prefers-color-scheme: light)">
+              <img src="web_assets/ms-store-badge-dark.svg" width="176" height="48" alt="Download from the Microsoft Store">
+            </picture>
+          </a>
           <span class="btn primary" aria-disabled="true">Google Play: coming soon</span>
           <a class="btn" href="https://github.com/janos-raul/pure-shell">Source on GitHub</a>
         </div>
@@ -60,7 +66,9 @@
         <div class="grid">
           <div class="card">
             <h3>Hardware-backed keys</h3>
-            <p>Keys are made inside your phone's secure hardware (StrongBox or TEE) where it exists. They can't be exported, and every use asks for your fingerprint or screen lock. A phone without secure hardware gets a clearly labelled software key.</p>
+            <p>On Android, keys are made inside your phone's secure hardware (StrongBox or TEE) where it exists, and every use asks for your fingerprint or screen lock. A phone without secure hardware gets a clearly labelled software key.</p>
+            <p>On Windows, keys are Windows Hello keys, created in the computer's TPM where it has one, and every use asks for Windows Hello. Without Windows Hello, the app uses a software Ed25519 key instead.</p>
+            <p>Either way, keys can't be exported.</p>
           </div>
           <div class="card">
             <h3>Strict host keys</h3>
@@ -90,9 +98,9 @@
       <div class="wrap">
         <h2>Private by design</h2>
         <ul class="checks">
-          <li>Hosts are stored only on your phone. Passwords are asked every time and never stored.</li>
-          <li>Keys live in the Android Keystore. They are not backed up and never leave the device.</li>
-          <li>Screenshots and the recent-apps preview are blocked unless you allow them.</li>
+          <li>Hosts are stored only on your device. Passwords are asked every time and never stored.</li>
+          <li>Keys live in the Android Keystore, or on Windows in Windows Hello (in the TPM where there is one; without Windows Hello, a software Ed25519 key encrypted for your Windows user). They are not backed up and never leave the device.</li>
+          <li>Screenshots and the recent-apps preview (on Windows, screen capture of the app window) are blocked unless you allow them.</li>
           <li>Nothing you type or see in a session is logged.</li>
         </ul>
         <p>Read the <a href="privacy.html">privacy policy</a> and the <a href="terms/">terms</a>.</p>
@@ -102,8 +110,14 @@
     <section id="get">
       <div class="wrap">
         <h2>Get Pure-Shell</h2>
-        <p>Pure-Shell will be a paid app on Google Play (Android) and the Microsoft Store (Windows): the signed, maintained builds, with updates. The source code is free: anyone may build it under the GPL. The only official Pure-Shell builds are on Google Play and the Microsoft Store, published by Janos-Raul.</p>
+        <p>Pure-Shell is a paid app: the signed, maintained builds, with updates, are on the Microsoft Store (Windows) and coming soon to Google Play (Android). The source code is free: anyone may build it under the GPL. The only official Pure-Shell builds are on Google Play and the Microsoft Store, published by Janos-Raul.</p>
         <div class="cta">
+          <a class="store-badge" href="https://apps.microsoft.com/detail/9N54CSB6MTNT">
+            <picture>
+              <source srcset="web_assets/ms-store-badge-light.svg" media="(prefers-color-scheme: light)">
+              <img src="web_assets/ms-store-badge-dark.svg" width="176" height="48" alt="Download from the Microsoft Store">
+            </picture>
+          </a>
           <span class="btn primary" aria-disabled="true">Google Play: coming soon</span>
           <a class="btn" href="https://github.com/janos-raul/pure-shell">Build it from source</a>
         </div>
