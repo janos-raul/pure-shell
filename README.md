@@ -6,6 +6,8 @@ It connects to your servers and gets out of the way.
 
 Website, privacy policy and terms: <https://pure-shell.eu>
 
+What changed in each version: [CHANGELOG.md](CHANGELOG.md).
+
 ## Beta testing
 
 Pure-Shell is in a closed test on Google Play. Testers get the app free:
@@ -96,11 +98,15 @@ this once, before you create your first key.
 - Host key verification: trust on first use with SHA-256 fingerprints, and a
   hard block when a key changes.
 - Password login (asked every time, never stored) and key login with
-  hardware-backed keys (per-use authentication).
+  hardware-backed keys (per-use authentication): the Android Keystore on
+  phones, Windows Hello on Windows.
 - A command-line box (swipe typing, suggestions), copy and paste with bracketed
   paste, and a Reconnect button.
 - Sessions stay alive in the background, with SSH keep-alive pings.
 - An app lock, and an offline in-app Help.
+- On Windows: Ctrl and Alt keys go to the shell, copy and paste with
+  Ctrl+Shift+C / Ctrl+Shift+V, a right-click menu, font zoom with Ctrl+= /
+  Ctrl+- / Ctrl+0, and the extra-keys bar is optional.
 
 ## Getting the app
 
