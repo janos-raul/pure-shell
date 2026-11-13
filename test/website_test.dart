@@ -290,7 +290,7 @@ void main() {
     test('says what the app promises', () {
       for (final phrase in [
         'does not collect, share, or process any personal information',
-        'Analytics or tracking technologies',
+        'Analytics, telemetry or tracking technologies',
         'Advertising SDKs',
         'Accounts or sign-in',
         'Crash reporting',
