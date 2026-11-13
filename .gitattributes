@@ -21,3 +21,6 @@
 *.pfx binary
 *.cer binary
 *.msix binary
+
+# Microsoft's Store badges: kept byte-for-byte as Microsoft ships them.
+github-pages/web_assets/ms-store-badge-*.svg -text

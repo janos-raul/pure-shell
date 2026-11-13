@@ -49,6 +49,8 @@ void main() {
       'web_assets/favicon.png',
       'web_assets/apple-touch-icon.png',
       'web_assets/og_image.png',
+      'web_assets/ms-store-badge-dark.svg',
+      'web_assets/ms-store-badge-light.svg',
     ]) {
       expect(File('$site/$f').existsSync(), isTrue, reason: f);
     }
@@ -257,7 +259,10 @@ void main() {
 
     test('name, one-line description, key features, store and source', () {
       expect(t, contains('Pure-Shell'));
-      expect(t, contains('A private, open-source SSH client for Android.'));
+      expect(
+        t,
+        contains('A private, open-source SSH client for Android and Windows.'),
+      );
       for (final feature in [
         'Hardware-backed keys',
         'Strict host keys',
@@ -267,6 +272,19 @@ void main() {
         expect(t, contains(feature));
       }
       expect(t, contains('Google Play: coming soon'));
+      // Microsoft's official Store badge, served from this site.
+      expect(
+        pages['index.html'],
+        contains('href="https://apps.microsoft.com/detail/9N54CSB6MTNT"'),
+      );
+      expect(
+        pages['index.html'],
+        contains('web_assets/ms-store-badge-dark.svg'),
+      );
+      expect(t, contains('Windows Hello'));
+      // Feature cards say which platform each Android-only part is for.
+      expect(t, contains('On Android, a notification shows only how many'));
+      expect(t, contains('On Android, a command box with swipe typing'));
       expect(
         pages['index.html'],
         contains('href="https://github.com/janos-raul/pure-shell"'),
@@ -297,6 +315,8 @@ void main() {
         'Nothing is sent to the developer',
         'only on your phone',
         'Android Keystore',
+        'Windows Hello keys',
+        'DPAPI',
         'servers you add yourself',
         'only how many sessions are active',
         'uninstalling Pure-Shell or clearing its data removes all of it',
@@ -372,7 +392,7 @@ void main() {
       expect(
         t,
         contains(
-          'the signed, maintained build distributed through Google Play',
+          'the signed, maintained build distributed through that store',
         ),
       );
       expect(t, contains('provided "as is", without warranty of any kind'));
@@ -383,12 +403,15 @@ void main() {
       expect(raw, contains('https://www.gnu.org/licenses/gpl-3.0.html'));
     });
 
-    test('purchases and refunds go through Google Play', () {
+    test('purchases and refunds go through Google Play or the Store', () {
       expect(
         raw,
         contains('https://support.google.com/googleplay/answer/2479637'),
       );
       expect(t, contains('Google Play refund policy'));
+      expect(raw, contains('https://support.microsoft.com/help/10558'));
+      expect(t, contains('Microsoft Store refund policy'));
+      expect(t, contains('Windows 10 or 11'));
       expect(t, contains('you keep all the rights those laws give you'));
     });
 

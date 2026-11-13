@@ -10,7 +10,7 @@ analytics). Dark by default, light on light systems.
 | `privacy.html` | privacy policy |
 | `terms/index.html` | terms of service |
 | `style.css` | the one stylesheet |
-| `web_assets/` | icon, favicon, touch icon, social preview (generated, see below) |
+| `web_assets/` | icon, favicon, touch icon, social preview (generated, see below); `ms-store-badge-*.svg`: Microsoft's official Store badge, unmodified |
 | `robots.txt`, `sitemap.xml`, `404.html` | search and error pages |
 | `CNAME` | a record of the custom domain (it is set in the repo's Pages settings) |
 
@@ -30,6 +30,9 @@ issued the certificate.
 ## Changing it
 
 - The `web_assets/` images come from the app icon: run `tool/make-icons.py`.
+- The Microsoft Store badges are Microsoft's own files from
+  `https://get.microsoft.com/images/en-us%20dark.svg` (and `%20light.svg`),
+  copied here unchanged so the site makes no third-party request. Don't edit them.
 - `test/website_test.dart` checks the site: pages and links exist, nothing is
   loaded from another host, the footer links Privacy and Terms, and the privacy
   policy mentions every permission the app declares.
