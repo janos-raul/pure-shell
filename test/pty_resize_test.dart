@@ -94,6 +94,28 @@ void main() {
     });
   });
 
+  test('a resize lost while the shell opened is sent once it is open', () {
+    fakeAsync((async) {
+      // The shell opens with 80x26; meanwhile the extra-keys bar appears
+      // (80x24) and that send finds no session yet, so it goes nowhere.
+      c.request(80, 24);
+      async.elapse(const Duration(milliseconds: 200));
+      // Shell open: the server has the size it was opened with, and the
+      // screen asks for the size the view has now.
+      c.markSent(80, 26);
+      c.request(80, 24);
+      async.elapse(const Duration(milliseconds: 200));
+      expect(sent.last, (80, 24));
+
+      // Had the view not changed, the same call sends nothing.
+      sent.clear();
+      c.markSent(80, 24);
+      c.request(80, 24);
+      async.elapse(const Duration(milliseconds: 200));
+      expect(sent, isEmpty);
+    });
+  });
+
   test('nothing is sent after dispose; invalid sizes are ignored', () {
     fakeAsync((async) {
       c.request(0, 0);

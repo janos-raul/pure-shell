@@ -353,6 +353,11 @@ class _TerminalScreenState extends State<TerminalScreen>
       unawaited(_maybeAskNotifications());
       _syncInput(); // there is a session now: input can be accepted
       _resizer.markSent(columns, rows); // the server has this size already
+      // The view can change size while the shell is opening (font size and
+      // extra-keys bar load after the first frame); that resize found no
+      // session and was dropped. Send the size the view has now, if it
+      // differs, or the server keeps rows the view does not show.
+      _resizer.request(_terminal.viewWidth, _terminal.viewHeight);
       _subscriptions
         ..add(
           session.stdout
