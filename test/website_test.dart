@@ -282,6 +282,9 @@ void main() {
         contains('web_assets/ms-store-badge-dark.svg'),
       );
       expect(t, contains('Windows Hello'));
+      // Feature cards say which platform each Android-only part is for.
+      expect(t, contains('On Android, a notification shows only how many'));
+      expect(t, contains('On Android, a command box with swipe typing'));
       expect(
         pages['index.html'],
         contains('href="https://github.com/janos-raul/pure-shell"'),
@@ -389,7 +392,7 @@ void main() {
       expect(
         t,
         contains(
-          'the signed, maintained build distributed through Google Play',
+          'the signed, maintained build distributed through that store',
         ),
       );
       expect(t, contains('provided "as is", without warranty of any kind'));
@@ -400,12 +403,15 @@ void main() {
       expect(raw, contains('https://www.gnu.org/licenses/gpl-3.0.html'));
     });
 
-    test('purchases and refunds go through Google Play', () {
+    test('purchases and refunds go through Google Play or the Store', () {
       expect(
         raw,
         contains('https://support.google.com/googleplay/answer/2479637'),
       );
       expect(t, contains('Google Play refund policy'));
+      expect(raw, contains('https://support.microsoft.com/help/10558'));
+      expect(t, contains('Microsoft Store refund policy'));
+      expect(t, contains('Windows 10 or 11'));
       expect(t, contains('you keep all the rights those laws give you'));
     });
 
