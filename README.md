@@ -31,7 +31,7 @@ Please keep the app installed and stay opted in for at least 14 days. Details:
 | Platform | Where | Requirements |
 | --- | --- | --- |
 | Android | Google Play | Android 11 (API 30) or newer |
-| Windows | Microsoft Store (MSIX package) | Windows 10 or 11 |
+| Windows | [Microsoft Store](https://apps.microsoft.com/detail/9N54CSB6MTNT) (MSIX package) | Windows 10 or 11 |
 
 **Keys on Android:** SSH keys are ECDSA P-256 keys generated inside the
 phone's Keystore, in StrongBox (a dedicated secure chip) when the phone has
@@ -110,8 +110,10 @@ this once, before you create your first key.
 
 ## Getting the app
 
-Pure-Shell will be a paid app on Google Play and the Microsoft Store: the
-signed, maintained builds.
+Pure-Shell is a paid app: the signed, maintained builds are on the
+[Microsoft Store](https://apps.microsoft.com/detail/9N54CSB6MTNT) (Windows),
+and coming to Google Play (Android), where it is in closed testing.
+Terms of Service: <https://pure-shell.eu/terms/>.
 The source code is free software: anyone may build it from source under the
 GPL (see Building).
 

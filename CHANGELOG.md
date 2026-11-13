@@ -6,6 +6,14 @@ are `x.y.z.0`.
 
 ## 1.1.2 (2026-11-13)
 
+### Changed
+
+- **Terms of Service updated** (effective 2026-11-13) for Windows and the
+  Microsoft Store: purchases and refunds through the store you bought from
+  (Google Play or the Microsoft Store), when keys are lost on Windows, and
+  Windows 10 or 11 as a requirement. Read them at
+  <https://pure-shell.eu/terms/>.
+
 ### Fixed
 
 - The server could be told a taller terminal than the one on screen. The
