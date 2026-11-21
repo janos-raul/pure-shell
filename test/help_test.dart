@@ -79,6 +79,7 @@ void main() {
           'Copy and paste',
           'Keeping sessions alive',
           'Long-running jobs: tmux',
+          'Try the test server (Sandbox)',
           'StrongBox, TEE, software',
           'Keys can be lost',
         ],
@@ -88,6 +89,38 @@ void main() {
         expect(t.blocks, isNotEmpty);
         expect(_all(t).trim(), isNotEmpty);
       }
+    });
+
+    test('the Sandbox topic: connection details, fingerprint, no chat', () {
+      final text = _all(helpTopicById('sandbox')!);
+      expect(text, contains('sandbox.pure-shell.eu'));
+      expect(text, contains('2222'));
+      expect(text, contains('pure-shell.eu/sandbox'));
+      expect(text, contains(sandboxHostFingerprint));
+      expect(text, contains('18+'));
+      expect(text, contains('14 days'));
+      // The fingerprint is a copyable block.
+      expect(
+        helpTopicById('sandbox')!.blocks
+            .whereType<HelpCommand>()
+            .single
+            .command,
+        sandboxHostFingerprint,
+      );
+    });
+
+    test('the app never mentions the chat server', () {
+      final hits = [
+        for (final f in Directory('lib').listSync(recursive: true))
+          if (f is File &&
+              f.path.endsWith('.dart') &&
+              RegExp(
+                r'\bchat\b',
+                caseSensitive: false,
+              ).hasMatch(f.readAsStringSync()))
+            f.path,
+      ];
+      expect(hits, isEmpty);
     });
 
     test(

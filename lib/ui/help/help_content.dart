@@ -58,6 +58,12 @@ class HelpTopic {
 const helpAddKey = 'add-key';
 const helpFirstConnect = 'first-connect';
 
+/// The Sandbox test server's host key (ED25519), as shown on
+/// pure-shell.eu/sandbox. Shown in Help so people can compare it on the first
+/// connection.
+const sandboxHostFingerprint =
+    'SHA256:w7eazsZJSDUIJe9Uc4ZHQwObHy35liw5+RuOfbbCIWs';
+
 /// The help for the platform the app runs on.
 List<HelpTopic> get helpTopics =>
     windowsStub ? _windowsHelpTopics : _androidHelpTopics;
@@ -285,6 +291,36 @@ final List<HelpTopic> _androidHelpTopics = [
       HelpText(
         'To leave a job running on purpose, tap Ctrl, then press b, then d. '
         '(Ctrl stays active for the next key you press.)',
+      ),
+    ],
+  ),
+  const HelpTopic(
+    'sandbox',
+    'Try the test server (Sandbox)',
+    'A free throwaway Linux server to try Pure-Shell',
+    [
+      HelpText(
+        'The Sandbox is a free test Linux server, so you can try Pure-Shell '
+        'without a server of your own. It is for adults (18+). Sessions are '
+        'recorded and kept up to 14 days, and they end after 30 minutes. '
+        'Details: `pure-shell.eu/sandbox`',
+      ),
+      HelpHeading('How to connect'),
+      HelpSteps([
+        'Open Keys and create a new key. Name it **Sandbox**. Use it only '
+            'for the Sandbox, not your real key.',
+        'Add a host: hostname `sandbox.pure-shell.eu`, port `2222`, any '
+            'username (for example `user`), and log in with the Sandbox key.',
+        'On the first connection, compare the fingerprint the server shows '
+            'with the one below before you tap Trust.',
+      ]),
+      HelpCommand(sandboxHostFingerprint),
+      HelpHeading('If the key is rejected'),
+      HelpText(
+        'The Sandbox allows only one session per network. If another device '
+        'on the same Wi-Fi has a session open, close it and try again. Many '
+        'attempts in a short time also cause a short block: wait a few '
+        'seconds and try again.',
       ),
     ],
   ),
