@@ -17,6 +17,11 @@ are `x.y.z.0`.
   30 minutes: see <https://pure-shell.eu/sandbox/> and the
   [privacy policy](https://pure-shell.eu/privacy.html#test-servers). The app
   itself still connects only to servers you add yourself.
+- **Chat (website and server only, not in the app).** A public text chat
+  room over SSH for Pure-Shell users and testers (ssh-chat), reachable with any
+  SSH client at `chat.pure-shell.eu`, port 2022. How to join and the rules:
+  <https://pure-shell.eu/chat/>. The chat server does not log messages; see the
+  [privacy policy](https://pure-shell.eu/privacy.html#test-servers).
 
 ### Changed
 

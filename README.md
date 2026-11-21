@@ -119,6 +119,16 @@ container, sessions are recorded and kept up to 14 days, and they end after 30
 minutes. Details and the rules: <https://pure-shell.eu/sandbox/>. The app never
 connects to it on its own.
 
+## Chat
+
+A public text chat room over SSH for Pure-Shell users and testers, running
+[ssh-chat](https://github.com/shazow/ssh-chat). Connect with any SSH client,
+Pure-Shell included, as an ordinary host: `chat.pure-shell.eu`, port `2022`,
+with a key of your own. The server does not log chat messages. The host key
+fingerprint, how to connect and the rules are on the website:
+<https://pure-shell.eu/chat/>. The app has no chat feature and never connects
+to it on its own.
+
 ## Getting the app
 
 Pure-Shell is a paid app: the signed, maintained builds are on the
