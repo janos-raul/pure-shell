@@ -103,10 +103,21 @@ this once, before you create your first key.
 - A command-line box (swipe typing, suggestions), copy and paste with bracketed
   paste, and a Reconnect button.
 - Sessions stay alive in the background, with SSH keep-alive pings.
-- An app lock, and an offline in-app Help.
+- An app lock, and an offline in-app Help (including how to try the free
+  Sandbox test server, below).
 - On Windows: Ctrl and Alt keys go to the shell, copy and paste with
   Ctrl+Shift+C / Ctrl+Shift+V, a right-click menu, font zoom with Ctrl+= /
   Ctrl+- / Ctrl+0, and the extra-keys bar is optional.
+
+## Try it without a server
+
+The Sandbox is a free, throwaway Linux server for trying Pure-Shell (or any SSH
+client). Add it as an ordinary host: `sandbox.pure-shell.eu`,
+port `2222`, any username, with a key of your own (the Android app's Help has
+the steps and the server's host key fingerprint). Every login gets a fresh
+container, sessions are recorded and kept up to 14 days, and they end after 30
+minutes. Details and the rules: <https://pure-shell.eu/sandbox/>. The app never
+connects to it on its own.
 
 ## Getting the app
 

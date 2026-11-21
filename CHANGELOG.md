@@ -4,6 +4,25 @@ All notable changes to Pure-Shell. Versions are the app version
 (`x.y.z`). Android builds also carry a build number (`+N`); Windows packages
 are `x.y.z.0`.
 
+## 1.2.0 (2026-11-21, Android)
+
+### Added
+
+- **Help: "Try the test server (Sandbox)".** A free throwaway Linux server to
+  try Pure-Shell without a server of your own. The topic explains
+  how to connect (create a key named Sandbox, add the host), shows the
+  server's host key fingerprint to compare on the first connection (copyable),
+  and says what to do if the key is rejected (one session per network).
+  Sessions on the Sandbox are recorded and kept up to 14 days, and end after
+  30 minutes: see <https://pure-shell.eu/sandbox/> and the
+  [privacy policy](https://pure-shell.eu/privacy.html#test-servers). The app
+  itself still connects only to servers you add yourself.
+
+### Changed
+
+- Updated the Android build tools (Gradle, Android Gradle Plugin, Kotlin) and
+  the libraries the app builds on.
+
 ## 1.1.2 (2026-11-13)
 
 ### Changed
