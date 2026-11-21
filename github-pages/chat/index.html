@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chat | Pure-Shell</title>
+  <meta name="description" content="A public text chat room over SSH for Pure-Shell users and testers. 18+ only.">
+  <meta name="color-scheme" content="dark light">
+  <link rel="icon" type="image/png" href="../web_assets/favicon.png">
+  <link rel="apple-touch-icon" href="../web_assets/apple-touch-icon.png">
+  <link rel="canonical" href="https://pure-shell.eu/chat/">
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+  <nav class="nav" aria-label="Main">
+    <div class="wrap">
+      <a class="brand" href="../index.html">
+        <img src="../web_assets/icon.svg" width="32" height="32" alt="">
+        <span>Pure-Shell</span>
+      </a>
+      <ul>
+        <li><a href="../index.html">Back to Home</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="doc docpage">
+    <h1>Chat</h1>
+    <p class="date">Last updated: November 21, 2026</p>
+
+    <p>A public text chat room over SSH, for Pure-Shell users and testers. It runs <a href="https://github.com/shazow/ssh-chat">ssh-chat</a> (MIT license). <strong>18 and over only.</strong></p>
+
+    <h2>How to connect</h2>
+    <p>Use Pure-Shell or any SSH client. Connect to <code>chat.pure-shell.eu</code>, port 2022 (IPv4 only):</p>
+<pre>ssh -p 2022 chat.pure-shell.eu</pre>
+    <p>An SSH key is required. Logins without a key and password logins are refused.</p>
+
+    <h2>Check the host key</h2>
+    <p>The fingerprint your client shows on first connect should match this one (ED25519):</p>
+<pre>SHA256:7jrCL3tt5fVK+mEOdsgFgzxxuAluADa1cI1S88Wpahk</pre>
+    <p>If it does not, do not continue.</p>
+
+    <h2>Commands</h2>
+    <ul>
+      <li><code>/help</code>: list all commands</li>
+      <li><code>/nick name</code>: change your nickname</li>
+      <li><code>/msg name text</code>: send a private message</li>
+      <li><code>/quit</code>: leave</li>
+    </ul>
+
+    <h2>Who is who</h2>
+    <p>Your key's fingerprint is your identity. Anyone can pick any nickname, so never trust a name alone.</p>
+
+    <h2>Rules</h2>
+    <ul>
+      <li>Be respectful. No spam, no illegal content, no sharing of personal data.</li>
+      <li>The room is moderated. Bans are at the admin's discretion.</li>
+      <li>Chat is public: anyone in the room sees what you write.</li>
+    </ul>
+
+    <h2>Report abuse</h2>
+    <p><a href="mailto:janos.szabo@gmail.com">janos.szabo@gmail.com</a></p>
+
+    <p class="back"><a href="../index.html">&larr; Back to Home</a></p>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <span>&copy; 2026 Pure-Shell. Designed for privacy.</span>
+      <ul>
+        <li><a href="../privacy.html">Privacy</a></li>
+        <li><a href="../terms/">Terms</a></li>
+        <li><a href="https://github.com/janos-raul/pure-shell">GitHub</a></li>
+        <li><a href="mailto:janos.szabo@gmail.com">Contact</a></li>
+      </ul>
+    </div>
+  </footer>
+
+</body>
+</html>

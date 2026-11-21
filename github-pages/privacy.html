@@ -27,9 +27,9 @@
 
   <main class="doc docpage">
     <h1>Privacy Policy</h1>
-    <p class="date">Last updated: November 12, 2026</p>
+    <p class="date">Last updated: November 21, 2026</p>
 
-    <p>Pure-Shell is an SSH client for Android and Windows. It is designed so that your data stays with you: it does not collect, store, or transmit any personal data to the developer.</p>
+    <p>Pure-Shell is an SSH client for Android and Windows. It is designed so that your data stays with you: it does not collect, store, or transmit any personal data to the developer, except through the optional test servers run by the developer, and only if you choose to connect to them (see <a href="#test-servers">section 9</a>).</p>
 
     <h2>1. No Data Collection</h2>
     <p>Pure-Shell does not collect, share, or process any personal information about you, on Android or on Windows. The app does not use:</p>
@@ -38,12 +38,12 @@
       <li>Advertising SDKs</li>
       <li>Accounts or sign-in</li>
       <li>Crash reporting</li>
-      <li>Any server or cloud service run by the developer</li>
+      <li>Any server or cloud service run by the developer, apart from the optional test servers in <a href="#test-servers">section 9</a>, which the app never contacts on its own</li>
     </ul>
-    <p>Nothing is sent to the developer. The app has no way to do so.</p>
+    <p>Nothing is sent to the developer, except what reaches the optional test servers if you choose to connect to them (section 9). The app never contacts them on its own.</p>
 
     <h2>2. Network Access</h2>
-    <p>Pure-Shell uses the internet permission for one thing: to connect, over SSH, to the servers you add yourself. It makes no other network requests. Links shown in the app (for example the source code address) are plain text you can copy; the app does not open a browser or load anything from the web.</p>
+    <p>Pure-Shell uses the internet permission for one thing: to connect, over SSH, to the servers you add yourself. It can also connect to the built-in Sandbox test server (section 9), but only if you choose to use it. It makes no other network requests. Links shown in the app (for example the source code address) are plain text you can copy; the app does not open a browser or load anything from the web.</p>
 
     <h2>3. What Is Stored on Your Device</h2>
     <ul>
@@ -53,7 +53,7 @@
       <li><strong>Trusted host keys:</strong> the fingerprint of each server's key you chose to trust, so that a changed key can be detected.</li>
       <li><strong>Settings:</strong> your choices, such as font size, colours, input mode and app lock.</li>
     </ul>
-    <p>Terminal content is shown on screen and kept in memory while a session is open. It is not saved, and nothing you type or see in a session is logged. Android's backup and data extraction are switched off for the app, so none of this is copied to a cloud backup.</p>
+    <p>Terminal content is shown on screen and kept in memory while a session is open. It is not saved, and the app logs nothing you type or see in a session with your own servers. The optional test servers are different, see <a href="#test-servers">section 9</a>. Android's backup and data extraction are switched off for the app, so none of this is copied to a cloud backup.</p>
     <p>On Windows, the app's data stays in its local storage on your computer. It is not placed in a roaming profile and is not synced to any cloud.</p>
     <p>Because everything is on your device, uninstalling Pure-Shell or clearing its data removes all of it, including your keys. On Windows, resetting Windows Hello also makes its keys unusable.</p>
 
@@ -73,16 +73,27 @@
     <h2>8. The Servers You Connect To</h2>
     <p>Pure-Shell connects only to servers you choose. What those servers do with your connection is up to them and you; the developer has no access to it. SSH encrypts the traffic between your device and the server.</p>
 
-    <h2>9. Google Play and Microsoft Store</h2>
+    <h2 id="test-servers">9. Test Servers (Sandbox and Chat)</h2>
+    <p>The developer runs two optional public servers, the <a href="sandbox/">Sandbox</a> and a <a href="chat/">chat room</a>. They are separate from the app: the app contacts them only if you choose to connect.</p>
+    <ul>
+      <li><strong>Sandbox:</strong> sessions are recorded, including what you type and what is shown on screen, together with your IP address, key fingerprint and the time. The purpose is abuse prevention and security. Records are kept up to 14 days and then deleted automatically.</li>
+      <li><strong>Chat:</strong> the chat server does not log chat messages or connection details. Chat is public: everything you write is visible to everyone in the room.</li>
+    </ul>
+    <p>As with any internet service, network equipment may briefly log connection attempts for security.</p>
+    <p>If an address or key is banned for abuse, that IP address or key fingerprint is kept on the ban list for as long as the ban lasts.</p>
+    <p>The legal basis is our legitimate interest in protecting the service from abuse. The test servers are intended for adults (18+) only.</p>
+    <p>The test servers are run by Janos Raul Szabo (Janos-Raul), Romania, who is responsible for this data. You can ask for access to, deletion of, or object to the processing of data about you through the contact address below (<a href="mailto:janos.szabo@gmail.com">janos.szabo@gmail.com</a>). You also have the right to complain to the Romanian data protection authority, ANSPDCP (<a href="https://www.dataprotection.ro">dataprotection.ro</a>).</p>
+
+    <h2>10. Google Play and Microsoft Store</h2>
     <p>If you buy Pure-Shell on Google Play or the Microsoft Store, the purchase, billing and refunds are handled by Google or Microsoft under their own policies. Pure-Shell itself receives nothing about your purchase or your Google or Microsoft account.</p>
 
-    <h2>10. Children's Privacy</h2>
-    <p>Pure-Shell does not collect any data from users of any age, including children.</p>
+    <h2>11. Children's Privacy</h2>
+    <p>The app collects no data from anyone. The optional test servers (section 9) are for adults only.</p>
 
-    <h2>11. Changes to This Policy</h2>
+    <h2>12. Changes to This Policy</h2>
     <p>If this privacy policy is updated, the new version will be posted on this page, and significant changes will be noted in the app's store release notes.</p>
 
-    <h2>12. Contact</h2>
+    <h2>13. Contact</h2>
     <p>If you have questions about this privacy policy, you can contact the developer:</p>
     <ul>
       <li><a href="mailto:janos.szabo@gmail.com">janos.szabo@gmail.com</a></li>
