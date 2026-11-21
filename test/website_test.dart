@@ -327,7 +327,7 @@ void main() {
     });
 
     test('numbered sections like the other app, ending in Contact', () {
-      final headings = RegExp(r'<h2>(\d+)\. (.*?)</h2>')
+      final headings = RegExp(r'<h2[^>]*>(\d+)\. (.*?)</h2>')
           .allMatches(pages['privacy.html']!)
           .toList();
       expect([
@@ -365,7 +365,7 @@ void main() {
     final raw = pages['terms/index.html']!;
     final t = text(raw);
 
-    test('the eleven sections, in the same order as the other app', () {
+    test('the twelve sections: the other app order plus the test servers', () {
       final titles = [
         for (final m in RegExp(r'<h2>(\d+)\. (.*?)</h2>').allMatches(raw))
           '${m.group(1)}. ${m.group(2)}',
@@ -378,10 +378,11 @@ void main() {
         '5. Source Code and Your License',
         '6. Your Servers and Your Keys',
         '7. Updates and Availability',
-        '8. Warranty and Liability',
-        '9. Changes to These Terms',
-        '10. Governing Law',
-        '11. Contact',
+        '8. Test Servers (Sandbox and Chat)',
+        '9. Warranty and Liability',
+        '10. Changes to These Terms',
+        '11. Governing Law',
+        '12. Contact',
       ]);
     });
 
