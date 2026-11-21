@@ -128,7 +128,7 @@ h3 { font-size: 1.15rem; margin: 0 0 6px; color: var(--accent); }
 .docpage .date { color: var(--muted); font-style: italic; margin: 0 0 28px; }
 .docpage h2 { font-size: 1.35rem; margin: 34px 0 10px; }
 .docpage p, .docpage li { max-width: 68ch; }
-.docpage ul { padding-left: 1.3em; }
+.docpage ul, .docpage ol { padding-left: 1.3em; }
 .docpage li { margin: 4px 0; }
 .docpage pre { width: fit-content; max-width: 100%; overflow-x: auto; margin: 12px 0 16px; padding: 12px 16px; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; font-family: var(--mono); font-size: 0.95rem; line-height: 1.5; }
 .back { display: inline-block; margin: 20px 0 0; font-size: 0.95rem; }

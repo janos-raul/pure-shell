@@ -32,7 +32,13 @@
     <p>The Sandbox is a free, throwaway Linux shell. Use it to try Pure-Shell, or any SSH client, without a server of your own.</p>
 
     <h2>How to connect</h2>
-    <p><strong>Built-in Sandbox preset in Pure-Shell:</strong> coming in the next Pure-Shell update. Until then, connect with any SSH client. Any key works, and any username:</p>
+    <p><strong>In Pure-Shell for Android (1.2 and later):</strong> see Help &rarr; Try the test server (Sandbox). In any version, or on Windows, add it as a host yourself:</p>
+    <ol>
+      <li>Create a new key and name it <strong>Sandbox</strong>. Use it only for the Sandbox, not your real key.</li>
+      <li>Add a host: hostname <code>sandbox.pure-shell.eu</code>, port <code>2222</code>, any username (for example <code>user</code>), and log in with the Sandbox key.</li>
+      <li>On the first connection, compare the fingerprint the server shows with the one below before you tap Trust.</li>
+    </ol>
+    <p><strong>With a normal OpenSSH client:</strong> any key works, and any username:</p>
 <pre>ssh -p 2222 anyname@sandbox.pure-shell.eu</pre>
     <p>Your key is your identity here. There are no accounts and no passwords; password login is refused.</p>
 
