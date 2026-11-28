@@ -301,8 +301,8 @@ final List<HelpTopic> _androidHelpTopics = [
     [
       HelpText(
         'The Sandbox is a free test Linux server, so you can try Pure-Shell '
-        'without a server of your own. It is for adults (18+). Sessions are '
-        'recorded and kept up to 14 days, and they end after 30 minutes. '
+        'without a server of your own. Sessions are recorded and kept up to '
+        '14 days, and they end after 30 minutes. '
         'Details: `pure-shell.eu/sandbox`',
       ),
       HelpHeading('How to connect'),
@@ -586,8 +586,8 @@ final List<HelpTopic> _windowsHelpTopics = [
     [
       HelpText(
         'The Sandbox is a free test Linux server, so you can try Pure-Shell '
-        'without a server of your own. It is for adults (18+). Sessions are '
-        'recorded and kept up to 14 days, and they end after 30 minutes. '
+        'without a server of your own. Sessions are recorded and kept up to '
+        '14 days, and they end after 30 minutes. '
         'Details: `pure-shell.eu/sandbox`',
       ),
       HelpHeading('How to connect'),

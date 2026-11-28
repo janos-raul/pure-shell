@@ -99,7 +99,8 @@ void main() {
       expect(text, contains('2222'));
       expect(text, contains('pure-shell.eu/sandbox'));
       expect(text, contains(sandboxHostFingerprint));
-      expect(text, contains('18+'));
+      expect(text, isNot(contains('18+')));
+      expect(text, isNot(contains('adults')));
       expect(text, contains('14 days'));
       // The fingerprint is a copyable block.
       expect(
@@ -119,6 +120,7 @@ void main() {
       expect(text, contains('sandbox.pure-shell.eu'));
       expect(text, contains('2222'));
       expect(text, contains('Hello'));
+      expect(text, isNot(contains('18+')));
       expect(text, isNot(contains('Keystore')));
       expect(
         topic.blocks.whereType<HelpCommand>().single.command,
