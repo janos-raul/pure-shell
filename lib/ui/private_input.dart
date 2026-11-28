@@ -27,6 +27,8 @@ class PrivateTextFormField extends StatelessWidget {
     this.autofocus = false,
     this.onFieldSubmitted,
     this.style,
+    this.minLines,
+    this.maxLines = 1,
   });
 
   final TextEditingController? controller;
@@ -39,6 +41,10 @@ class PrivateTextFormField extends StatelessWidget {
   final ValueChanged<String>? onFieldSubmitted;
   final TextStyle? style;
 
+  /// More than one line for text such as snippets (null [maxLines] grows).
+  final int? minLines;
+  final int? maxLines;
+
   @override
   Widget build(BuildContext context) {
     return TextFormField(
@@ -49,6 +55,8 @@ class PrivateTextFormField extends StatelessWidget {
       validator: validator,
       textInputAction: textInputAction,
       obscureText: obscureText,
+      minLines: minLines,
+      maxLines: obscureText ? 1 : maxLines,
       autofocus: autofocus,
       onFieldSubmitted: onFieldSubmitted,
       autocorrect: false,

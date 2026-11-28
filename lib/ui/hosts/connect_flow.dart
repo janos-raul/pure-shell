@@ -13,6 +13,7 @@ import '../theme.dart';
 
 import 'package:material_ui/material_ui.dart';
 
+import '../../core/snippets/snippet_repository.dart';
 import '../../core/hosts/host.dart';
 import '../../core/keys/key_service.dart';
 import '../../core/keys/ssh_key.dart';
@@ -279,6 +280,7 @@ Future<void> connectToHost(
   required KnownHostsStore knownHosts,
   required TerminalSettings settings,
   required KeyService keyService,
+  SnippetRepository? snippets,
   SocketFactory? socketFactory,
 }) async {
   final navigator = Navigator.of(context);
@@ -301,6 +303,7 @@ Future<void> connectToHost(
         host: host,
         connection: conn,
         settings: settings,
+        snippets: snippets,
         onReconnect: establish,
       ),
     ),

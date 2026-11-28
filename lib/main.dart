@@ -12,6 +12,7 @@ import 'package:material_ui/material_ui.dart';
 
 import 'core/platform_support.dart';
 import 'core/hosts/host_repository.dart';
+import 'core/snippets/snippet_repository.dart';
 import 'core/hosts/known_hosts.dart';
 import 'core/keys/key_repository.dart';
 import 'core/keys/key_service.dart';
@@ -69,9 +70,11 @@ Future<void> main() async {
   );
   final knownHosts = KnownHostsStore(store);
   final hosts = HostRepository(store, knownHosts: knownHosts);
+  final snippets = SnippetRepository(store);
   runApp(
     PureShellApp(
       hosts: hosts,
+      snippets: snippets,
       knownHosts: knownHosts,
       settings: terminalSettings,
       keyService: KeyService(
@@ -94,9 +97,13 @@ class PureShellApp extends StatefulWidget {
     required this.keyService,
     required this.lock,
     required this.screenshots,
+    this.snippets,
   });
 
   final HostRepository hosts;
+
+  /// Saved commands (Snippets). Null turns the feature off.
+  final SnippetRepository? snippets;
   final KnownHostsStore knownHosts;
   final TerminalSettings settings;
   final KeyService keyService;
@@ -125,6 +132,7 @@ class _PureShellAppState extends State<PureShellApp> {
       ),
       home: HostListScreen(
         hosts: widget.hosts,
+        snippets: widget.snippets,
         knownHosts: widget.knownHosts,
         settings: widget.settings,
         keyService: widget.keyService,

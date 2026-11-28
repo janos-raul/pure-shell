@@ -20,12 +20,16 @@ class ExtraKeysRow extends StatelessWidget {
     required this.onText,
     required this.onBox,
     required this.onPaste,
+    this.onSnippets,
     this.boxOpen = false,
     this.enabled = true,
   });
 
   /// The Paste key: pastes the clipboard (into the box while it is open).
   final VoidCallback onPaste;
+
+  /// The Snippets key: opens the snippet list. Null hides the key.
+  final VoidCallback? onSnippets;
 
   /// The command-line box button was tapped (open or close it).
   final VoidCallback onBox;
@@ -53,9 +57,10 @@ class ExtraKeysRow extends StatelessWidget {
       VoidCallback onTap, {
       bool active = false,
       bool enabled = true,
+      bool ignoreEnded = false,
       String? tooltip,
     }) {
-      enabled = enabled && this.enabled;
+      enabled = ignoreEnded || (enabled && this.enabled);
       final color = active ? scheme.onPrimary : null;
       Widget face = label is IconData
           ? Icon(label, size: 20, color: color)
@@ -111,6 +116,15 @@ class ExtraKeysRow extends StatelessWidget {
           key('/', () => onText('/')),
           key(Icons.content_paste, onPaste, tooltip: 'Paste'),
           key(Icons.edit_note, onBox, active: boxOpen, tooltip: 'Command line'),
+          if (onSnippets != null)
+            // Stays usable after the session ends: the list then says why
+            // nothing can be sent, and Manage still works.
+            key(
+              Icons.bookmarks_outlined,
+              onSnippets!,
+              ignoreEnded: true,
+              tooltip: 'Snippets',
+            ),
         ],
       ),
     );

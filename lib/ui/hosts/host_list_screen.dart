@@ -17,10 +17,12 @@ import '../../core/hosts/known_hosts.dart';
 import '../../core/storage/screenshot_settings.dart';
 import '../../core/storage/terminal_settings.dart';
 import '../../core/keys/key_service.dart';
+import '../../core/snippets/snippet_repository.dart';
 import '../../core/lock/app_lock_controller.dart';
 import '../about_screen.dart';
 import '../help/help_screen.dart';
 import '../keys/keys_screen.dart';
+import '../snippets/snippets_screen.dart';
 import '../settings/settings_screen.dart';
 import 'connect_flow.dart';
 import 'host_edit_screen.dart';
@@ -35,6 +37,7 @@ class HostListScreen extends StatefulWidget {
     required this.keyService,
     required this.lock,
     required this.screenshots,
+    this.snippets,
   });
 
   final HostRepository hosts;
@@ -43,6 +46,9 @@ class HostListScreen extends StatefulWidget {
   final KeyService keyService;
   final AppLockController lock;
   final ScreenshotSettings screenshots;
+
+  /// Saved commands. Null hides everything about snippets.
+  final SnippetRepository? snippets;
 
   @override
   State<HostListScreen> createState() => _HostListScreenState();
@@ -76,6 +82,7 @@ class _HostListScreenState extends State<HostListScreen> {
           hosts: widget.hosts,
           knownHosts: widget.knownHosts,
           keyService: widget.keyService,
+          snippets: widget.snippets,
           host: host,
         ),
       ),
@@ -86,6 +93,7 @@ class _HostListScreenState extends State<HostListScreen> {
   Future<void> _openMenuItem(String item) async {
     final Widget page = switch (item) {
       'keys' => KeysScreen(keyService: widget.keyService),
+      'snippets' => SnippetsScreen(snippets: widget.snippets!),
       'help' => const HelpScreen(),
       'about' => const AboutScreen(),
       _ => SettingsScreen(
@@ -114,7 +122,11 @@ class _HostListScreenState extends State<HostListScreen> {
       context: context,
       builder: (c) => AlertDialog(
         title: Text('Delete "${host.label}"?'),
-        content: const Text('The host and its trusted host key are removed.'),
+        content: Text(
+          widget.snippets == null
+              ? 'The host and its trusted host key are removed.'
+              : 'The host, its trusted host key and its snippets are removed.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(c, false),
@@ -130,6 +142,7 @@ class _HostListScreenState extends State<HostListScreen> {
     );
     if (ok != true) return;
     await widget.hosts.delete(host);
+    await widget.snippets?.deleteForHost(host.id);
     await _reload();
   }
 
@@ -139,6 +152,7 @@ class _HostListScreenState extends State<HostListScreen> {
     knownHosts: widget.knownHosts,
     settings: widget.settings,
     keyService: widget.keyService,
+    snippets: widget.snippets,
   );
 
   @override
@@ -155,6 +169,8 @@ class _HostListScreenState extends State<HostListScreen> {
             onSelected: _openMenuItem,
             itemBuilder: (_) => [
               _menuItem('keys', 'Keys', Icons.vpn_key_outlined),
+              if (widget.snippets != null)
+                _menuItem('snippets', 'Snippets', Icons.bookmarks_outlined),
               _menuItem('settings', 'Settings', Icons.settings_outlined),
               _menuItem('help', 'Help', Icons.help_outline),
               _menuItem('about', 'About', Icons.info_outline),

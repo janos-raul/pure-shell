@@ -8,6 +8,19 @@ are `x.y.z.0`.
 
 ### Added
 
+- **Snippets (saved commands).** Save a command, or several lines, once and
+  use it on any session. Each snippet has a name, the text, a scope (every host
+  or one host) and a mode: **Insert** puts it in the command box to edit,
+  **Run** sends it followed by Enter. Several lines are sent as one paste
+  (bracketed when the program asked for it). A run snippet can ask before it
+  runs; that is on by default for several lines. Open the list with the new
+  Snippets key in the extra keys row, the icon in the top bar (in landscape:
+  tap the top edge of the screen first) or, on Windows, **Ctrl+Shift+S**.
+  The host's own snippets come first, then the ones for every host. Manage
+  them (add, edit, delete, reorder) from the list, from the Snippets entry in
+  the host list menu, or from a host's settings. Snippets are stored encrypted
+  like hosts and are deleted with their host. The editor reminds you not to
+  put passwords or secrets in them. There is a Help topic "Snippets".
 - **Windows: Help topic "Try the test server (Sandbox)".** Windows 1.2.0.0
   shipped without it; the Android topic came with 1.2.0. Same steps and the
   same fingerprint to compare, with Windows Hello wording for the key.

@@ -18,6 +18,8 @@ import 'package:flutter/services.dart';
 import '../../core/hosts/host.dart';
 import '../../core/platform_support.dart';
 import '../../core/lock/app_lock_controller.dart';
+import '../../core/snippets/snippet.dart';
+import '../../core/snippets/snippet_repository.dart';
 import '../../core/ssh/session_keeper.dart';
 import '../../core/ssh/ssh_connection.dart';
 import '../../core/storage/terminal_settings.dart';
@@ -25,12 +27,15 @@ import '../theme.dart';
 import '../lock/app_lock_gate.dart';
 import '../private_input.dart';
 import 'command_box.dart';
+import '../snippets/snippet_sheet.dart';
+import '../snippets/snippets_screen.dart';
 import 'desktop_keys.dart';
 import 'desktop_text_input.dart';
 import 'direct_input.dart';
 import 'extra_keys.dart';
 import 'pinch_zoom.dart';
 import 'pty_resize.dart';
+import 'snippet_runner.dart';
 import 'terminal_clipboard.dart';
 
 /// Converts a single typed character to its Ctrl-modified control character
@@ -52,12 +57,16 @@ class TerminalScreen extends StatefulWidget {
     required this.host,
     required this.connection,
     required this.settings,
+    this.snippets,
     this.onReconnect,
   });
 
   final Host host;
   final SshConnection connection;
   final TerminalSettings settings;
+
+  /// Saved commands. Null hides the Snippets buttons.
+  final SnippetRepository? snippets;
 
   /// Runs the full connect flow for [host] again (host key check, password or
   /// key prompt) and returns the new connection, or null if it did not
@@ -571,12 +580,84 @@ class _TerminalScreenState extends State<TerminalScreen>
         unawaited(_copySelection());
       case PasteAction():
         unawaited(_paste());
+      case SnippetsAction():
+        unawaited(_openSnippets());
       case ZoomAction(:final step):
         _zoom(step);
       case TypeAction(:final text):
         if (_sessionLive) _terminal.textInput(text);
     }
     return KeyEventResult.handled;
+  }
+
+  /// The snippet list (this host's first, then the global ones). Also the
+  /// way to the manager.
+  Future<void> _openSnippets() async {
+    final repo = widget.snippets;
+    if (repo == null || !mounted) return;
+    final result = await showSnippetSheet(
+      context,
+      snippets: repo,
+      host: widget.host,
+      live: _sessionLive,
+    );
+    if (result == null || !mounted) return;
+    switch (result) {
+      case ManageSnippets():
+        await Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (_) => SnippetsScreen(snippets: repo, host: widget.host),
+          ),
+        );
+        if (mounted && !_boxOpen) _focus.requestFocus();
+      case UseSnippet(:final snippet):
+        await _useSnippet(snippet);
+    }
+  }
+
+  /// Insert: the text goes into the command box (opened if needed) for the
+  /// user to change and send. Run: it is sent now (several lines as a paste),
+  /// after a question when the snippet asks for one.
+  Future<void> _useSnippet(Snippet snippet) async {
+    if (!_sessionLive) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('The session has ended.')));
+      return;
+    }
+    if (snippet.mode == SnippetMode.insert) {
+      if (!_boxOpen) _toggleBox();
+      insertAtCursor(_boxText, snippet.text.replaceAll('\r\n', '\n'));
+      _boxPrevLength = _boxText.text.length;
+      _boxFocus.requestFocus();
+      return;
+    }
+    if (snippetNeedsConfirm(snippet)) {
+      final ok = await showDialog<bool>(
+        context: context,
+        builder: (c) => AlertDialog(
+          title: Text('Run "${snippet.name}"?'),
+          content: SingleChildScrollView(
+            child: Text(snippet.text, style: monoStyle),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(c, false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(c, true),
+              child: const Text('Run'),
+            ),
+          ],
+        ),
+      );
+      // The session may have ended or the app been covered meanwhile.
+      if (ok != true || !mounted || !_sessionLive) return;
+    }
+    if (_ctrl) setState(() => _ctrl = false); // a snippet is not Ctrl+key
+    final sent = runSnippetText(snippet.text, terminal: _terminal, send: _send);
+    if (sent && !_boxOpen) _focus.requestFocus();
   }
 
   /// Ctrl+= / Ctrl+- one point, Ctrl+0 back to the default. Saved like a
@@ -784,6 +865,13 @@ class _TerminalScreenState extends State<TerminalScreen>
     );
   }
 
+  Widget _snippetsButton() => IconButton(
+    key: const ValueKey('snippets-button'),
+    icon: const Icon(Icons.bookmarks_outlined),
+    tooltip: 'Snippets',
+    onPressed: _openSnippets,
+  );
+
   Widget _disconnectButton() => IconButton(
     icon: const Icon(Icons.power_settings_new),
     tooltip: 'Disconnect',
@@ -811,7 +899,10 @@ class _TerminalScreenState extends State<TerminalScreen>
             : AppBar(
                 title: Text(widget.host.label),
                 backgroundColor: const Color(0xFF121212),
-                actions: [_disconnectButton()],
+                actions: [
+                  if (widget.snippets != null) _snippetsButton(),
+                  _disconnectButton(),
+                ],
               ),
         body: SafeArea(
           top: landscape,
@@ -908,6 +999,8 @@ class _TerminalScreenState extends State<TerminalScreen>
                                     onPressed: _confirmDisconnect,
                                   ),
                                   Expanded(child: Text(widget.host.label)),
+                                  if (widget.snippets != null)
+                                    _snippetsButton(),
                                   _disconnectButton(),
                                 ],
                               ),
@@ -964,6 +1057,7 @@ class _TerminalScreenState extends State<TerminalScreen>
                   boxOpen: _boxOpen,
                   onBox: _toggleBox,
                   onPaste: _paste,
+                  onSnippets: widget.snippets == null ? null : _openSnippets,
                 ),
               if (_boxOpen)
                 CommandLineBox(

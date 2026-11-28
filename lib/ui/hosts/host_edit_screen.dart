@@ -13,12 +13,14 @@ import '../theme.dart';
 
 import 'package:material_ui/material_ui.dart';
 
+import '../../core/snippets/snippet_repository.dart';
 import '../../core/hosts/host.dart';
 import '../../core/hosts/host_repository.dart';
 import '../../core/hosts/known_hosts.dart';
 import '../../core/keys/key_service.dart';
 import '../../core/keys/ssh_key.dart';
 import '../private_input.dart';
+import '../snippets/snippets_screen.dart';
 
 /// Add or edit a host. When editing, also shows the trusted host key with a
 /// button to remove it (the only way past a host key mismatch).
@@ -28,12 +30,16 @@ class HostEditScreen extends StatefulWidget {
     required this.hosts,
     required this.knownHosts,
     required this.keyService,
+    this.snippets,
     this.host,
   });
 
   final HostRepository hosts;
   final KnownHostsStore knownHosts;
   final KeyService keyService;
+
+  /// Saved commands. Null hides the Snippets row.
+  final SnippetRepository? snippets;
   final Host? host;
 
   @override
@@ -255,6 +261,25 @@ class _HostEditScreenState extends State<HostEditScreen> {
                 ),
                 value: _fallback,
                 onChanged: (v) => setState(() => _fallback = v),
+              ),
+            ],
+            if (widget.host != null && widget.snippets != null) ...[
+              const SizedBox(height: 24),
+              ListTile(
+                key: const ValueKey('host-snippets'),
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.bookmarks_outlined),
+                title: const Text('Snippets'),
+                subtitle: const Text('Saved commands for this host'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => SnippetsScreen(
+                      snippets: widget.snippets!,
+                      host: widget.host,
+                    ),
+                  ),
+                ),
               ),
             ],
             if (widget.host != null) ...[

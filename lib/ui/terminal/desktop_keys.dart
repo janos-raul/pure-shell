@@ -22,6 +22,11 @@ class PasteAction extends DesktopKeyAction {
   const PasteAction();
 }
 
+/// Open the snippet list.
+class SnippetsAction extends DesktopKeyAction {
+  const SnippetsAction();
+}
+
 /// Font size: +1 / -1 step, or back to the default (0).
 class ZoomAction extends DesktopKeyAction {
   const ZoomAction(this.step);
@@ -47,6 +52,7 @@ final _zoomReset = {LogicalKeyboardKey.digit0, LogicalKeyboardKey.numpad0};
 /// The desktop shortcuts, like Windows Terminal:
 ///
 /// - Ctrl+Shift+C copy, Ctrl+Shift+V and Shift+Insert paste;
+/// - Ctrl+Shift+S opens the snippet list;
 /// - Ctrl+= / Ctrl++ / Ctrl+- / Ctrl+0 font size;
 /// - AltGr characters typed as text.
 ///
@@ -62,6 +68,9 @@ DesktopKeyAction? desktopKeyAction(
   if (ctrl && shift && !alt) {
     if (key == LogicalKeyboardKey.keyC) return const CopyAction();
     if (key == LogicalKeyboardKey.keyV) return const PasteAction();
+    // xterm would send ^S (XOFF, freezes the terminal) for any Ctrl+S, so the
+    // shifted one is free to use; plain Ctrl+S still reaches the shell.
+    if (key == LogicalKeyboardKey.keyS) return const SnippetsAction();
   }
   if (shift && !ctrl && !alt && key == LogicalKeyboardKey.insert) {
     return const PasteAction();

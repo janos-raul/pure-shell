@@ -32,6 +32,21 @@ void main() {
     expect(act(LogicalKeyboardKey.insert, shift: true), isA<PasteAction>());
   });
 
+  test(
+    'Ctrl+Shift+S opens the snippets; plain Ctrl+S stays with the shell',
+    () {
+      expect(
+        act(LogicalKeyboardKey.keyS, ctrl: true, shift: true),
+        isA<SnippetsAction>(),
+      );
+      expect(act(LogicalKeyboardKey.keyS, ctrl: true), isNull);
+      expect(
+        act(LogicalKeyboardKey.keyS, ctrl: true, shift: true, alt: true),
+        isNull,
+      );
+    },
+  );
+
   test('plain Ctrl and Alt combinations go to the shell', () {
     for (final k in [
       LogicalKeyboardKey.keyA,

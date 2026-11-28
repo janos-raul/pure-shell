@@ -178,8 +178,8 @@ final List<HelpTopic> _androidHelpTopics = [
     'Type a whole line with swipe and suggestions',
     [
       HelpText(
-        'Tap the last key in the row above the keyboard to open the command '
-        'box. It is an ordinary text field: swipe typing, suggestions and '
+        'Tap the key with the pencil icon in the row above the keyboard to open '
+        'the command box. It is an ordinary text field: swipe typing, suggestions and '
         'editing work. Autocorrect and automatic capital letters are off, so '
         'your command is sent exactly as typed.',
       ),
@@ -273,6 +273,53 @@ final List<HelpTopic> _androidHelpTopics = [
         'restarts. Pure-Shell pings idle sessions every 30 seconds and '
         'treats a connection that stops answering as lost after roughly a '
         'minute.',
+      ),
+    ],
+  ),
+  const HelpTopic(
+    'snippets',
+    'Snippets (saved commands)',
+    'Keep the commands you use often, insert or run them with one tap',
+    [
+      HelpText(
+        'A snippet is a command, or several lines, that you save once and use '
+        'again on any session. Give it a name, and choose when it is tapped:',
+      ),
+      HelpSteps([
+        '**Insert** puts the text in the command box, so you can change it '
+            'and send it yourself.',
+        '**Run** sends the text and presses Enter. Several lines are sent as '
+            'one paste (bracketed paste when the program asked for it), so the '
+            'shell reads them all before running.',
+      ]),
+      HelpText(
+        'A snippet is either for every host or only for one host. In the list, '
+        'the snippets of the host you are connected to come first, then the '
+        'ones for every host.',
+      ),
+      HelpHeading('Ask before running'),
+      HelpText(
+        'A run snippet can show its text and ask first. It starts on for '
+        'snippets with several lines and off for one-line snippets; you can '
+        'change it.',
+      ),
+      HelpHeading('Open the list'),
+      HelpText(
+        'Tap the Snippets key (bookmarks icon) in the row of extra keys, or '
+        'the same icon in the top bar. In landscape the top bar is hidden: '
+        'tap the top edge of the screen to show it, then the icon.',
+      ),
+      HelpHeading('Add, edit, reorder'),
+      HelpText(
+        'Choose Manage snippets in the list, or Snippets in the menu of the '
+        'host list (snippets for every host), or in a host\'s settings '
+        '(snippets for that host). Drag the handle on the right to reorder.',
+      ),
+      HelpHeading('No secrets'),
+      HelpText(
+        'Do not put passwords or other secrets in snippets. They are plain '
+        'text in the app, and a run snippet sends them as typed. When the '
+        'session has ended, snippets cannot be inserted or run.',
       ),
     ],
   ),
@@ -504,6 +551,8 @@ final List<HelpTopic> _windowsHelpTopics = [
       HelpSteps([
         '**Ctrl+Shift+C** copies the selection.',
         '**Ctrl+Shift+V** (or **Shift+Insert**) pastes.',
+        '**Ctrl+Shift+S** opens your snippets (saved commands). Plain Ctrl+S '
+            'still goes to the server.',
         '**Ctrl+=** and **Ctrl+-** make the text bigger and smaller, '
             '**Ctrl+0** goes back to the normal size. The size is remembered.',
       ]),
@@ -512,9 +561,9 @@ final List<HelpTopic> _windowsHelpTopics = [
         'period) type straight into the terminal.',
       ),
       HelpText(
-        'The row of extra keys (Esc, Tab, Ctrl, arrows, Paste and the command '
-        'box) is off on Windows; turn it on in Settings, under Terminal, Extra '
-        'keys row.',
+        'The row of extra keys (Esc, Tab, Ctrl, arrows, Paste, the command box '
+        'and Snippets) is off on Windows; turn it on in Settings, under '
+        'Terminal, Extra keys row.',
       ),
     ],
   ),
@@ -561,6 +610,53 @@ final List<HelpTopic> _windowsHelpTopics = [
         'computer goes to sleep. Pure-Shell pings idle sessions every 30 '
         'seconds and treats a connection that stops answering as lost after '
         'roughly a minute.',
+      ),
+    ],
+  ),
+  const HelpTopic(
+    'snippets',
+    'Snippets (saved commands)',
+    'Keep the commands you use often, insert or run them with one click',
+    [
+      HelpText(
+        'A snippet is a command, or several lines, that you save once and use '
+        'again on any session. Give it a name, and choose when it is clicked:',
+      ),
+      HelpSteps([
+        '**Insert** puts the text in the command box, so you can change it '
+            'and send it yourself.',
+        '**Run** sends the text and presses Enter. Several lines are sent as '
+            'one paste (bracketed paste when the program asked for it), so the '
+            'shell reads them all before running.',
+      ]),
+      HelpText(
+        'A snippet is either for every host or only for one host. In the list, '
+        'the snippets of the host you are connected to come first, then the '
+        'ones for every host.',
+      ),
+      HelpHeading('Ask before running'),
+      HelpText(
+        'A run snippet can show its text and ask first. It starts on for '
+        'snippets with several lines and off for one-line snippets; you can '
+        'change it.',
+      ),
+      HelpHeading('Open the list'),
+      HelpText(
+        'Click the bookmarks icon in the top bar, or the Snippets key in the '
+        'row of extra keys if you turned it on, or press Ctrl+Shift+S in the '
+        'terminal.',
+      ),
+      HelpHeading('Add, edit, reorder'),
+      HelpText(
+        'Choose Manage snippets in the list, or Snippets in the menu of the '
+        'host list (snippets for every host), or in a host\'s settings '
+        '(snippets for that host). Drag the handle on the right to reorder.',
+      ),
+      HelpHeading('No secrets'),
+      HelpText(
+        'Do not put passwords or other secrets in snippets. They are plain '
+        'text in the app, and a run snippet sends them as typed. When the '
+        'session has ended, snippets cannot be inserted or run.',
       ),
     ],
   ),

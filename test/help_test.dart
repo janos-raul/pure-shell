@@ -80,6 +80,7 @@ void main() {
           'The command box',
           'Copy and paste',
           'Keeping sessions alive',
+          'Snippets (saved commands)',
           'Long-running jobs: tmux',
           'Try the test server (Sandbox)',
           'StrongBox, TEE, software',
@@ -120,6 +121,8 @@ void main() {
       expect(text, contains('sandbox.pure-shell.eu'));
       expect(text, contains('2222'));
       expect(text, contains('Hello'));
+      expect(helpTopicById('snippets'), isNotNull);
+      expect(_all(helpTopicById('snippets')!), contains('Ctrl+Shift+S'));
       expect(text, isNot(contains('18+')));
       expect(text, isNot(contains('Keystore')));
       expect(
