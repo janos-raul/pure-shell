@@ -6,6 +6,12 @@ are `x.y.z.0`.
 
 ## 1.3.0 (unreleased; Android and Windows)
 
+### Added
+
+- **Windows: Help topic "Try the test server (Sandbox)".** Windows 1.2.0.0
+  shipped without it; the Android topic came with 1.2.0. Same steps and the
+  same fingerprint to compare, with Windows Hello wording for the key.
+
 ### Changed
 
 - **Internal: moved to `package:material_ui`.** Flutter 3.50 deprecates

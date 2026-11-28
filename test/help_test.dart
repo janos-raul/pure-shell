@@ -10,6 +10,8 @@
 import 'dart:io';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart'
+    show TargetPlatform, debugDefaultTargetPlatformOverride;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pureshell/core/hosts/host.dart';
@@ -107,6 +109,22 @@ void main() {
             .command,
         sandboxHostFingerprint,
       );
+    });
+
+    test('the Windows help has the Sandbox topic too, same fingerprint', () {
+      debugDefaultTargetPlatformOverride = TargetPlatform.windows;
+      addTearDown(() => debugDefaultTargetPlatformOverride = null);
+      final topic = helpTopicById('sandbox')!;
+      final text = _all(topic);
+      expect(text, contains('sandbox.pure-shell.eu'));
+      expect(text, contains('2222'));
+      expect(text, contains('Hello'));
+      expect(text, isNot(contains('Keystore')));
+      expect(
+        topic.blocks.whereType<HelpCommand>().single.command,
+        sandboxHostFingerprint,
+      );
+      expect({for (final t in helpTopics) t.id}.length, helpTopics.length);
     });
 
     test('the app never mentions the chat server', () {

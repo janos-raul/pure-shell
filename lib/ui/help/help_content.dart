@@ -579,6 +579,37 @@ final List<HelpTopic> _windowsHelpTopics = [
       HelpText('To leave a job running on purpose, press Ctrl+B, then d.'),
     ],
   ),
+  const HelpTopic(
+    'sandbox',
+    'Try the test server (Sandbox)',
+    'A free throwaway Linux server to try Pure-Shell',
+    [
+      HelpText(
+        'The Sandbox is a free test Linux server, so you can try Pure-Shell '
+        'without a server of your own. It is for adults (18+). Sessions are '
+        'recorded and kept up to 14 days, and they end after 30 minutes. '
+        'Details: `pure-shell.eu/sandbox`',
+      ),
+      HelpHeading('How to connect'),
+      HelpSteps([
+        'Open Keys and create a new key. Name it **Sandbox**. Use it only '
+            'for the Sandbox, not your real key. Windows asks for your Hello '
+            'PIN, fingerprint or face when the key is used.',
+        'Add a host: hostname `sandbox.pure-shell.eu`, port `2222`, any '
+            'username (for example `user`), and log in with the Sandbox key.',
+        'On the first connection, compare the fingerprint the server shows '
+            'with the one below before you click Trust.',
+      ]),
+      HelpCommand(sandboxHostFingerprint),
+      HelpHeading('If the key is rejected'),
+      HelpText(
+        'The Sandbox allows only one session per network. If another device '
+        'on the same network has a session open, close it and try again. '
+        'Many attempts in a short time also cause a short block: wait a few '
+        'seconds and try again.',
+      ),
+    ],
+  ),
   HelpTopic(
     'key-protection',
     'TPM + Hello, Hello, software',
