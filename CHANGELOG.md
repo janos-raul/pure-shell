@@ -4,7 +4,7 @@ All notable changes to Pure-Shell. Versions are the app version
 (`x.y.z`). Android builds also carry a build number (`+N`); Windows packages
 are `x.y.z.0`.
 
-## 1.3.0 (unreleased; Android and Windows)
+## 1.3.0 (2026-11-28)
 
 ### Added
 
