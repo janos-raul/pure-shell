@@ -1,6 +1,6 @@
-# Windows desktop build: feasibility notes (experimental)
+# Windows desktop build: feasibility notes
 
-Branch `windows-build`, 2026-11-11. Exploration only, not a release.
+Branch `windows-build`, 2026-11-11. Notes from the first exploration, before the Windows release.
 
 ## What the branch does
 

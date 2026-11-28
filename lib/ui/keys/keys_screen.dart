@@ -146,7 +146,7 @@ class _KeysScreenState extends State<KeysScreen> {
             content: Text(
               windowsStub
                   ? 'Windows Hello is not set up, so this is a software key. '
-                        'EXPERIMENTAL: it is kept encrypted for your Windows '
+                        'It is kept encrypted for your Windows '
                         'account (Windows data protection), not by a TPM, and '
                         'using it asks for no confirmation. Set up Windows '
                         'Hello and create a new key for a TPM key.'

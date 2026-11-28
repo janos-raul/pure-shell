@@ -9,8 +9,8 @@
 
 import 'package:flutter/foundation.dart';
 
-/// EXPERIMENTAL (windows-build branch): the Windows desktop build has no
-/// native bridges yet. Keys are software keys without a user prompt, the app
+/// The Windows desktop build differs from Android: keys use Windows Hello
+/// (or a software key without a user prompt when Hello is not set up), the app
 /// lock is off, and there is no foreground service, FLAG_SECURE or share
 /// sheet. Everything that differs checks this flag.
 ///

@@ -14,6 +14,10 @@ are `x.y.z.0`.
 
 ### Changed
 
+- **Windows: no more "experimental" wording.** The About screen now says
+  "An open-source SSH client." on both platforms, and the software-key notices
+  and Help no longer call the Windows build experimental (what they say about
+  the key is unchanged).
 - **Internal: moved to `package:material_ui`.** Flutter 3.50 deprecates
   `package:flutter/material.dart`. No visible change.
 - **SSH library updated to dartssh2 4.2.0.** Fixes the connection closing when

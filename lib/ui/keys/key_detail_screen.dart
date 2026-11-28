@@ -150,7 +150,7 @@ class _KeyDetailScreenState extends State<KeyDetailScreen> {
               padding: const EdgeInsets.only(top: 8),
               child: Text(
                 windowsStub
-                    ? 'EXPERIMENTAL Windows build: software key, not in a TPM, '
+                    ? 'Software key: not in a TPM, '
                           'no confirmation on use.'
                     : 'This phone reports no secure hardware for keys, so this '
                           'is a software key.',

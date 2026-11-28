@@ -11,7 +11,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
 import '../core/app_info.dart';
-import '../core/platform_support.dart';
 import 'theme.dart';
 
 /// Where the source lives. The links are shown as text you can copy: Pure-Shell
@@ -58,12 +57,7 @@ class _AboutScreenState extends State<AboutScreen> {
             key: const ValueKey('about-version'),
           ),
           const SizedBox(height: 12),
-          Text(
-            windowsStub
-                ? 'An open-source SSH client. This Windows build is '
-                      'experimental.'
-                : 'An open-source SSH client for Android.',
-          ),
+          const Text('An open-source SSH client.'),
           const _Heading('License'),
           const Text(
             'GNU General Public License, version 3 or later. Pure-Shell comes '

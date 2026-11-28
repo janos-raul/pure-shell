@@ -16,7 +16,7 @@ import 'package:pointycastle/export.dart';
 import '../storage/secure_store.dart';
 import 'keystore_api.dart';
 
-/// EXPERIMENTAL STUB for the Windows build: a SOFTWARE-ONLY [KeystoreApi].
+/// Windows build fallback, used when Windows Hello is not set up: a SOFTWARE-ONLY [KeystoreApi].
 ///
 /// - No hardware keys: [generateKey] always fails, so [KeyService] must run
 ///   with `softwareOnly: true` (the same Ed25519 "software key" path phones

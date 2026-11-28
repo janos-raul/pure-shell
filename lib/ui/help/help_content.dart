@@ -638,8 +638,8 @@ final List<HelpTopic> _windowsHelpTopics = [
       const HelpHeading('Software key'),
       HelpText(
         'Used only when Windows Hello is not set up. The key is made by the '
-        'app (`$ed25519Type`) and kept encrypted for your Windows account. In '
-        'this experimental Windows build, using it asks for nothing. Set up '
+        'app (`$ed25519Type`) and kept encrypted for your Windows account. '
+        'Using it asks for no confirmation. Set up '
         'Windows Hello (Settings, Accounts, Sign-in options) and create a new '
         'key to get a TPM key.',
       ),

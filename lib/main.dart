@@ -47,7 +47,7 @@ Future<void> main() async {
   final SecureStore store = windowsStub
       ? await WindowsSecureStore.open()
       : FlutterSecureStore();
-  // EXPERIMENTAL Windows build: Windows Hello keys with a software-key
+  // Windows build: Windows Hello keys with a software-key
   // fallback, no app lock (see platform_support.dart).
   final KeystoreApi keystore = windowsStub
       ? WindowsKeystore(store)
