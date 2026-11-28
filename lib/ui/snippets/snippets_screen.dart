@@ -147,9 +147,14 @@ class _SnippetsScreenState extends State<SnippetsScreen> {
                         tooltip: 'More',
                         onSelected: (v) =>
                             v == 'edit' ? _edit(list[i]) : _delete(list[i]),
-                        itemBuilder: (_) => const [
-                          PopupMenuItem(value: 'edit', child: Text('Edit')),
-                          PopupMenuItem(value: 'delete', child: Text('Delete')),
+                        itemBuilder: (_) => [
+                          _menuItem('edit', 'Edit', Icons.edit_outlined),
+                          _menuItem(
+                            'delete',
+                            'Delete',
+                            Icons.delete_outline,
+                            destructive: true,
+                          ),
                         ],
                       ),
                       ReorderableDragStartListener(
@@ -196,3 +201,20 @@ class _SnippetsScreenState extends State<SnippetsScreen> {
     );
   }
 }
+
+/// A menu entry with a small leading icon, like the host list's menu.
+PopupMenuItem<String> _menuItem(
+  String value,
+  String label,
+  IconData icon, {
+  bool destructive = false,
+}) => PopupMenuItem<String>(
+  value: value,
+  child: Row(
+    children: [
+      Icon(icon, size: 20, color: destructive ? errorRed : menuIconColor),
+      const SizedBox(width: 12),
+      Text(label, style: destructive ? const TextStyle(color: errorRed) : null),
+    ],
+  ),
+);
