@@ -14,6 +14,11 @@ are `x.y.z.0`.
   a server asks to change an expired password (the app now moves on to the next
   login method), and ignores credential results that arrive after an attempt
   has already ended.
+- **Clean logout.** When you end a session (close the tab, disconnect, leave
+  the app), Pure-Shell now sends the server an SSH disconnect message first, so
+  the server's log shows a normal logout instead of a lost connection. Failed
+  connections and dead links are still closed without it. Nothing changes on
+  screen.
 
 ## 1.2.0 (2026-11-21)
 
@@ -36,6 +41,11 @@ are `x.y.z.0`.
 
 ### Changed
 
+- **Terms of Service and Privacy Policy updated** (2026-11-21) for the test
+  servers (Sandbox and Chat): who may use them (18 or older), what is
+  recorded and for how long (Sandbox sessions up to 14 days; the Chat server
+  keeps no messages), and the rules of use. Read them at
+  <https://pure-shell.eu/terms/> and <https://pure-shell.eu/privacy.html>.
 - Updated the Android build tools (Gradle, Android Gradle Plugin, Kotlin) and
   the libraries the app builds on.
 

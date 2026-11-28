@@ -346,18 +346,38 @@ class SshConnection {
     if (!outcome.connected) _closeTransport();
   }
 
-  void _closeTransport() {
+  /// Tears the transport down. With [graceful] (the user ended the session) the
+  /// server first gets an SSH disconnect message, so its log shows a clean
+  /// logout instead of a lost connection; failures use a plain close.
+  void _closeTransport({bool graceful = false}) {
     _keepAlive?.stop();
     _keepAlive = null;
     _session = null;
-    try {
-      _client?.close();
-    } catch (_) {}
-    try {
-      _socket?.destroy();
-    } catch (_) {}
+    final client = _client;
+    final socket = _socket;
     _client = null;
     _socket = null;
+    void destroySocket() {
+      try {
+        socket?.destroy();
+      } catch (_) {}
+    }
+
+    if (graceful && client != null) {
+      // Fire and forget; the timeout keeps a stuck socket from lingering.
+      unawaited(
+        client
+            .disconnect()
+            .timeout(const Duration(seconds: 2))
+            .catchError((_) {})
+            .whenComplete(destroySocket),
+      );
+      return;
+    }
+    try {
+      client?.close();
+    } catch (_) {}
+    destroySocket();
   }
 
   /// dartssh2's host key callback. Public for tests.
@@ -464,6 +484,6 @@ class SshConnection {
 
   void close() {
     _watchdogTimer?.cancel();
-    _closeTransport();
+    _closeTransport(graceful: true);
   }
 }
