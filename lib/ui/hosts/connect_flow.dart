@@ -11,7 +11,7 @@ import 'dart:async';
 
 import '../theme.dart';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../core/hosts/host.dart';
 import '../../core/keys/key_service.dart';

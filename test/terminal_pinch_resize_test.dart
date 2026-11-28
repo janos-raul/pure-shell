@@ -8,7 +8,7 @@
 // any later version. See the LICENSE file for details.
 
 import 'package:dartssh2/dartssh2.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pureshell/core/hosts/host.dart';
 import 'package:pureshell/core/hosts/known_hosts.dart';

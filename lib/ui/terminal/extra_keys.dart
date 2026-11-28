@@ -7,7 +7,7 @@
 // Software Foundation, either version 3 of the License, or (at your option)
 // any later version. See the LICENSE file for details.
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Row of keys missing from the Android soft keyboard. Ctrl is a sticky
 /// modifier: tap it, then the next key is sent with Ctrl applied.

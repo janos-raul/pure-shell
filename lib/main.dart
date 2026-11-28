@@ -8,7 +8,7 @@
 // any later version. See the LICENSE file for details.
 
 import 'package:flutter/foundation.dart' show kReleaseMode;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'core/platform_support.dart';
 import 'core/hosts/host_repository.dart';
