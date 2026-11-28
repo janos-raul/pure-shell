@@ -474,7 +474,7 @@ void main() {
       await t.tap(find.text('Delete'));
       await t.pumpAndSettle();
       expect(find.text('Delete "name-g"?'), findsOneWidget);
-      await t.tap(find.widgetWithText(FilledButton, 'Delete'));
+      await t.tap(find.widgetWithText(TextButton, 'Delete'));
       await t.pumpAndSettle();
       expect((await repo.list()).map((s) => s.id), ['h']);
     });

@@ -73,7 +73,8 @@ class _SnippetsScreenState extends State<SnippetsScreen> {
             onPressed: () => Navigator.pop(c, false),
             child: const Text('Cancel'),
           ),
-          FilledButton(
+          TextButton(
+            style: destructiveTextStyle(),
             onPressed: () => Navigator.pop(c, true),
             child: const Text('Delete'),
           ),
