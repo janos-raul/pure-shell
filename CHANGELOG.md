@@ -4,6 +4,17 @@ All notable changes to Pure-Shell. Versions are the app version
 (`x.y.z`). Android builds also carry a build number (`+N`); Windows packages
 are `x.y.z.0`.
 
+## 1.3.0 (unreleased; Android and Windows)
+
+### Changed
+
+- **Internal: moved to `package:material_ui`.** Flutter 3.50 deprecates
+  `package:flutter/material.dart`. No visible change.
+- **SSH library updated to dartssh2 4.2.0.** Fixes the connection closing when
+  a server asks to change an expired password (the app now moves on to the next
+  login method), and ignores credential results that arrive after an attempt
+  has already ended.
+
 ## 1.2.0 (2026-11-21)
 
 ### Added
